@@ -13,7 +13,7 @@ concurrency:
 jobs:
   engine-tests:
     name: CleanerEngine tests
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Run unit tests
@@ -22,7 +22,7 @@ jobs:
 
   app-build:
     name: Build app
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Build (no signing)

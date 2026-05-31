@@ -141,7 +141,7 @@ machine, macOS trusts it with no Gatekeeper prompts:
 curl -fsSL https://raw.githubusercontent.com/yagcioglutoprak/dusty/main/scripts/install.sh | bash
 ```
 
-It needs Xcode (not just the Command Line Tools). To do it by hand:
+It needs Xcode 16 or later (not just the Command Line Tools). To do it by hand:
 
 ```bash
 git clone https://github.com/yagcioglutoprak/dusty.git

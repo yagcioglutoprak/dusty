@@ -16,7 +16,7 @@ layer on top of it.
 
 ## Building
 
-You need Xcode (the full app, not just the Command Line Tools).
+You need Xcode 16 or later (the full app, not just the Command Line Tools).
 
 ```bash
 # Run the engine tests

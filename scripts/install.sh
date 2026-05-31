@@ -52,6 +52,11 @@ case "$DEV_DIR" in
        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer" ;;
 esac
 
+XCODE_MAJOR="$(xcodebuild -version 2>/dev/null | awk 'NR==1{split($2,v,"."); print v[1]}')"
+if [ -n "$XCODE_MAJOR" ] && [ "$XCODE_MAJOR" -lt 16 ] 2>/dev/null; then
+  die "Dusty's project needs Xcode 16 or later (found $XCODE_MAJOR). Update Xcode from the App Store."
+fi
+
 # Build ----------------------------------------------------------------------
 
 WORK="$(mktemp -d -t dusty)"
