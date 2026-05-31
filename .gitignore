@@ -38,3 +38,11 @@ build/
 # Demo recording scratch
 *.mov
 docs/demo-frames/
+
+# Launch / marketing drafts (local only, never published)
+launch-drafts/
+
+# Demo + card capture tooling (local scratch)
+scripts/winlist.swift
+scripts/sample_colors.swift
+scripts/capture_demo.sh
