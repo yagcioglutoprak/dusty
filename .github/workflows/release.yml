@@ -14,7 +14,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Releases are signed and notarized only when the signing secrets are
+      # present. Without them this job no-ops and stays green, so tags pushed
+      # before you finish docs/SIGNING.md do not fail. See docs/SIGNING.md.
+      - id: check
+        env:
+          CERT: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+        run: |
+          if [ -n "$CERT" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "No signing secrets configured. Skipping signed release."
+          fi
+
       - name: Import Developer ID certificate
+        if: steps.check.outputs.ok == 'true'
         env:
           CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
           CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
@@ -31,6 +46,7 @@ jobs:
           rm "$RUNNER_TEMP/cert.p12"
 
       - name: Build signed app
+        if: steps.check.outputs.ok == 'true'
         env:
           SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -47,40 +63,37 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" \
             build
 
-      - name: Notarize and staple
+      - name: Package, notarize, staple
+        if: steps.check.outputs.ok == 'true'
         env:
-          APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
-          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        working-directory: Dusty
-        run: |
-          APP="build/Build/Products/Release/Dusty.app"
-          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/Dusty-notarize.zip"
-          xcrun notarytool submit "$RUNNER_TEMP/Dusty-notarize.zip" \
-            --apple-id "$APPLE_ID" \
-            --password "$APPLE_PASSWORD" \
-            --team-id "$TEAM_ID" \
-            --wait
-          xcrun stapler staple "$APP"
-
-      - name: Package DMG and zip
-        env:
+          NOTARY_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
           TAG: ${{ github.ref_name }}
         working-directory: Dusty
         run: |
           VERSION="${TAG#v}"
           APP="build/Build/Products/Release/Dusty.app"
-          STAGE="$RUNNER_TEMP/dmg"
-          mkdir -p "$STAGE"
+          echo "$NOTARY_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          STAGE="$RUNNER_TEMP/dmg"; mkdir -p "$STAGE"
           ditto "$APP" "$STAGE/Dusty.app"
           ln -s /Applications "$STAGE/Applications"
           hdiutil create -volname "Dusty" -srcfolder "$STAGE" -ov -format UDZO \
             "$RUNNER_TEMP/Dusty-$VERSION.dmg"
+          xcrun notarytool submit "$RUNNER_TEMP/Dusty-$VERSION.dmg" \
+            --key "$RUNNER_TEMP/notary.p8" \
+            --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$RUNNER_TEMP/Dusty-$VERSION.dmg"
+          xcrun stapler staple "$APP" || true
           ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/Dusty-$VERSION.zip"
           shasum -a 256 "$RUNNER_TEMP/Dusty-$VERSION.dmg" | awk '{print $1}' > "$RUNNER_TEMP/dmg.sha256"
+          rm "$RUNNER_TEMP/notary.p8"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Publish GitHub release
+        if: steps.check.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
@@ -92,6 +105,7 @@ jobs:
             --generate-notes
 
       - name: Update Homebrew tap
+        if: steps.check.outputs.ok == 'true'
         env:
           TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
         run: |

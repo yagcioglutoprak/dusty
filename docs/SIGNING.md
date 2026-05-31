@@ -1,65 +1,72 @@
 # Cutting a signed, notarized release
 
-Dusty ships as a notarized `.dmg` so people can download and run it without any
-Gatekeeper friction. Releases are built by the `Release` GitHub Actions workflow
-when you push a `v*` tag. The workflow needs your Apple signing material as
-repository secrets. You only set this up once.
+Dusty ships as a notarized `.dmg` so people download and run it with no
+Gatekeeper friction. You need a paid Apple Developer Program membership and a
+**Developer ID Application** certificate (team `W4AZ5462W5`).
 
-## 1. Create a Developer ID Application certificate
+There are two ways to release: from CI (push a tag) or locally.
 
-You need a **Developer ID Application** certificate (not "Apple Development").
+## Required pieces
 
-In Xcode: `Settings` > `Accounts` > select your team > `Manage Certificates` >
-the `+` button > `Developer ID Application`.
+- A **Developer ID Application** certificate. Create it in Xcode: `Settings` >
+  `Accounts` > your team > `Manage Certificates` > `+` > `Developer ID
+  Application`. The signing identity looks like
+  `Developer ID Application: TOPRAK YAGCIOGLU (W4AZ5462W5)`.
+- An **App Store Connect API key** for notarization. App Store Connect >
+  `Users and Access` > `Integrations` > `App Store Connect API` > generate a key
+  with `Developer` access, download its `.p8` (one time only), and note the
+  **Key ID** and the **Issuer ID** shown on that page.
 
-Then export it as a `.p12`:
+## Release from CI (recommended for repeat releases)
 
-1. Open `Keychain Access`.
-2. Find `Developer ID Application: <your name> (<TEAMID>)` under `login`.
-3. Right click > `Export`, save as `dusty-cert.p12`, set a password.
-
-Base64 encode it for the secret:
-
-```bash
-base64 -i dusty-cert.p12 | pbcopy
-```
-
-## 2. Create an app-specific password for notarization
-
-At <https://appleid.apple.com> > `Sign-In and Security` > `App-Specific
-Passwords`, generate one and label it `dusty-notary`.
-
-## 3. Add the repository secrets
-
-`Settings` > `Secrets and variables` > `Actions` > `New repository secret`:
+Add these as repository secrets (`Settings` > `Secrets and variables` >
+`Actions`). When they are present, pushing a `v*` tag builds, signs, notarizes,
+staples, and publishes the release. When they are absent the workflow skips and
+stays green.
 
 | Secret | Value |
 | --- | --- |
-| `MACOS_CERT_P12_BASE64` | the base64 blob from step 1 |
+| `MACOS_CERT_P12_BASE64` | your Developer ID cert + key exported as `.p12`, then `base64 -i cert.p12` |
 | `MACOS_CERT_PASSWORD` | the `.p12` export password |
-| `MACOS_SIGN_IDENTITY` | `Developer ID Application: <your name> (83VWMF5EQX)` |
-| `APPLE_TEAM_ID` | `83VWMF5EQX` |
-| `NOTARY_APPLE_ID` | your Apple ID email |
-| `NOTARY_PASSWORD` | the app-specific password from step 2 |
-| `TAP_TOKEN` | optional, a PAT with `repo` scope to auto-update the Homebrew tap |
-
-## 4. Tag and push
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The workflow builds, signs, notarizes, staples, packages a `.dmg` and `.zip`,
-and creates the GitHub release. If `TAP_TOKEN` is set it also updates
-`yagcioglutoprak/homebrew-tap` so `brew install --cask yagcioglutoprak/tap/dusty`
-serves the new version.
-
-## Verifying a build locally
+| `MACOS_SIGN_IDENTITY` | `Developer ID Application: TOPRAK YAGCIOGLU (W4AZ5462W5)` |
+| `APPLE_TEAM_ID` | `W4AZ5462W5` |
+| `NOTARY_KEY_P8_BASE64` | the notarization `.p8`, base64 encoded |
+| `NOTARY_KEY_ID` | the API key ID |
+| `NOTARY_ISSUER_ID` | the issuer ID from the Integrations page |
+| `TAP_TOKEN` | optional PAT with `repo` scope, to auto-update the Homebrew tap |
 
 ```bash
-spctl --assess --type execute -vv /Applications/Dusty.app
-codesign --verify --deep --strict --verbose=2 /Applications/Dusty.app
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
-A notarized, stapled app prints `accepted` and `source=Notarized Developer ID`.
+## Release locally
+
+```bash
+cd Dusty
+xcodebuild -project Dusty.xcodeproj -scheme Dusty -configuration Release \
+  -derivedDataPath build/Release \
+  CODE_SIGN_STYLE=Manual \
+  CODE_SIGN_IDENTITY="Developer ID Application: TOPRAK YAGCIOGLU (W4AZ5462W5)" \
+  DEVELOPMENT_TEAM=W4AZ5462W5 \
+  OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" build
+
+APP="build/Release/Build/Products/Release/Dusty.app"
+mkdir -p stage && ditto "$APP" stage/Dusty.app && ln -s /Applications stage/Applications
+hdiutil create -volname Dusty -srcfolder stage -ov -format UDZO Dusty.dmg
+
+xcrun notarytool submit Dusty.dmg \
+  --key /path/to/AuthKey_XXXX.p8 --key-id XXXX --issuer <issuer-id> --wait
+xcrun stapler staple Dusty.dmg
+```
+
+The `Release` configuration sets `CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO` so the
+build does not carry the debug `get-task-allow` entitlement, which notarization
+rejects.
+
+## Verifying
+
+```bash
+spctl --assess --type execute -vv /Applications/Dusty.app   # source=Notarized Developer ID
+xcrun stapler validate Dusty.dmg                            # The validate action worked!
+```

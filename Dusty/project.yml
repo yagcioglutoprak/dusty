@@ -14,14 +14,20 @@ targets:
     sources:
       - Dusty
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: sh.toprak.dusty
-      INFOPLIST_FILE: Dusty/Info.plist
-      CODE_SIGN_ENTITLEMENTS: Dusty/Dusty.entitlements
-      CODE_SIGN_STYLE: Automatic
-      ENABLE_HARDENED_RUNTIME: YES
-      SWIFT_VERSION: "5.9"
-      MACOSX_DEPLOYMENT_TARGET: "13.0"
-      GENERATE_INFOPLIST_FILE: NO
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: sh.toprak.dusty
+        INFOPLIST_FILE: Dusty/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Dusty/Dusty.entitlements
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        GENERATE_INFOPLIST_FILE: NO
+      configs:
+        Release:
+          # Distribution builds must not carry the debug get-task-allow
+          # entitlement, or notarization rejects them.
+          CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
     dependencies:
       - package: CleanerEngine
         product: CleanerEngine
