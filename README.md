@@ -46,7 +46,7 @@ Three levels, from "do this anytime" to "look before you leap."
 | Level | What it clears | Why it is safe |
 | --- | --- | --- |
 | **Safe** | User caches, app logs, Trash, browser caches | Regenerates on its own, zero functional impact |
-| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, npm / yarn / pnpm / pip / gradle / CocoaPods / SwiftPM caches, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
+| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), JetBrains and Unity caches, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
 | **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, aged diagnostic logs | Per-file checklist, nothing goes without a tick |
 
 Every scan is concurrent, shows live progress, and reports the exact bytes per
@@ -132,10 +132,10 @@ scanner, the UI, and the safety checks all pick it up:
 
 ```swift
 CleanupTarget(
-    id: "rust-cargo-cache",
-    displayName: "Cargo Registry Cache",
+    id: "dart-pub-cache",
+    displayName: "Dart and Flutter pub cache",
     level: .developer,
-    pathTemplates: ["~/.cargo/registry/cache"],
+    pathTemplates: ["~/.pub-cache"],
     category: "Package Manager",
     deletesContentsNotDirectory: true,
     regenerates: true

@@ -188,6 +188,60 @@ public enum CleanupTargetRegistry {
             regenerates: true
         ),
         CleanupTarget(
+            id: "cargo-cache",
+            displayName: "Cargo Registry Cache",
+            level: .developer,
+            pathTemplates: ["~/.cargo/registry/cache", "~/.cargo/registry/index"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "go-cache",
+            displayName: "Go Build & Module Cache",
+            level: .developer,
+            pathTemplates: ["~/Library/Caches/go-build", "~/go/pkg/mod/cache/download"],
+            category: "Build Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "homebrew-cache",
+            displayName: "Homebrew Downloads",
+            level: .developer,
+            pathTemplates: ["~/Library/Caches/Homebrew"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "composer-cache",
+            displayName: "Composer Cache",
+            level: .developer,
+            pathTemplates: ["~/.composer/cache", "~/Library/Caches/composer"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "jetbrains-cache",
+            displayName: "JetBrains IDE Caches",
+            level: .developer,
+            pathTemplates: ["~/Library/Caches/JetBrains"],
+            category: "IDE",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "unity-cache",
+            displayName: "Unity Asset Cache",
+            level: .developer,
+            pathTemplates: ["~/Library/Unity/cache"],
+            category: "Build Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
             id: "docker-prune",
             displayName: "Docker System Prune",
             level: .developer,
