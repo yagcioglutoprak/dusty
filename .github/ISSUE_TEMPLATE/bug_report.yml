@@ -1,0 +1,39 @@
+name: Bug report
+description: Something Dusty did wrong, or a path it mishandled
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, and what did Dusty do that it should not have?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "14.5"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Dusty version
+      description: Shown in the deletion log, or the release you installed
+    validations:
+      required: false
+  - type: textarea
+    id: log
+    attributes:
+      label: Relevant deletion log lines
+      description: From ~/Library/Application Support/Dusty/deletion-log.jsonl, if relevant. Redact anything private.
+      render: text
+    validations:
+      required: false

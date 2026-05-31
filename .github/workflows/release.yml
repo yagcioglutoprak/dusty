@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, notarize, publish
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import Developer ID certificate
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: dusty-ci-keychain
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/dusty.keychain-db"
+          echo "$CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+
+      - name: Build signed app
+        env:
+          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        working-directory: Dusty
+        run: |
+          xcodebuild \
+            -project Dusty.xcodeproj \
+            -scheme Dusty \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="$SIGN_IDENTITY" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" \
+            build
+
+      - name: Notarize and staple
+        env:
+          APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        working-directory: Dusty
+        run: |
+          APP="build/Build/Products/Release/Dusty.app"
+          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/Dusty-notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/Dusty-notarize.zip" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$TEAM_ID" \
+            --wait
+          xcrun stapler staple "$APP"
+
+      - name: Package DMG and zip
+        env:
+          TAG: ${{ github.ref_name }}
+        working-directory: Dusty
+        run: |
+          VERSION="${TAG#v}"
+          APP="build/Build/Products/Release/Dusty.app"
+          STAGE="$RUNNER_TEMP/dmg"
+          mkdir -p "$STAGE"
+          ditto "$APP" "$STAGE/Dusty.app"
+          ln -s /Applications "$STAGE/Applications"
+          hdiutil create -volname "Dusty" -srcfolder "$STAGE" -ov -format UDZO \
+            "$RUNNER_TEMP/Dusty-$VERSION.dmg"
+          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/Dusty-$VERSION.zip"
+          shasum -a 256 "$RUNNER_TEMP/Dusty-$VERSION.dmg" | awk '{print $1}' > "$RUNNER_TEMP/dmg.sha256"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            "$RUNNER_TEMP/Dusty-$VERSION.dmg" \
+            "$RUNNER_TEMP/Dusty-$VERSION.zip" \
+            --title "Dusty $TAG" \
+            --generate-notes
+
+      - name: Update Homebrew tap
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
+        run: |
+          if [ -z "${TAP_TOKEN:-}" ]; then
+            echo "TAP_TOKEN not set, skipping tap update."
+            exit 0
+          fi
+          SHA="$(cat "$RUNNER_TEMP/dmg.sha256")"
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/yagcioglutoprak/homebrew-tap.git" "$RUNNER_TEMP/tap"
+          mkdir -p "$RUNNER_TEMP/tap/Casks"
+          sed -e "s/{{VERSION}}/$VERSION/g" -e "s/{{SHA256}}/$SHA/g" \
+            homebrew/dusty.rb > "$RUNNER_TEMP/tap/Casks/dusty.rb"
+          cd "$RUNNER_TEMP/tap"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/dusty.rb
+          git commit -m "dusty $VERSION"
+          git push

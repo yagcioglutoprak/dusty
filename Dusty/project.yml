@@ -1,0 +1,36 @@
+name: Dusty
+options:
+  bundleIdPrefix: sh.toprak
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+packages:
+  CleanerEngine:
+    path: ../CleanerEngine
+targets:
+  Dusty:
+    type: application
+    platform: macOS
+    sources:
+      - Dusty
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: sh.toprak.dusty
+      INFOPLIST_FILE: Dusty/Info.plist
+      CODE_SIGN_ENTITLEMENTS: Dusty/Dusty.entitlements
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_HARDENED_RUNTIME: YES
+      SWIFT_VERSION: "5.9"
+      MACOSX_DEPLOYMENT_TARGET: "13.0"
+      GENERATE_INFOPLIST_FILE: NO
+    dependencies:
+      - package: CleanerEngine
+        product: CleanerEngine
+    entitlements:
+      path: Dusty/Dusty.entitlements
+schemes:
+  Dusty:
+    build:
+      targets:
+        Dusty: all
+    run:
+      config: Debug

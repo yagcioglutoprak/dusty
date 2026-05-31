@@ -1,0 +1,35 @@
+name: Cleanup target request
+description: A cache or artifact directory Dusty should know how to clean
+labels: ["target"]
+body:
+  - type: input
+    id: tool
+    attributes:
+      label: What creates it
+      placeholder: "Rust / Cargo, Android Studio, Unity, ..."
+    validations:
+      required: true
+  - type: input
+    id: path
+    attributes:
+      label: Path
+      placeholder: "~/.cargo/registry/cache"
+    validations:
+      required: true
+  - type: dropdown
+    id: level
+    attributes:
+      label: Which level fits
+      options:
+        - Safe (regenerates instantly, zero impact)
+        - Developer (rebuilds or re-downloads)
+        - Deep (needs per-file review)
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Does an app need to be quit first? Is it ever unsafe to clear?
+    validations:
+      required: false

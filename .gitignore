@@ -1,0 +1,40 @@
+# Xcode
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+*.swiftpm/configuration/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Build
+build/
+*.o
+*.linkFileList
+
+# IDE
+.idea/
+*.swp
+*~
+
+# Dusty
+*.log
+
+# Demo recording scratch
+*.mov
+docs/demo-frames/

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine-tests:
+    name: CleanerEngine tests
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        working-directory: CleanerEngine
+        run: swift test
+
+  app-build:
+    name: Build app
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (no signing)
+        working-directory: Dusty
+        run: |
+          xcodebuild \
+            -project Dusty.xcodeproj \
+            -scheme Dusty \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            build
