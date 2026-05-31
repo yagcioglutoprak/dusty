@@ -52,6 +52,19 @@ Three levels, from "do this anytime" to "look before you leap."
 Every scan is concurrent, shows live progress, and reports the exact bytes per
 target before you commit to anything.
 
+## How it compares
+
+The honest version, set against the paid cleaners (CleanMyMac and the like):
+
+| | Dusty | CleanMyMac and similar |
+| --- | --- | --- |
+| Price | Free, MIT licensed | Paid license or subscription |
+| Source code | Open, every deletion rule is readable | Closed |
+| What it can delete | A fixed allowlist, nothing outside it | Broad categories, not all of them visible |
+| Sizes shown before deleting | Always, per path | Varies |
+| Undo and a written deletion log | Yes | Varies |
+| Account or telemetry | None | Often |
+
 ## Why you can trust it
 
 Most of the reason Dusty exists is that "Mac cleaner" usually means "app that
