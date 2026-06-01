@@ -2,7 +2,9 @@ import SwiftUI
 import AppKit
 import CleanerEngine
 
-struct ConfirmationSheet: View {
+/// In-panel confirmation. Presented as an overlay (never a sheet) so the
+/// MenuBarExtra window keeps focus and stays open while the user decides.
+struct ConfirmationCard: View {
     let level: CleanupLevel
     let paths: [ResolvedPath]
     let bytes: Int64
@@ -12,70 +14,87 @@ struct ConfirmationSheet: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
+    private var accent: Color { dryRun ? DustyTheme.gold : .red }
+
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider()
+            Divider().opacity(0.5)
             pathList
-            Divider()
+            Divider().opacity(0.5)
             footer
         }
-        .frame(width: 480, height: min(520, CGFloat(160 + paths.count * 28)))
+        .frame(width: 418, height: min(560, CGFloat(240 + paths.count * 27)))
+        .background(
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .fill(.regularMaterial)
+                .shadow(color: DustyTheme.overlayShadow, radius: 28, y: 12)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .stroke(DustyTheme.hairline, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous))
+        .padding(20)
     }
 
     private var header: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 11) {
             Image(systemName: dryRun ? "eye.circle.fill" : "trash.circle.fill")
-                .font(.system(size: 36))
-                .foregroundStyle(dryRun ? .blue : .orange)
+                .font(.system(size: 46))
+                .foregroundStyle(accent)
                 .symbolRenderingMode(.hierarchical)
 
-            Text("Confirm Cleanup")
-                .font(.title3.weight(.semibold))
+            Text(dryRun ? "Preview Cleanup" : "Confirm Cleanup")
+                .font(.title2.weight(.bold))
 
             Text("\(paths.count) item\(paths.count == 1 ? "" : "s") · \(DiskSpaceMonitor.formatBytes(bytes))")
-                .font(.subheadline)
+                .font(.body.weight(.medium))
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
 
-            if !skippedApps.isEmpty {
-                Label("Skipping \(skippedApps.joined(separator: ", ")) cache, app is open", systemImage: "app.dashed")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .multilineTextAlignment(.center)
-            }
-
-            if dryRun {
-                Label("Dry run: nothing will be deleted", systemImage: "eye")
-                    .font(.caption)
-                    .foregroundStyle(.blue)
-            }
-
-            if moveToTrash {
-                Label("Items will be moved to Trash", systemImage: "trash")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            VStack(spacing: 6) {
+                if !skippedApps.isEmpty {
+                    Label("Skipping \(skippedApps.joined(separator: ", ")) cache, app is open", systemImage: "app.dashed")
+                        .font(.footnote)
+                        .foregroundStyle(.orange)
+                        .multilineTextAlignment(.center)
+                }
+                if dryRun {
+                    Label("Dry run: nothing will be deleted", systemImage: "eye")
+                        .font(.footnote)
+                        .foregroundStyle(.blue)
+                }
+                if moveToTrash {
+                    Label("Items will be moved to Trash", systemImage: "trash")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else if !dryRun && level == .safe {
+                    Label("Recoverable for a few seconds via Undo", systemImage: "arrow.uturn.backward")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
-        .padding(20)
+        .padding(22)
     }
 
     private var pathList: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 4) {
+            LazyVStack(alignment: .leading, spacing: 5) {
                 ForEach(paths) { path in
-                    HStack(alignment: .top) {
+                    HStack(alignment: .top, spacing: 9) {
                         Image(systemName: "minus.circle.fill")
-                            .font(.caption2)
-                            .foregroundStyle(.red.opacity(0.7))
+                            .font(.footnote)
+                            .foregroundStyle(.red.opacity(0.75))
                             .padding(.top, 2)
-                        VStack(alignment: .leading, spacing: 1) {
+                        VStack(alignment: .leading, spacing: 2) {
                             Text(path.displayName)
-                                .font(.caption)
+                                .font(.subheadline)
                                 .lineLimit(2)
                                 .textSelection(.enabled)
                             Text(path.path)
-                                .font(.caption2)
+                                .font(.caption)
                                 .foregroundStyle(.tertiary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
@@ -83,10 +102,10 @@ struct ConfirmationSheet: View {
                         }
                         Spacer()
                         Text(DiskSpaceMonitor.formatBytes(path.estimatedBytes))
-                            .font(.caption2.monospacedDigit())
+                            .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 3)
+                    .padding(.vertical, 4)
                     .contextMenu {
                         if path.path.hasPrefix("/") {
                             Button("Reveal in Finder") {
@@ -96,21 +115,28 @@ struct ConfirmationSheet: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
         }
     }
 
     private var footer: some View {
-        HStack {
+        HStack(spacing: 12) {
             Button("Cancel", action: onCancel)
                 .keyboardShortcut(.cancelAction)
+                .controlSize(.large)
             Spacer()
-            Button(dryRun ? "Run Dry Run" : "Delete", action: onConfirm)
-                .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
+            Button(action: onConfirm) {
+                Text(dryRun ? "Run Dry Run" : "Delete")
+                    .font(.body.weight(.semibold))
+                    .frame(minWidth: 80)
+            }
+            .keyboardShortcut(.defaultAction)
+            .buttonStyle(.borderedProminent)
+            .tint(accent)
+            .controlSize(.large)
         }
-        .padding(16)
+        .padding(18)
     }
 }
 
@@ -127,49 +153,50 @@ struct DeletionResultBanner: View {
         case .reclaimed: return "Cleanup complete"
         }
     }
-    private var tint: Color { style == .trashed ? .orange : .green }
+    private var tint: Color { style == .trashed ? .orange : DustyTheme.diskColor(ratio: 1) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Label(title, systemImage: style == .trashed ? "trash.fill" : "checkmark.circle.fill")
                     .foregroundStyle(tint)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.headline)
                 Spacer()
                 if style == .undoable, let onUndo {
                     Button("Undo", action: onUndo)
                         .buttonStyle(.bordered)
-                        .controlSize(.small)
+                        .controlSize(.regular)
                 }
             }
 
-            HStack(spacing: 4) {
+            HStack(spacing: 5) {
                 Text(DiskSpaceMonitor.formatBytes(result.bytesFreed))
-                    .fontWeight(.medium)
+                    .font(.title3.weight(.bold).monospacedDigit())
+                    .foregroundStyle(tint)
                 Text(style == .trashed ? "moved" : "cleaned")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-            .font(.caption)
 
             switch style {
             case .trashed:
                 Text("Empty Trash to reclaim this space.")
-                    .font(.caption2)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
             case .undoable:
                 Text("Recoverable for a few seconds, then permanently removed.")
-                    .font(.caption2)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
             case .reclaimed:
-                HStack(spacing: 6) {
+                HStack(spacing: 7) {
                     Text(DiskSpaceMonitor.formatBytes(result.freeSpaceBefore))
                     Image(systemName: "arrow.right")
-                        .font(.caption2)
+                        .font(.caption.weight(.bold))
                     Text(DiskSpaceMonitor.formatBytes(result.freeSpaceAfter))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.green)
+                        .fontWeight(.bold)
+                        .foregroundStyle(tint)
                 }
-                .font(.caption.monospacedDigit())
+                .font(.footnote.monospacedDigit())
                 .foregroundStyle(.secondary)
             }
 
@@ -178,7 +205,7 @@ struct DeletionResultBanner: View {
                     withAnimation { showSkipped.toggle() }
                 } label: {
                     Label("\(result.skippedPaths.count) skipped, tap to \(showSkipped ? "hide" : "show")", systemImage: "exclamationmark.triangle")
-                        .font(.caption2)
+                        .font(.footnote)
                         .foregroundStyle(.orange)
                 }
                 .buttonStyle(.plain)
@@ -186,19 +213,22 @@ struct DeletionResultBanner: View {
                 if showSkipped {
                     ForEach(Array(result.skippedPaths.enumerated()), id: \.offset) { _, item in
                         Text("\(item.path): \(item.reason)")
-                            .font(.caption2)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
                 }
             }
         }
-        .padding(12)
+        .padding(15)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius)
-                .fill(Color.green.opacity(0.08))
-                .overlay(RoundedRectangle(cornerRadius: DustyTheme.cornerRadius).stroke(Color.green.opacity(0.2)))
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .fill(tint.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                        .stroke(tint.opacity(0.25), lineWidth: 1)
+                )
         )
     }
 }
@@ -207,80 +237,127 @@ struct FullDiskAccessBanner: View {
     let onOpenSettings: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "lock.shield")
+        HStack(spacing: 12) {
+            Image(systemName: "lock.shield.fill")
                 .foregroundStyle(.orange)
-                .font(.title3)
-            VStack(alignment: .leading, spacing: 2) {
+                .font(.title2)
+            VStack(alignment: .leading, spacing: 3) {
                 Text("Full Disk Access recommended")
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                 Text("Grant access in System Settings to scan system logs and protected caches.")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            Button("Open Settings", action: onOpenSettings)
-                .controlSize(.small)
+            Button("Open", action: onOpenSettings)
+                .controlSize(.regular)
         }
-        .padding(12)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius)
-                .fill(Color.orange.opacity(0.08))
-                .overlay(RoundedRectangle(cornerRadius: DustyTheme.cornerRadius).stroke(Color.orange.opacity(0.2)))
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .fill(Color.orange.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                        .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+                )
         )
     }
 }
 
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
+    @ObservedObject var updater: Updater
     @Environment(\.dismiss) private var dismiss
     var onRefreshIntervalChanged: (TimeInterval) -> Void
     var onDone: (() -> Void)? = nil
 
-    var body: some View {
-        Form {
-            Section("General") {
-                Toggle("Launch at login", isOn: $settings.launchAtLogin)
-            }
+    private func close() { if let onDone { onDone() } else { dismiss() } }
 
-            Section("Refresh") {
-                Stepper(
-                    "Menu bar interval: \(Int(settings.refreshIntervalSeconds))s",
-                    value: $settings.refreshIntervalSeconds,
-                    in: 10...300,
-                    step: 10
-                )
-                .onChange(of: settings.refreshIntervalSeconds) { newValue in
-                    onRefreshIntervalChanged(newValue)
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Settings")
+                    .font(.title3.weight(.bold))
+                Spacer()
+                Button("Done", action: close)
+                    .font(.body.weight(.semibold))
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+
+            Divider().opacity(0.5)
+
+            Form {
+                Section("General") {
+                    Toggle("Launch at login", isOn: $settings.launchAtLogin)
+                }
+
+                Section("Refresh") {
+                    Stepper(
+                        "Menu bar interval: \(Int(settings.refreshIntervalSeconds))s",
+                        value: $settings.refreshIntervalSeconds,
+                        in: 10...300,
+                        step: 10
+                    )
+                    .onChange(of: settings.refreshIntervalSeconds) { newValue in
+                        onRefreshIntervalChanged(newValue)
+                    }
+                }
+
+                Section("Updates") {
+                    Toggle("Check for updates automatically", isOn: Binding(
+                        get: { updater.automaticallyChecksForUpdates },
+                        set: { updater.automaticallyChecksForUpdates = $0 }
+                    ))
+                    Toggle("Download and install automatically", isOn: Binding(
+                        get: { updater.automaticallyDownloadsUpdates },
+                        set: { updater.automaticallyDownloadsUpdates = $0 }
+                    ))
+                    HStack {
+                        Button("Check for Updates Now") { updater.checkForUpdates() }
+                            .disabled(!updater.canCheckForUpdates)
+                        Spacer()
+                        Text("v\(Bundle.main.shortVersion) (\(Bundle.main.buildVersion))")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+
+                Section("Cleanup defaults") {
+                    Toggle("Dry run by default", isOn: $settings.dryRunDefault)
+                    Toggle("Move to Trash (levels 2 & 3)", isOn: $settings.moveToTrashDefault)
+                    Stepper(
+                        "System log age: \(settings.logAgeThresholdDays) days",
+                        value: $settings.logAgeThresholdDays,
+                        in: 7...365,
+                        step: 7
+                    )
+                }
+
+                Section("Safety") {
+                    Text("Dusty uses a strict allowlist: only paths in CleanupTargetRegistry can be deleted, and never through a symlink. No sudo, no SIP-protected paths. The one system folder it can touch, /Library/Logs/DiagnosticReports, is opt-in and age-filtered.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Text("Deletion log: ~/Library/Application Support/Dusty/")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
             }
-
-            Section("Cleanup defaults") {
-                Toggle("Dry run by default", isOn: $settings.dryRunDefault)
-                Toggle("Move to Trash (levels 2 & 3)", isOn: $settings.moveToTrashDefault)
-                Stepper(
-                    "System log age: \(settings.logAgeThresholdDays) days",
-                    value: $settings.logAgeThresholdDays,
-                    in: 7...365,
-                    step: 7
-                )
-            }
-
-            Section("Safety") {
-                Text("Dusty uses a strict allowlist. Only paths in CleanupTargetRegistry can be deleted. No sudo, no system paths, no symlinks.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("Deletion log: ~/Library/Application Support/Dusty/")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
+            .formStyle(.grouped)
         }
-        .formStyle(.grouped)
-        .frame(width: 440, height: 400)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Done") { if let onDone { onDone() } else { dismiss() } }
-            }
-        }
+        .frame(width: 418, height: 480)
+        .background(
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .fill(.regularMaterial)
+                .shadow(color: DustyTheme.overlayShadow, radius: 28, y: 12)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .stroke(DustyTheme.hairline, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous))
+        .padding(20)
     }
 }

@@ -10,6 +10,10 @@ cask "dusty" do
   desc "Menu bar disk cleaner for macOS that frees space safely"
   homepage "https://github.com/yagcioglutoprak/dusty"
 
+  # Dusty updates itself via Sparkle, so Homebrew should not treat a self-updated
+  # build as outdated.
+  auto_updates true
+
   depends_on macos: ">= :ventura"
 
   app "Dusty.app"

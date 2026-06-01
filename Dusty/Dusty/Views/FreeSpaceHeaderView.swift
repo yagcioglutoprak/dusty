@@ -11,60 +11,75 @@ struct FreeSpaceHeaderView: View {
         return Int((1 - ratio) * 100)
     }
 
+    private var diskColor: Color { DustyTheme.diskColor(ratio: ratio) }
+
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             ZStack {
+                // Halo: the ring's color bled softly into the surface behind it.
                 Circle()
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 10)
+                    .fill(diskColor)
+                    .frame(width: 130, height: 130)
+                    .blur(radius: 38)
+                    .opacity(0.28)
+
+                Circle()
+                    .stroke(Color.primary.opacity(0.07), lineWidth: 14)
 
                 Circle()
                     .trim(from: 0, to: max(0.02, ratio))
                     .stroke(
                         DustyTheme.diskGradient(ratio: ratio),
-                        style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .animation(.spring(response: 0.7, dampingFraction: 0.8), value: ratio)
+                    .shadow(color: diskColor.opacity(0.5), radius: 6)
+                    .animation(.spring(response: 0.8, dampingFraction: 0.8), value: ratio)
 
-                VStack(spacing: 3) {
+                VStack(spacing: 4) {
                     Image(systemName: ratio < 0.15 ? "externaldrive.badge.exclamationmark" : "internaldrive.fill")
-                        .font(.title2)
-                        .foregroundStyle(DustyTheme.diskColor(ratio: ratio))
+                        .font(.title)
+                        .foregroundStyle(diskColor)
                         .symbolRenderingMode(.hierarchical)
 
                     Text(DiskSpaceMonitor.formatBytes(freeBytes))
-                        .font(.system(.title3, design: .rounded, weight: .bold))
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
                         .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .animation(.spring(response: 0.6, dampingFraction: 0.85), value: freeBytes)
 
-                    Text("available")
-                        .font(.caption2.weight(.medium))
+                    Text("FREE")
+                        .font(.caption.weight(.bold))
                         .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(0.5)
+                        .tracking(2)
                 }
             }
-            .frame(width: 130, height: 130)
+            .frame(width: 150, height: 150)
 
-            HStack(spacing: 16) {
-                statPill(label: "Used", value: "\(usedPercent)%")
-                statPill(label: "Total", value: DiskSpaceMonitor.formatBytes(totalBytes))
+            HStack(spacing: 10) {
+                statPill(label: "USED", value: "\(usedPercent)%")
+                statPill(label: "TOTAL", value: DiskSpaceMonitor.formatBytes(totalBytes))
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
     }
 
     private func statPill(label: String, value: String) -> some View {
-        VStack(spacing: 2) {
+        HStack(spacing: 7) {
             Text(label)
-                .font(.caption2)
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(.tertiary)
+                .tracking(0.8)
             Text(value)
-                .font(.caption.weight(.semibold))
+                .font(.footnote.weight(.semibold))
                 .monospacedDigit()
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(Capsule().fill(Color.primary.opacity(0.05)))
+        .padding(.horizontal, 13)
+        .padding(.vertical, 7)
+        .background(
+            Capsule().fill(Color.primary.opacity(0.05))
+                .overlay(Capsule().stroke(DustyTheme.hairline, lineWidth: 1))
+        )
     }
 }

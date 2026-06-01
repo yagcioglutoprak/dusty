@@ -41,6 +41,8 @@ docs/demo-frames/
 
 # Launch / marketing drafts (local only, never published)
 launch-drafts/
+traffic_agent_report.md
+CODE_REVIEW_AUDIT.md
 
 # Demo + card capture tooling (local scratch)
 scripts/winlist.swift

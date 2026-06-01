@@ -76,7 +76,7 @@ public final class CleanerEngine: @unchecked Sendable {
         var scanErrors: [String] = []
         var resolvedPaths: [ResolvedPath] = []
 
-        if target.id == "simulator-unavailable" {
+        if target.action == .simctlDeleteUnavailable {
             let udids = SimulatorHelper.unavailableDeviceUDIDs()
             let base = validator.expandPath("~/Library/Developer/CoreSimulator/Devices")
             let bytes = udids.reduce(Int64(0)) { sum, udid in
@@ -96,7 +96,7 @@ public final class CleanerEngine: @unchecked Sendable {
             return TargetScanResult(target: target, resolvedPaths: resolvedPaths, scanErrors: scanErrors)
         }
 
-        if target.id == "docker-prune" {
+        if target.action == .dockerPrune {
             if validator.resolveAllowlistedPaths(for: target).isEmpty {
                 return TargetScanResult(target: target, resolvedPaths: [], scanErrors: ["Docker not installed"])
             }
@@ -111,7 +111,7 @@ public final class CleanerEngine: @unchecked Sendable {
             return TargetScanResult(target: target, resolvedPaths: resolvedPaths)
         }
 
-        if target.id == "old-simulators" {
+        if target.action == .simctlDeleteDevice {
             let base = validator.expandPath("~/Library/Developer/CoreSimulator/Devices")
             let devices = SimulatorHelper.unusedDevicePaths(basePath: base, fileManager: fileManager)
             for device in devices {
@@ -236,6 +236,12 @@ public final class CleanerEngine: @unchecked Sendable {
         options: CleanerOptions
     ) -> DeletionResult {
         let targetMap = Dictionary(uniqueKeysWithValues: targets.map { ($0.id, $0) })
+        // Resolve each target's allowlist roots ONCE. Dynamic targets shell out
+        // (e.g. `simctl list`) or scan directories, so re-resolving per path would
+        // repeat that work for every item in a multi-item delete.
+        let rootsByTargetID = Dictionary(uniqueKeysWithValues: targets.map {
+            ($0.id, validator.resolveAllowlistedPaths(for: $0))
+        })
         var entries: [DeletionEntry] = []
         var skipped: [(String, String)] = []
         let freeBefore = diskMonitor.availableCapacityBytes()
@@ -248,23 +254,27 @@ public final class CleanerEngine: @unchecked Sendable {
                 continue
             }
 
-            if resolved.path == "simctl:delete unavailable" {
+            // External commands carry no real filesystem path: dispatch on the typed
+            // action and skip path validation (there is nothing to validate).
+            switch target.action {
+            case .simctlDeleteUnavailable:
                 let result = runSimctlDeleteUnavailable(dryRun: options.dryRun)
                 bytesFreed += result.bytes
                 entries.append(contentsOf: result.entries)
                 if let error = result.error { skipped.append((resolved.path, error)) }
                 continue
-            }
-
-            if resolved.path == "docker:system prune" {
+            case .dockerPrune:
                 let result = runDockerPrune(dryRun: options.dryRun)
                 bytesFreed += result.bytes
                 entries.append(contentsOf: result.entries)
                 if let error = result.error { skipped.append((resolved.path, error)) }
                 continue
+            case .files, .simctlDeleteDevice:
+                break
             }
 
-            switch validator.validateDeletionPath(resolved.path, for: target) {
+            let roots = rootsByTargetID[resolved.targetID] ?? []
+            switch validator.validateDeletionPath(resolved.path, for: target, allowlistedRoots: roots) {
             case .failure(let error):
                 skipped.append((resolved.path, String(describing: error)))
                 continue
@@ -283,22 +293,34 @@ public final class CleanerEngine: @unchecked Sendable {
             }
 
             do {
-                let roots = target.pathTemplates.map { validator.expandPath($0) }
+                // Deleting a simulator goes through `simctl` (it also unregisters the
+                // device), not a raw filesystem remove. The path was validated above.
+                if target.action == .simctlDeleteDevice {
+                    try runSimctlDelete(udid: (resolved.path as NSString).lastPathComponent)
+                    let entry = DeletionEntry(path: resolved.path, bytes: sizeBefore, movedToTrash: false, dryRun: false)
+                    entries.append(entry)
+                    try? deletionLog.append(entry)
+                    bytesFreed += sizeBefore
+                    continue
+                }
+
+                // Targets whose destination is the Trash (Empty Trash) must always delete
+                // permanently, even on a Safe-undo clean, or they would just shuffle items
+                // within the Trash and reclaim nothing.
+                let moveThisToTrash = useTrash && !target.bypassesTrash
                 let standardized = (resolved.path as NSString).standardizingPath
                 let isRoot = roots.contains { ($0 as NSString).standardizingPath == standardized }
 
                 var trashedPath: String?
-                if target.id == "old-simulators" {
-                    try runSimctlDelete(udid: (resolved.path as NSString).lastPathComponent)
-                } else if target.deletesContentsNotDirectory && isRoot {
-                    try deleteDirectoryContents(at: resolved.path, target: target, moveToTrash: useTrash)
+                if target.deletesContentsNotDirectory && isRoot {
+                    try deleteDirectoryContents(at: resolved.path, target: target, moveToTrash: moveThisToTrash)
                 } else {
-                    trashedPath = try deleteItem(at: resolved.path, moveToTrash: useTrash)?.path
+                    trashedPath = try deleteItem(at: resolved.path, moveToTrash: moveThisToTrash)?.path
                 }
                 let entry = DeletionEntry(
                     path: resolved.path,
                     bytes: sizeBefore,
-                    movedToTrash: useTrash,
+                    movedToTrash: moveThisToTrash,
                     dryRun: false,
                     trashedPath: trashedPath
                 )
@@ -545,6 +567,11 @@ extension CleanerEngine {
 
     public func expandPath(_ template: String) -> String {
         validator.expandPath(template)
+    }
+
+    /// Exposes the private Docker size parser for unit testing.
+    public func parseDockerSizeForTesting(_ s: String) -> Int64? {
+        parseDockerSize(s)
     }
 }
 

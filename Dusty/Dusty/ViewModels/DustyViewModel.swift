@@ -29,6 +29,13 @@ final class DustyViewModel: ObservableObject {
     private var undoTask: Task<Void, Never>?
     private var wasDiskLow = false
 
+    /// After a clean, macOS's "available" figure lags the real deletion by
+    /// seconds (and Safe items sit briefly in the Trash before being purged).
+    /// We project the reclaimed space immediately and hold this floor so the
+    /// laggy OS value can't snap the number back down before it catches up.
+    private var freeSpaceFloor: Int64?
+    private var freeSpaceFloorExpiry: Date?
+
     init() {
         refreshFreeSpace()
         startAutoRefresh(interval: AppSettings.shared.refreshIntervalSeconds)
@@ -49,11 +56,24 @@ final class DustyViewModel: ObservableObject {
     }
 
     func refreshFreeSpace() {
-        freeSpaceBytes = diskMonitor.freeSpaceBytes()
+        let real = diskMonitor.freeSpaceBytes()
+        if let floor = freeSpaceFloor, let expiry = freeSpaceFloorExpiry, real < floor, Date() < expiry {
+            // OS hasn't caught up to the reclaim yet: hold the projected value.
+            freeSpaceBytes = floor
+        } else {
+            freeSpaceFloor = nil
+            freeSpaceFloorExpiry = nil
+            freeSpaceBytes = real
+        }
         totalSpaceBytes = diskMonitor.totalSpaceBytes()
         let low = isDiskLow
         if low && !wasDiskLow { LowDiskNotifier.notifyLowDisk(freeBytes: freeSpaceBytes) }
         wasDiskLow = low
+    }
+
+    private func clearFreeSpaceFloor() {
+        freeSpaceFloor = nil
+        freeSpaceFloorExpiry = nil
     }
 
     func scanIfNeeded(settings: AppSettings) {
@@ -126,7 +146,20 @@ final class DustyViewModel: ObservableObject {
 
         let result = await engine.delete(paths: paths, targets: levelResult.targetResults.map(\.target), options: options)
         lastDeletionResult = result
-        refreshFreeSpace()
+
+        // Instant feedback: project the reclaimed space the moment a clean
+        // actually frees disk (direct delete, or Safe items that auto-purge from
+        // Trash). Trash-only cleans (levels 2 & 3) don't free space until the
+        // Trash is emptied, so those just re-read the real figure.
+        let willReclaim = !options.dryRun && result.bytesFreed > 0 && (undoable || !options.effectiveMoveToTrash)
+        if willReclaim {
+            let projected = freeSpaceBytes + result.bytesFreed
+            freeSpaceFloor = projected
+            freeSpaceFloorExpiry = Date().addingTimeInterval(20)
+            freeSpaceBytes = projected
+        } else {
+            refreshFreeSpace()
+        }
         isCleaning = false
         cleaningLevel = nil
 
@@ -134,14 +167,20 @@ final class DustyViewModel: ObservableObject {
             errorMessage = "Cleanup failed: check permissions or try again."
         }
 
-        if undoable && result.entries.contains(where: { $0.trashedPath != nil }) {
-            undoEntries = result.entries
+        // Only items actually parked in the Trash can be undone or later purged.
+        // Permanent deletes (e.g. Empty Trash, which bypasses the Trash) are already gone.
+        let restorable = result.entries.filter { $0.trashedPath != nil }
+        let anyTrashed = result.entries.contains { $0.movedToTrash }
+        if undoable && !restorable.isEmpty {
+            undoEntries = restorable
             canUndo = true
             bannerStyle = .undoable
             scheduleUndoPurge()
         } else {
             canUndo = false
-            bannerStyle = options.effectiveMoveToTrash ? .trashed : .reclaimed
+            // Reflect what actually happened: if nothing went to the Trash, the space is
+            // already reclaimed even on a Safe-undo run that only emptied the Trash.
+            bannerStyle = anyTrashed ? .trashed : .reclaimed
         }
 
         await rescan(level: level, settings: settings)
@@ -155,9 +194,13 @@ final class DustyViewModel: ObservableObject {
         undoEntries = []
         canUndo = false
         lastDeletionResult = nil
+        clearFreeSpaceFloor()
         let engine = self.engine
         Task {
-            _ = await Task.detached { engine.restore(entries) }.value
+            let restored = await Task.detached { engine.restore(entries) }.value
+            if restored < entries.count {
+                self.errorMessage = "Restored \(restored) of \(entries.count) items. Some could not be moved back (the original location may be occupied)."
+            }
             self.refreshFreeSpace()
             await self.rescan(level: .safe, settings: AppSettings.shared)
         }
@@ -183,6 +226,18 @@ final class DustyViewModel: ObservableObject {
         let engine = self.engine
         Task {
             _ = await Task.detached { engine.purge(entries) }.value
+            // The trashed items only leave disk now, after the undo window. Re-measure so
+            // the "reclaimed" receipt shows the real before -> after, not the pre-purge value
+            // (which was sampled while the items still sat in the Trash).
+            if let prev = self.lastDeletionResult {
+                self.lastDeletionResult = DeletionResult(
+                    entries: prev.entries,
+                    bytesFreed: prev.bytesFreed,
+                    skippedPaths: prev.skippedPaths,
+                    freeSpaceBefore: prev.freeSpaceBefore,
+                    freeSpaceAfter: self.diskMonitor.availableCapacityBytes()
+                )
+            }
             self.refreshFreeSpace()
         }
     }

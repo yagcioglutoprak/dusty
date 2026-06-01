@@ -51,6 +51,20 @@ jobs:
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
           rm "$RUNNER_TEMP/cert.p12"
 
+      - name: Derive version and build number
+        if: steps.check.outputs.ok == 'true'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          IFS=. read -r MAJ MIN PAT <<< "$VERSION"
+          # Monotonic integer build from semver (minor/patch assumed < 100). Sparkle
+          # compares this against the installed CFBundleVersion to detect updates.
+          BUILD=$(( ${MAJ:-0} * 10000 + ${MIN:-0} * 100 + ${PAT:-0} ))
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "BUILD=$BUILD" >> "$GITHUB_ENV"
+          echo "Releasing $VERSION (build $BUILD)"
+
       - name: Build signed app
         if: steps.check.outputs.ok == 'true'
         env:
@@ -63,6 +77,8 @@ jobs:
             -scheme Dusty \
             -configuration Release \
             -derivedDataPath build \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="$SIGN_IDENTITY" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
@@ -98,15 +114,33 @@ jobs:
           rm "$RUNNER_TEMP/notary.p8"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
+      - name: Generate Sparkle appcast
+        if: steps.check.outputs.ok == 'true'
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
+            echo "SPARKLE_PRIVATE_KEY not set; skipping appcast (auto-update feed not published). See docs/UPDATES.md."
+            exit 0
+          fi
+          SIGN_UPDATE="$(find Dusty/build/SourcePackages/artifacts -path '*sparkle/Sparkle/bin/sign_update' | head -1)"
+          DMG="$RUNNER_TEMP/Dusty-$VERSION.dmg"
+          URL="https://github.com/yagcioglutoprak/dusty/releases/download/$TAG/Dusty-$VERSION.dmg"
+          SIGN_UPDATE="$SIGN_UPDATE" \
+          RELEASE_NOTES_URL="https://github.com/yagcioglutoprak/dusty/releases/tag/$TAG" \
+            scripts/make-appcast.sh "$DMG" "$VERSION" "$BUILD" "$URL" "$RUNNER_TEMP/appcast.xml"
+
       - name: Publish GitHub release
         if: steps.check.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
+          ASSETS=( "$RUNNER_TEMP/Dusty-$VERSION.dmg" "$RUNNER_TEMP/Dusty-$VERSION.zip" )
+          [ -f "$RUNNER_TEMP/appcast.xml" ] && ASSETS+=( "$RUNNER_TEMP/appcast.xml" )
           gh release create "$TAG" \
-            "$RUNNER_TEMP/Dusty-$VERSION.dmg" \
-            "$RUNNER_TEMP/Dusty-$VERSION.zip" \
+            "${ASSETS[@]}" \
             --title "Dusty $TAG" \
             --generate-notes
 

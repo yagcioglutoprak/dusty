@@ -72,6 +72,17 @@ public struct SafetyValidator: @unchecked Sendable {
     }
 
     public func validateDeletionPath(_ path: String, for target: CleanupTarget) -> Result<Void, SafetyError> {
+        validateDeletionPath(path, for: target, allowlistedRoots: resolveAllowlistedPaths(for: target))
+    }
+
+    /// Validate a single path with the target's allowlist roots supplied by the caller.
+    /// Lets a batch delete resolve dynamic roots (e.g. `simctl list`, Downloads scan) once
+    /// instead of re-resolving for every path.
+    public func validateDeletionPath(
+        _ path: String,
+        for target: CleanupTarget,
+        allowlistedRoots: [String]
+    ) -> Result<Void, SafetyError> {
         guard allowedTargetIDs.contains(target.id) else {
             return .failure(.pathNotInAllowlist(path))
         }
@@ -99,9 +110,17 @@ public struct SafetyValidator: @unchecked Sendable {
             return .failure(.prohibitedPath(standardized))
         }
 
-        let allowlistedRoots = resolveAllowlistedPaths(for: target)
         guard isPath(standardized, underAnyOf: allowlistedRoots, for: target) else {
             return .failure(.pathNotInAllowlist(standardized))
+        }
+
+        // Defense in depth against ANCESTOR symlinks. `standardizingPath` does not resolve
+        // symlinks, and the leaf check above only inspects the final component, so a symlinked
+        // directory anywhere above the leaf (e.g. a relocated `~/Library/Caches`) could otherwise
+        // redirect a delete outside the allowlist. Resolve symlinks on both sides and require the
+        // resolved candidate to still live inside a resolved allowlist root.
+        guard isPath(standardized, underAnyOfResolvingSymlinks: allowlistedRoots) else {
+            return .failure(.symlinkRefusal(standardized))
         }
 
         if !isOnBootVolume(url) {
@@ -197,10 +216,31 @@ public struct SafetyValidator: @unchecked Sendable {
         return false
     }
 
+    /// Containment check after fully resolving symlinks on both the candidate and each root,
+    /// so an ancestor symlink cannot smuggle a path outside its allowlist root.
+    private func isPath(_ path: String, underAnyOfResolvingSymlinks roots: [String]) -> Bool {
+        let realCandidate = realPath(path)
+        for root in roots {
+            let realRoot = realPath((root as NSString).standardizingPath)
+            if realCandidate == realRoot || realCandidate.hasPrefix(realRoot + "/") {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Resolve symlinks in a path. Falls back to the input if resolution yields an empty string.
+    private func realPath(_ path: String) -> String {
+        let resolved = (path as NSString).resolvingSymlinksInPath
+        return resolved.isEmpty ? path : resolved
+    }
+
     private func resolveDynamicPaths(for target: CleanupTarget) -> [String] {
         switch target.id {
         case "xcode-device-support":
             return oldDeviceSupportPaths()
+        case "xcode-archives":
+            return archivePaths()
         case "simulator-unavailable":
             return ["simctl:unavailable"]
         case "docker-prune":
@@ -212,6 +252,23 @@ public struct SafetyValidator: @unchecked Sendable {
         default:
             return target.pathTemplates.map { expandPath($0) }
         }
+    }
+
+    /// Individual `.xcarchive` bundles under `~/Library/Developer/Xcode/Archives/<date>/`.
+    private func archivePaths() -> [String] {
+        let base = expandPath("~/Library/Developer/Xcode/Archives")
+        guard let dateDirs = try? fileManager.contentsOfDirectory(atPath: base) else { return [] }
+        var archives: [String] = []
+        for dateDir in dateDirs {
+            let dayPath = (base as NSString).appendingPathComponent(dateDir)
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: dayPath, isDirectory: &isDir), isDir.boolValue,
+                  let entries = try? fileManager.contentsOfDirectory(atPath: dayPath) else { continue }
+            for entry in entries where entry.hasSuffix(".xcarchive") {
+                archives.append((dayPath as NSString).appendingPathComponent(entry))
+            }
+        }
+        return archives
     }
 
     private func oldDeviceSupportPaths() -> [String] {

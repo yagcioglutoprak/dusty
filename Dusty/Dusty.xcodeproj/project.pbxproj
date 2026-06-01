@@ -10,6 +10,7 @@
 		0772F1974FA2B3D49CE4810D /* FreeSpaceHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A883255D5FA5B8218151F810 /* FreeSpaceHeaderView.swift */; };
 		078648CE4B1C5D2E2AA5567F /* DustyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05CD6A9B404339BEF4E36398 /* DustyViewModel.swift */; };
 		1207961D090D64D814274B0C /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5263AB93087BA090F6125B4 /* Notifications.swift */; };
+		1C89AE0DFF856103FD50A08A /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = B3D2046D54969261F6554DE4 /* Sparkle */; };
 		1DF86AC8135E1F7BC0ABCF2A /* ReclaimSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1DADFC3B655A0F3ABECC2E /* ReclaimSummaryView.swift */; };
 		3011C579D83F771AD2D3387B /* ConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20054ADE9B6A55A7FFAC287 /* ConfirmationSheet.swift */; };
 		4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */; };
@@ -20,6 +21,7 @@
 		C8505AC6E4CABB304CDB60FB /* CleanerEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D395E7531274A6A48E031DBA /* CleanerEngine */; };
 		CBB9B6AD138D84D9BF08BC60 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9697743997D4B2AE022063 /* AppSettings.swift */; };
 		CE7A2E459C980847794391A2 /* DustyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFF08EAAC5965987A96F3964 /* DustyTheme.swift */; };
+		D66C7C1373F8CE4DDE938665 /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,7 @@
 		2907B709F4AEBC9EFA7F96C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3C9697743997D4B2AE022063 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		3F1DADFC3B655A0F3ABECC2E /* ReclaimSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReclaimSummaryView.swift; sourceTree = "<group>"; };
+		42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 		6EE1880A2830CF07228CCB6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPanelView.swift; sourceTree = "<group>"; };
 		850F46E756285E383D2C0624 /* LevelSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSectionView.swift; sourceTree = "<group>"; };
@@ -47,6 +50,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C8505AC6E4CABB304CDB60FB /* CleanerEngine in Frameworks */,
+				1C89AE0DFF856103FD50A08A /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,6 +107,7 @@
 			children = (
 				F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */,
 				B5263AB93087BA090F6125B4 /* Notifications.swift */,
+				42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -149,6 +154,7 @@
 			name = Dusty;
 			packageProductDependencies = (
 				D395E7531274A6A48E031DBA /* CleanerEngine */,
+				B3D2046D54969261F6554DE4 /* Sparkle */,
 			);
 			productName = Dusty;
 			productReference = 96AD659D54873CF231EA2BE6 /* Dusty.app */;
@@ -179,6 +185,7 @@
 			mainGroup = 0922D979E8271819A1F05398;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				D68863D26772992BC67ABD8F /* XCRemoteSwiftPackageReference "Sparkle" */,
 				3D7998B8461ECA74E52CDB64 /* XCLocalSwiftPackageReference "../CleanerEngine" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -217,6 +224,7 @@
 				4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */,
 				1207961D090D64D814274B0C /* Notifications.swift in Sources */,
 				1DF86AC8135E1F7BC0ABCF2A /* ReclaimSummaryView.swift in Sources */,
+				D66C7C1373F8CE4DDE938665 /* Updater.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,6 +295,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 10100;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dusty/Info.plist;
@@ -295,6 +304,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = sh.toprak.dusty;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
@@ -371,6 +381,7 @@
 				CODE_SIGN_ENTITLEMENTS = Dusty/Dusty.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 10100;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dusty/Info.plist;
@@ -379,6 +390,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = sh.toprak.dusty;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
@@ -415,7 +427,23 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		D68863D26772992BC67ABD8F /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		B3D2046D54969261F6554DE4 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D68863D26772992BC67ABD8F /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		D395E7531274A6A48E031DBA /* CleanerEngine */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CleanerEngine;

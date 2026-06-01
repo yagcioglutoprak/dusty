@@ -1,5 +1,28 @@
 import Foundation
 
+/// How a target's selected items are removed. Modeled as a closed set rather than
+/// magic strings so the scan and delete phases can never drift out of sync: a target
+/// declares its action once, and the engine dispatches on the enum.
+public enum CleanupAction: String, Codable, Sendable, Hashable {
+    /// Ordinary filesystem deletion of validated paths (trash or permanent).
+    case files
+    /// `xcrun simctl delete unavailable` (no filesystem path).
+    case simctlDeleteUnavailable
+    /// `xcrun simctl delete <udid>`, where the UDID is the path's last component.
+    case simctlDeleteDevice
+    /// `docker system prune -af` (no filesystem path, no `--volumes`).
+    case dockerPrune
+
+    /// True when the action is an external command with no real filesystem path,
+    /// so path validation does not apply and must be skipped.
+    public var isExternalCommand: Bool {
+        switch self {
+        case .files, .simctlDeleteDevice: return false
+        case .simctlDeleteUnavailable, .dockerPrune: return true
+        }
+    }
+}
+
 /// A data-driven cleanup target. Adding or removing a target is a one-line change in `CleanupTargetRegistry`.
 public struct CleanupTarget: Identifiable, Codable, Sendable, Hashable {
     public let id: String
@@ -12,6 +35,13 @@ public struct CleanupTarget: Identifiable, Codable, Sendable, Hashable {
     public let deletesContentsNotDirectory: Bool
     /// When true, the data regenerates automatically (safe tier).
     public let regenerates: Bool
+    /// How selected items are removed. Defaults to ordinary file deletion.
+    public let action: CleanupAction
+    /// When true, items are ALWAYS permanently deleted, never moved to Trash, even
+    /// when a Safe-undo clean would otherwise trash them. Required for "Empty Trash":
+    /// trashing an item that already lives in the Trash is incoherent (it just shuffles
+    /// the file within the Trash and reclaims nothing).
+    public let bypassesTrash: Bool
     /// Bundle ID or app name hint shown in UI when the app should be quit first.
     public let requiresAppClosed: String?
     /// Precise bundle identifier for running-app detection (preferred over name).
@@ -33,6 +63,8 @@ public struct CleanupTarget: Identifiable, Codable, Sendable, Hashable {
         category: String,
         deletesContentsNotDirectory: Bool = false,
         regenerates: Bool = false,
+        action: CleanupAction = .files,
+        bypassesTrash: Bool = false,
         requiresAppClosed: String? = nil,
         requiresAppBundleID: String? = nil,
         usesDynamicPaths: Bool = false,
@@ -47,6 +79,8 @@ public struct CleanupTarget: Identifiable, Codable, Sendable, Hashable {
         self.category = category
         self.deletesContentsNotDirectory = deletesContentsNotDirectory
         self.regenerates = regenerates
+        self.action = action
+        self.bypassesTrash = bypassesTrash
         self.requiresAppClosed = requiresAppClosed
         self.requiresAppBundleID = requiresAppBundleID
         self.usesDynamicPaths = usesDynamicPaths

@@ -16,21 +16,22 @@ struct LevelSectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
                 Button(action: onToggleExpand) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 12) {
                         Image(systemName: "chevron.right")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(.tertiary)
                             .rotationEffect(.degrees(isExpanded ? 90 : 0))
                         levelBadge
                         VStack(alignment: .leading, spacing: 2) {
                             Text(level.title)
-                                .font(.subheadline.weight(.semibold))
+                                .font(.body.weight(.semibold))
                             Text(level.subtitle)
-                                .font(.caption2)
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         Spacer(minLength: 4)
                     }
@@ -40,7 +41,7 @@ struct LevelSectionView: View {
 
                 if selectedBytes > 0 {
                     Text(DiskSpaceMonitor.formatBytes(selectedBytes))
-                        .font(.caption.weight(.semibold))
+                        .font(.footnote.weight(.bold))
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
                 }
@@ -48,15 +49,11 @@ struct LevelSectionView: View {
             }
 
             if isExpanded {
-                detail.padding(.top, 10)
+                detail.padding(.top, 12)
             }
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius)
-                .fill(DustyTheme.cardBackground)
-                .shadow(color: .black.opacity(0.04), radius: 2, y: 1)
-        )
+        .padding(14)
+        .dustyCard()
     }
 
     private var cleanButton: some View {
@@ -65,13 +62,14 @@ struct LevelSectionView: View {
                 if isCleaning {
                     ProgressView().controlSize(.small)
                 } else {
-                    Text("Clean").font(.caption.weight(.semibold))
+                    Text("Clean").font(.subheadline.weight(.bold))
                 }
             }
-            .frame(minWidth: 52)
+            .frame(minWidth: 58, minHeight: 18)
         }
         .buttonStyle(.borderedProminent)
-        .controlSize(.small)
+        .tint(levelColor)
+        .controlSize(.regular)
         .disabled(levelResult == nil || selectedBytes == 0 || isCleaning || !canClean)
     }
 
@@ -93,7 +91,7 @@ struct LevelSectionView: View {
             }
         } else {
             Text("Scanning…")
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -102,35 +100,29 @@ struct LevelSectionView: View {
     private var levelBadge: some View {
         ZStack {
             Circle()
-                .fill(levelColor.opacity(0.15))
-                .frame(width: 28, height: 28)
+                .fill(levelColor.opacity(0.18))
+                .frame(width: 34, height: 34)
             Text("\(level.rawValue)")
-                .font(.caption.weight(.bold))
+                .font(.subheadline.weight(.heavy))
                 .foregroundStyle(levelColor)
         }
     }
 
-    private var levelColor: Color {
-        switch level {
-        case .safe: return .green
-        case .developer: return .blue
-        case .deep: return .orange
-        }
-    }
+    private var levelColor: Color { DustyTheme.levelColor(level.rawValue) }
 
     private var blockingBanner: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(systemName: "app.dashed")
                 .foregroundStyle(.orange)
             Text("\(blockingApps.joined(separator: ", ")) open, its cache is skipped. Quit to include it.")
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(8)
+        .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.1)))
-        .padding(.bottom, 6)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.1)))
+        .padding(.bottom, 8)
     }
 }
 
@@ -144,30 +136,30 @@ struct TargetRowView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack {
                 Text(targetResult.target.displayName)
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                 Spacer()
                 if targetResult.target.needsUserSelection && !targetResult.resolvedPaths.isEmpty {
                     Text("\(selectedInTarget)/\(targetResult.resolvedPaths.count)")
-                        .font(.caption2.monospacedDigit())
+                        .font(.caption.monospacedDigit())
                         .foregroundStyle(.tertiary)
                     Button("All") { onSelectAll(targetResult.id, true) }
                         .buttonStyle(.link)
-                        .font(.caption2)
+                        .font(.caption.weight(.medium))
                     Button("None") { onSelectAll(targetResult.id, false) }
                         .buttonStyle(.link)
-                        .font(.caption2)
+                        .font(.caption.weight(.medium))
                 }
                 Text(DiskSpaceMonitor.formatBytes(targetResult.selectedBytes))
-                    .font(.caption2.monospacedDigit())
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
 
             if let app = targetResult.target.requiresAppClosed {
                 Label("Skipped while \(app) is open", systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.orange)
             }
 
@@ -186,19 +178,19 @@ struct TargetRowView: View {
                 }
             } else if !targetResult.resolvedPaths.isEmpty {
                 Text("\(targetResult.resolvedPaths.count) item\(targetResult.resolvedPaths.count == 1 ? "" : "s") · cleaned automatically")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
                     .padding(.leading, 4)
             }
 
             ForEach(targetResult.scanErrors, id: \.self) { err in
                 Label(err, systemImage: "lock.fill")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.red)
                     .lineLimit(3)
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 7)
         .padding(.horizontal, 4)
     }
 }
@@ -207,14 +199,14 @@ private struct PathLabel: View {
     let path: ResolvedPath
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(path.displayName)
-                .font(.caption)
+                .font(.subheadline)
                 .lineLimit(3)
                 .textSelection(.enabled)
                 .help(path.path)
             Text(DiskSpaceMonitor.formatBytes(path.estimatedBytes))
-                .font(.caption2.monospacedDigit())
+                .font(.caption.monospacedDigit())
                 .foregroundStyle(.tertiary)
         }
     }

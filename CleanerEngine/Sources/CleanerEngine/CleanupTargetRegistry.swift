@@ -36,7 +36,9 @@ public enum CleanupTargetRegistry {
             pathTemplates: ["~/.Trash"],
             category: "Trash",
             deletesContentsNotDirectory: true,
-            regenerates: true
+            regenerates: true,
+            // Always permanent: the destination IS the Trash, so a trash-move is a no-op.
+            bypassesTrash: true
         ),
         CleanupTarget(
             id: "safari-cache",
@@ -122,6 +124,7 @@ public enum CleanupTargetRegistry {
             level: .developer,
             pathTemplates: [],
             category: "Simulator",
+            action: .simctlDeleteUnavailable,
             usesDynamicPaths: true
         ),
         CleanupTarget(
@@ -247,6 +250,7 @@ public enum CleanupTargetRegistry {
             level: .developer,
             pathTemplates: [],
             category: "Docker",
+            action: .dockerPrune,
             usesDynamicPaths: true,
             requiresExplicitOptIn: true
         ),
@@ -270,6 +274,9 @@ public enum CleanupTargetRegistry {
             level: .deep,
             pathTemplates: ["~/Library/Developer/Xcode/Archives"],
             category: "Xcode",
+            // Enumerate each .xcarchive bundle so the user picks specific builds:
+            // archives hold dSYMs you cannot regenerate for an already-shipped build.
+            usesDynamicPaths: true,
             requiresIndividualSelection: true
         ),
         CleanupTarget(
@@ -278,6 +285,7 @@ public enum CleanupTargetRegistry {
             level: .deep,
             pathTemplates: ["~/Library/Developer/CoreSimulator/Devices"],
             category: "Simulator",
+            action: .simctlDeleteDevice,
             usesDynamicPaths: true,
             requiresIndividualSelection: true
         ),

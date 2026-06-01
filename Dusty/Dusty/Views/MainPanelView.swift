@@ -5,94 +5,141 @@ import CleanerEngine
 struct MainPanelView: View {
     @ObservedObject var viewModel: DustyViewModel
     @ObservedObject var settings: AppSettings
+    @ObservedObject var updater: Updater
     @State private var showFDABanner = true
+    @State private var appeared = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            Divider()
-            scrollContent
-            Divider()
-            footer
+        ZStack {
+            VStack(spacing: 0) {
+                header
+                Divider().opacity(0.5)
+                scrollContent
+                Divider().opacity(0.5)
+                footer
+            }
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 10)
+
+            overlay
         }
         .frame(width: DustyTheme.panelWidth, height: DustyTheme.panelHeight)
-        .background(DustyTheme.panelBackground)
+        .background(panelBackground)
+        .animation(.easeInOut(duration: 0.18), value: viewModel.showSettings)
+        .animation(.easeInOut(duration: 0.18), value: viewModel.pendingConfirmationLevel)
         .task {
             viewModel.scanIfNeeded(settings: settings)
         }
         .onAppear {
             viewModel.startAutoRefresh(interval: settings.refreshIntervalSeconds)
             viewModel.refreshFreeSpace()
+            withAnimation(.easeOut(duration: 0.3)) { appeared = true }
         }
         .onChange(of: settings.refreshIntervalSeconds) { newValue in
             viewModel.startAutoRefresh(interval: newValue)
         }
-        .sheet(isPresented: $viewModel.showSettings) {
-            SettingsView(settings: settings, onRefreshIntervalChanged: { interval in
+    }
+
+    /// Atmosphere, not a flat fill: a warm dust-gold glow pools behind the disk
+    /// ring up top, with a faint shadow gathering at the base for depth. Reads
+    /// well in both light and dark appearances.
+    private var panelBackground: some View {
+        ZStack {
+            DustyTheme.panelBackground
+            RadialGradient(
+                colors: [DustyTheme.gold.opacity(0.05), .clear],
+                center: UnitPoint(x: 0.5, y: 0.12),
+                startRadius: 4,
+                endRadius: 280
+            )
+            LinearGradient(
+                colors: [.clear, Color.black.opacity(0.04)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+        }
+        .ignoresSafeArea()
+    }
+
+    /// Confirmation and settings are drawn inside the panel, never as sheets. A
+    /// `MenuBarExtra(.window)` panel is a non-activating `NSPanel` that closes the
+    /// instant a modal sheet pulls focus away, which would dismiss the whole UI
+    /// mid-action: the cause of "clicking Delete does nothing" and "buttons close
+    /// the app". Keeping every interaction in-panel avoids the focus loss entirely.
+    @ViewBuilder private var overlay: some View {
+        if viewModel.showSettings {
+            OverlayScrim { viewModel.showSettings = false }
+            SettingsView(settings: settings, updater: updater, onRefreshIntervalChanged: { interval in
                 viewModel.startAutoRefresh(interval: interval)
             }, onDone: { viewModel.showSettings = false })
-        }
-        .sheet(item: $viewModel.pendingConfirmationLevel) { level in
-            if viewModel.levelResult(for: level) != nil {
-                ConfirmationSheet(
-                    level: level,
-                    paths: viewModel.cleanablePaths(for: level),
-                    bytes: viewModel.cleanableBytes(for: level),
-                    dryRun: settings.dryRunDefault,
-                    moveToTrash: settings.moveToTrashDefault && level != .safe,
-                    skippedApps: viewModel.blockingApps(for: level),
-                    onConfirm: {
-                        Task { await viewModel.confirmClean(level: level, settings: settings) }
-                    },
-                    onCancel: { viewModel.cancelConfirmation() }
-                )
-            }
+            .transition(.scale(scale: 0.96).combined(with: .opacity))
+        } else if let level = viewModel.pendingConfirmationLevel,
+                  viewModel.levelResult(for: level) != nil {
+            OverlayScrim { viewModel.cancelConfirmation() }
+            ConfirmationCard(
+                level: level,
+                paths: viewModel.cleanablePaths(for: level),
+                bytes: viewModel.cleanableBytes(for: level),
+                dryRun: settings.dryRunDefault,
+                moveToTrash: settings.moveToTrashDefault && level != .safe,
+                skippedApps: viewModel.blockingApps(for: level),
+                onConfirm: {
+                    Task { await viewModel.confirmClean(level: level, settings: settings) }
+                },
+                onCancel: { viewModel.cancelConfirmation() }
+            )
+            .transition(.scale(scale: 0.96).combined(with: .opacity))
         }
     }
 
     private var header: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 10) {
             HStack {
-                HStack(spacing: 6) {
+                HStack(spacing: 7) {
                     Image(systemName: "sparkles")
-                        .foregroundStyle(DustyTheme.diskColor(ratio: viewModel.freeSpaceRatio))
+                        .font(.body)
+                        .foregroundStyle(DustyTheme.gold)
                     Text("Dusty")
-                        .font(.headline.weight(.semibold))
+                        .font(.title3.weight(.bold))
                 }
                 Spacer()
                 if viewModel.isDiskLow {
                     Text("LOW DISK")
-                        .font(.caption2.weight(.bold))
+                        .font(.caption.weight(.bold))
                         .foregroundStyle(.red)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.red.opacity(0.12)))
+                        .tracking(0.5)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(Capsule().fill(Color.red.opacity(0.14)))
                 }
                 Button {
                     viewModel.showSettings = true
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gearshape.fill")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.borderless)
                 .help("Settings")
                 .accessibilityLabel("Settings")
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
+            .padding(.horizontal, 18)
+            .padding(.top, 16)
 
             FreeSpaceHeaderView(
                 freeBytes: viewModel.freeSpaceBytes,
                 totalBytes: viewModel.totalSpaceBytes,
                 ratio: viewModel.freeSpaceRatio
             )
+            .padding(.bottom, 4)
         }
     }
 
     private var scrollContent: some View {
         ScrollView {
-            VStack(spacing: 12) {
+            VStack(spacing: 14) {
                 scanSection
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
 
                 if viewModel.hasScannedOnce && !viewModel.isScanning && viewModel.hasReclaimableSpace {
                     ReclaimSummaryView(
@@ -103,7 +150,7 @@ struct MainPanelView: View {
                         canCleanSafe: viewModel.canClean(level: .safe),
                         onCleanSafe: { viewModel.cleanSafe() }
                     )
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
                     .transition(.scale(scale: 0.96).combined(with: .opacity))
                 }
 
@@ -111,20 +158,20 @@ struct MainPanelView: View {
                     FullDiskAccessBanner {
                         viewModel.openFullDiskAccessSettings()
                     }
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
                 if let result = viewModel.lastDeletionResult {
                     DeletionResultBanner(result: result, style: viewModel.bannerStyle,
                                          onUndo: { viewModel.undoLastDeletion() })
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 16)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
                 if let error = viewModel.errorMessage {
                     errorBanner(error)
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 16)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
@@ -146,10 +193,10 @@ struct MainPanelView: View {
                             viewModel.setAllSelected(level: level, targetID: targetID, selected: selected)
                         }
                     )
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 16)
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: viewModel.isScanning)
             .animation(.easeInOut(duration: 0.25), value: viewModel.lastDeletionResult != nil)
             .animation(.easeInOut(duration: 0.25), value: viewModel.errorMessage)
@@ -158,44 +205,52 @@ struct MainPanelView: View {
     }
 
     private var scanSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             Button {
                 viewModel.startScan(settings: settings)
             } label: {
-                HStack {
+                HStack(spacing: 8) {
                     if viewModel.isScanning {
-                        ProgressView()
-                            .controlSize(.small)
+                        ProgressView().controlSize(.small)
                     } else {
                         Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.body.weight(.semibold))
                     }
-                    Text(viewModel.isScanning ? "Scanning…" : viewModel.hasScannedOnce ? "Rescan" : "Scan")
-                        .fontWeight(.medium)
+                    Text(viewModel.isScanning ? "Scanning…" : viewModel.hasScannedOnce ? "Rescan" : "Scan disk")
+                        .font(.body.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 2)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        .fill(Color.primary.opacity(0.06))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                .stroke(DustyTheme.hairline, lineWidth: 1)
+                        )
+                )
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.plain)
             .disabled(viewModel.isScanning || viewModel.isCleaning)
 
             if let progress = viewModel.scanProgress, viewModel.isScanning {
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     ProgressView(value: progress.fraction)
                         .progressViewStyle(.linear)
                     HStack {
                         Text("\(progress.completed)/\(progress.total) · \(progress.currentTargetName)")
-                            .font(.caption2)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                         Spacer()
                         Button("Cancel") { viewModel.cancelScan() }
                             .buttonStyle(.link)
-                            .font(.caption2)
+                            .font(.caption.weight(.medium))
                     }
                 }
             } else if let scannedAt = viewModel.scanResult?.scannedAt {
                 Text("Last scan: \(scannedAt.formatted(date: .omitted, time: .shortened))")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
             }
         }
@@ -206,22 +261,24 @@ struct MainPanelView: View {
     }
 
     private func errorBanner(_ message: String) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Image(systemName: "exclamationmark.circle.fill")
+                .font(.body)
                 .foregroundStyle(.red)
             Text(message)
-                .font(.caption)
+                .font(.subheadline)
             Spacer()
             Button {
                 viewModel.errorMessage = nil
             } label: {
                 Image(systemName: "xmark")
-                    .font(.caption2)
+                    .font(.caption.weight(.bold))
             }
             .buttonStyle(.plain)
         }
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.red.opacity(0.08)))
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(Color.red.opacity(0.1)))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).stroke(Color.red.opacity(0.2), lineWidth: 1))
     }
 
     private func toggleLevel(_ level: CleanupLevel) {
@@ -233,41 +290,54 @@ struct MainPanelView: View {
     }
 
     private var footer: some View {
-        VStack(spacing: 7) {
+        VStack(spacing: 8) {
             HStack {
                 Button("Deletion log") {
                     viewModel.openDeletionLog()
                 }
                 .buttonStyle(.link)
-                .font(.caption)
+                .font(.footnote.weight(.medium))
 
                 Spacer()
 
                 if settings.dryRunDefault {
                     Label("Dry Run", systemImage: "eye")
-                        .font(.caption2)
-                        .foregroundStyle(.blue)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
 
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.link)
-                .font(.caption)
+                .font(.footnote.weight(.medium))
                 .keyboardShortcut("q")
             }
 
-            HStack(spacing: 3) {
+            HStack(spacing: 4) {
                 Text("made by")
                     .foregroundStyle(.tertiary)
                 Link("toprak.sh", destination: URL(string: "https://toprak.sh")!)
                     .foregroundStyle(.secondary)
                     .help("Open toprak.sh")
             }
-            .font(.caption2)
+            .font(.caption)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 11)
+        .padding(.horizontal, 18)
+        .padding(.top, 12)
+        .padding(.bottom, 13)
+    }
+}
+
+/// Dimmed, tap-to-dismiss backdrop behind an in-panel overlay. Sized by its
+/// container so it covers the full panel and intercepts taps on the content below.
+private struct OverlayScrim: View {
+    let onTap: () -> Void
+
+    var body: some View {
+        Color.black.opacity(0.3)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onTap)
+            .transition(.opacity)
     }
 }

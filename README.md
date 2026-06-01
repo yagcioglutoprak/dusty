@@ -79,8 +79,9 @@ delete. It enforces:
 - **Protected folders are off limits.** Documents, Desktop, Pictures, Photos
   library, Music, Movies, Mail, iCloud Drive, Keychains, and Application Support
   (except one named browser cache path) are rejected even as prefixes.
-- **No symlink escapes.** Symlinks are never followed, so a delete cannot walk
-  out of an allowed directory.
+- **No symlink escapes.** Symlinks are never followed, including a symlinked
+  parent directory: the path is resolved and re-checked against the allowlist, so
+  a delete cannot walk out of an allowed directory.
 - **Boot volume only.** Operations are confined to the volume your home folder
   lives on, and Dusty never runs as root or uses `sudo`. The only paths outside
   your home folder are the Deep level's system diagnostic logs under
