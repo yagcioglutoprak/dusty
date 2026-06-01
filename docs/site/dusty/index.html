@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dusty: a safe, open-source disk cleaner for macOS</title>
+<meta name="description" content="Dusty is a free, open-source macOS menu bar app that reclaims disk space from caches, logs, and developer junk. It can only ever delete from a fixed allowlist, and it shows you every path before it removes a thing.">
+<meta name="theme-color" content="#161618">
+<link rel="canonical" href="https://toprak.sh/dusty">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dusty: a safe, open-source disk cleaner for macOS">
+<meta property="og:description" content="Reclaim disk space on your Mac without deleting the wrong file. Allowlist-only, open source, MIT.">
+<meta property="og:url" content="https://toprak.sh/dusty">
+<meta property="og:image" content="https://toprak.sh/dusty/og-card.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dusty: a safe, open-source disk cleaner for macOS">
+<meta name="twitter:description" content="Reclaim disk space on your Mac without deleting the wrong file. Allowlist-only, open source, MIT.">
+<meta name="twitter:image" content="https://toprak.sh/dusty/og-card.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff5656' d='M12 0C12 6.2 5.8 12 0 12c5.8 0 12 5.8 12 12 0-6.2 6.2-12 12-12-5.8 0-12-5.8-12-12Z'/%3E%3C/svg%3E">
+
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg0: #0f0f10;
+    --bg1: #161618;
+    --bg2: #1b1b1d;
+    --surface: #1f2022;
+    --surface-2: #25272a;
+    --line: rgba(255,255,255,0.08);
+    --line-strong: rgba(255,255,255,0.14);
+    --text: #f3f3f4;
+    --muted: #9a9ba1;
+    --faint: #6c6d73;
+    --blue: #3478f6;
+    --blue-soft: #5b93ff;
+    --red: #ff5656;
+    --green: #34c759;
+    --amber: #e0a23a;
+    --radius: 16px;
+    --maxw: 1080px;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg0);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* Atmosphere: layered glows + a faint grain over near-black. */
+  .atmosphere { position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(900px 600px at 78% 8%, rgba(52,120,246,0.13), transparent 60%),
+      radial-gradient(700px 500px at 8% 0%, rgba(255,86,86,0.06), transparent 55%),
+      linear-gradient(180deg, #131315 0%, #0f0f10 38%, #0d0d0e 100%);
+  }
+  .grain { position: fixed; inset: 0; z-index: -1; opacity: 0.04; mix-blend-mode: overlay; pointer-events: none; }
+
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: rgba(52,120,246,0.35); }
+
+  .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- top bar ---------- */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: saturate(140%) blur(14px); -webkit-backdrop-filter: saturate(140%) blur(14px);
+    background: rgba(15,15,16,0.66);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 11px; font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .brand svg { width: 22px; height: 22px; filter: drop-shadow(0 2px 6px rgba(255,86,86,0.35)); }
+  .nav-right { display: flex; align-items: center; gap: 22px; font-size: 14.5px; color: var(--muted); }
+  .nav-right a { transition: color 0.2s var(--ease); }
+  .nav-right a:hover { color: var(--text); }
+  .nav-gh { display: inline-flex; align-items: center; gap: 7px; }
+  .nav-gh svg { width: 17px; height: 17px; }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; padding: 86px 0 64px; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 48px; align-items: center; }
+  .hero-grid > *, .oss > * { min-width: 0; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
+    color: var(--blue-soft); letter-spacing: 0.02em; margin-bottom: 20px; }
+  .eyebrow .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(52,199,89,0.5); animation: pulse 2.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52,199,89,0.45);} 70% { box-shadow: 0 0 0 9px rgba(52,199,89,0);} 100% { box-shadow: 0 0 0 0 rgba(52,199,89,0);} }
+
+  h1 { font-size: clamp(40px, 6vw, 62px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; }
+  h1 .dim { display: block; color: var(--muted); font-weight: 650; }
+  .lede { margin-top: 22px; font-size: 18.5px; color: #c4c5ca; max-width: 30em; }
+  .lede b { color: var(--text); font-weight: 650; }
+
+  .cmd { margin-top: 30px; display: flex; align-items: stretch; gap: 0; width: 100%; max-width: 520px;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 13px; overflow: hidden; }
+  .cmd code { flex: 1; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 13px; color: #cfd0d5;
+    padding: 13px 14px; white-space: nowrap; overflow-x: auto; font-variant-ligatures: none; }
+  .cmd code .p { color: var(--faint); }
+  .cmd code .f { letter-spacing: 0.14em; }
+  .copy { border: 0; border-left: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+    padding: 0 15px; cursor: pointer; font-size: 13px; font-weight: 600; transition: color 0.2s, background 0.2s; flex-shrink: 0; }
+  .copy:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .copy.done { color: var(--green); }
+
+  .cta-row { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 13px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 600;
+    padding: 12px 20px; border-radius: 12px; transition: transform 0.18s var(--ease), box-shadow 0.18s, background 0.18s; cursor: pointer; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { color: #fff; border: 1px solid rgba(255,255,255,0.16);
+    background: linear-gradient(180deg, #4a87ff, #2f6cf0);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 10px 26px rgba(47,108,240,0.4); }
+  .btn-primary:hover { box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 14px 32px rgba(47,108,240,0.5); }
+  .btn-ghost { color: var(--text); border: 1px solid var(--line-strong); background: rgba(255,255,255,0.03); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.07); }
+  .btn svg { width: 17px; height: 17px; }
+
+  .meta { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; color: var(--faint); }
+  .meta span { display: inline-flex; align-items: center; gap: 7px; }
+  .meta .tick { color: var(--green); }
+
+  /* hero art: app panel over a faint disk ring */
+  .hero-art { position: relative; display: flex; justify-content: center; align-items: center; min-height: 540px; }
+  .ring { position: absolute; width: 560px; height: 560px; right: -120px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none; }
+  .panel-shot { position: relative; width: 360px; max-width: 100%; border-radius: 22px;
+    box-shadow: 0 50px 110px rgba(0,0,0,0.62), 0 14px 36px rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.06); }
+
+  /* ---------- sections ---------- */
+  section { padding: 70px 0; }
+  .sec-head { max-width: 40em; margin-bottom: 40px; }
+  .sec-tag { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-soft); }
+  .sec-head h2 { margin-top: 12px; font-size: clamp(28px, 4vw, 38px); letter-spacing: -0.03em; line-height: 1.1; font-weight: 800; }
+  .sec-head p { margin-top: 14px; color: var(--muted); font-size: 17px; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
+
+  /* trust bento + cleanup levels live in the crafted .dy-* block below */
+
+  /* comparison */
+  .compare { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 520px; }
+  th, td { padding: 15px 20px; text-align: left; border-bottom: 1px solid var(--line); }
+  thead th { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: 700; }
+  thead th.us { color: var(--blue-soft); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--muted); }
+  td.us { color: var(--text); font-weight: 600; }
+  td.them { color: var(--faint); }
+  .col-us { background: rgba(52,120,246,0.06); }
+  .yes { color: var(--green); }
+
+  /* open source band */
+  .oss { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+  pre.code { background: #0c0c0d; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.7; color: #c9cad0; overflow-x: auto; }
+  pre.code .k { color: #ff7b8a; } pre.code .s { color: #9ad26b; } pre.code .c { color: var(--faint); }
+  .stacks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .chip { font-size: 13px; color: #cdced3; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; }
+
+  /* final cta */
+  .final { text-align: center; padding: 86px 0 30px; }
+  .final h2 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -0.03em; line-height: 1.05; font-weight: 800; }
+  .final p { margin-top: 14px; color: var(--muted); font-size: 17px; }
+  .final .cmd { margin: 28px auto 0; }
+  .final .cta-row { justify-content: center; }
+
+  footer { border-top: 1px solid var(--line); padding: 34px 0 56px; margin-top: 40px; }
+  .foot { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; color: var(--faint); font-size: 14px; }
+  .foot a { color: var(--muted); transition: color 0.2s; }
+  .foot a:hover { color: var(--text); }
+  .foot .made { color: var(--faint); }
+  .foot .made a { color: var(--blue-soft); }
+
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .hero-art { min-height: 0; order: -1; }
+    .ring { width: 420px; height: 420px; right: 50%; transform: translate(50%, -50%); }
+    .panel-shot { width: 290px; }
+    .trust, .levels, .oss { grid-template-columns: minmax(0, 1fr); }
+    .hero { padding: 56px 0 40px; }
+    section { padding: 52px 0; }
+    h1 { font-size: clamp(28px, 8vw, 38px); }
+    .lede { font-size: 17px; }
+    .cmd code { font-size: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .eyebrow .pulse { animation: none; }
+    .reveal { transition: none; opacity: 1; transform: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ============================================================
+     Trust bento + cleanup levels — crafted macOS panel material.
+     Namespaced .dy-* so nothing collides with the page above.
+     "Light through dust": layered surfaces, edge-light hairlines,
+     recessed icon chips, a single restrained accent per card.
+     ============================================================ */
+
+  /* shared card material */
+  .dy-card {
+    --accent: var(--blue); --accent-soft: var(--blue-soft); --accent-glow: rgba(52,120,246,0.5);
+    position: relative; isolation: isolate; border-radius: var(--radius);
+    padding: 23px 24px 25px;
+    background: linear-gradient(180deg, var(--surface), var(--bg2));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      inset 0 0 0 1px rgba(255,255,255,0.045),
+      0 1px 1px rgba(0,0,0,0.5),
+      0 22px 46px -28px rgba(0,0,0,0.9);
+    transition:
+      opacity 0.6s var(--ease) calc(var(--i,0) * 60ms),
+      transform 0.55s var(--ease) calc(var(--i,0) * 60ms),
+      box-shadow 0.45s var(--ease);
+  }
+  .dy-card::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background: radial-gradient(82% 60% at 18% 0%, var(--accent-glow), transparent 62%);
+    opacity: 0.09; transition: opacity 0.45s var(--ease);
+  }
+  .dy-card:hover {
+    transform: translateY(-4px);
+    transition: transform 0.34s var(--ease), box-shadow 0.4s var(--ease);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      inset 0 0 0 1px rgba(255,255,255,0.06),
+      0 1px 1px rgba(0,0,0,0.5),
+      0 34px 60px -30px rgba(0,0,0,0.95),
+      0 0 0 1px var(--accent-glow);
+  }
+  .dy-card:hover::before { opacity: 0.3; }
+  .dy-card:hover .dy-chip { color: var(--accent-soft); }
+  .dy-card h3 { margin: 17px 0 7px; font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
+  .dy-card p { color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+
+  /* recessed / embossed icon chip */
+  .dy-chip {
+    width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+    color: #cdced3;
+    background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.016));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 -1px 2px rgba(0,0,0,0.55),
+      0 1px 2px rgba(0,0,0,0.4);
+    transition: color 0.4s var(--ease);
+  }
+  .dy-chip svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .dy-idx { position: absolute; top: 19px; right: 21px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: 0.05em; color: var(--faint); }
+
+  /* section 1 — trust bento */
+  .dy-bento { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .dy-bento .span2 { grid-column: span 2; }
+  .dy-card.hero { --accent: var(--red); --accent-soft: #ff8d85; --accent-glow: rgba(255,86,86,0.45); }
+  .dy-card.hero::before { opacity: 0.16; }
+  .dy-card.hero .dy-chip { width: 54px; height: 54px; border-radius: 15px; color: #ff8d85; }
+  .dy-card.hero .dy-chip svg { width: 27px; height: 27px; }
+  .dy-card.hero h3 { font-size: 22px; margin-top: 20px; }
+  .dy-card.hero p { font-size: 15px; max-width: 46ch; }
+
+  .dy-logline {
+    margin-top: 16px; display: flex; align-items: center; gap: 10px; overflow: hidden;
+    padding: 11px 13px; border-radius: 11px; background: rgba(0,0,0,0.32);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 12px; color: #cfd0d5;
+  }
+  .dy-logline .b { width: 6px; height: 6px; border-radius: 50%; flex: none; background: var(--green); box-shadow: 0 0 8px rgba(52,199,89,0.55); }
+  .dy-logline .t { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dy-logline .k { color: #ff9a93; }
+  .dy-logline .v { color: var(--faint); }
+
+  /* section 2 — cleanup levels */
+  .dy-levels { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .dy-level { padding-top: 21px; }
+  .dy-level.safe { --accent: var(--green); --accent-soft: #74e29b; --accent-glow: rgba(52,199,89,0.42); }
+  .dy-level.dev  { --accent: var(--blue);  --accent-soft: var(--blue-soft); --accent-glow: rgba(52,120,246,0.46); }
+  .dy-level.deep { --accent: var(--red);   --accent-soft: #ff8d85; --accent-glow: rgba(255,86,86,0.42); }
+  .dy-level::before { opacity: 0.13; }
+  .dy-level.deep::before { opacity: 0.2; }
+  .dy-level .dy-chip { color: var(--accent-soft); }
+  .dy-lvtop { display: flex; align-items: center; justify-content: space-between; }
+  .dy-meter { display: flex; gap: 5px; }
+  .dy-pip { width: 20px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); }
+  .dy-pip.on { background: var(--accent); box-shadow: 0 0 9px var(--accent-glow); }
+  .dy-level .dy-lvtag { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-soft); margin-top: 18px; }
+  .dy-level h3 { margin-top: 6px; font-size: 20px; font-weight: 750; letter-spacing: -0.02em; }
+  .dy-rule { height: 1.5px; width: 64px; margin: 15px 0; border-radius: 2px; background: linear-gradient(90deg, var(--accent), transparent); }
+  .dy-level .dy-note { display: flex; gap: 9px; align-items: flex-start; margin-top: 18px; color: #c9cace; font-size: 13.5px; line-height: 1.5; }
+  .dy-level .dy-note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; fill: none; stroke: var(--accent-soft); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .dy-fda { display: inline-flex; align-items: center; gap: 7px; margin-top: 16px; padding: 5px 10px; border-radius: 999px; font-size: 11.5px; color: var(--muted); background: rgba(255,255,255,0.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+  .dy-fda .d { width: 5px; height: 5px; border-radius: 50%; background: var(--red); }
+
+  /* drifting dust motes — scoped to the trust section */
+  .dy-sec { position: relative; }
+  .dy-motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .dy-fg { position: relative; z-index: 1; }
+  .dy-mote { position: absolute; border-radius: 50%; background: #fff; filter: blur(0.5px); opacity: 0; animation: dy-drift 22s linear infinite; }
+  .dy-mote:nth-child(1) { left: 15%; top: 36%; width: 3px; height: 3px; animation-delay: 0s; }
+  .dy-mote:nth-child(2) { left: 71%; top: 22%; width: 2px; height: 2px; animation-delay: -6s; }
+  .dy-mote:nth-child(3) { left: 45%; top: 66%; width: 3px; height: 3px; animation-delay: -11s; background: #ff8d85; }
+  .dy-mote:nth-child(4) { left: 85%; top: 56%; width: 2px; height: 2px; animation-delay: -16s; }
+  @keyframes dy-drift {
+    0% { opacity: 0; transform: translateY(14px) translateX(0); }
+    18% { opacity: 0.45; }
+    82% { opacity: 0.4; }
+    100% { opacity: 0; transform: translateY(-46px) translateX(16px); }
+  }
+
+  @media (max-width: 860px) {
+    .dy-bento { grid-template-columns: 1fr 1fr; }
+    .dy-bento .span2 { grid-column: span 2; }
+    .dy-levels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .dy-bento { grid-template-columns: 1fr; }
+    .dy-bento .span2 { grid-column: span 1; }
+    .dy-card.hero h3 { font-size: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dy-card { transition: none; }
+    .dy-mote { animation: none; opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+<div class="atmosphere"></div>
+<svg class="grain"><filter id="gr"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#gr)"/></svg>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/dusty">
+      <svg viewBox="0 0 24 24" fill="#ff5656" aria-hidden="true"><path d="M12 0C12 6.2 5.8 12 0 12c5.8 0 12 5.8 12 12 0-6.2 6.2-12 12-12-5.8 0-12-5.8-12-12Z"/></svg>
+      Dusty
+    </a>
+    <nav class="nav-right">
+      <a href="#trust">Safety</a>
+      <a href="#clean">What it cleans</a>
+      <a class="nav-gh" href="https://github.com/yagcioglutoprak/dusty" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="pulse"></span>Free and open source for macOS</span>
+        <h1>Free up disk space<span class="dim">without deleting the wrong file.</span></h1>
+        <p class="lede">Dusty lives in your menu bar and reclaims the gigabytes hiding in caches, logs, and developer junk. It can only ever delete from a <b>fixed allowlist</b>, and it shows you every path and its size <b>before</b> it removes a thing.</p>
+
+        <div class="cmd">
+          <code id="brew"><span class="p">$ </span>brew install <span class="f">--</span>cask yagcioglutoprak/tap/dusty</code>
+          <button class="copy" id="copy" aria-label="Copy install command">Copy</button>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/yagcioglutoprak/dusty/releases/latest" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+            Download for macOS
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/yagcioglutoprak/dusty" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+            View source
+          </a>
+        </div>
+
+        <div class="meta">
+          <span><span class="tick">&#10003;</span> MIT licensed</span>
+          <span><span class="tick">&#10003;</span> Signed &amp; notarized by Apple</span>
+          <span><span class="tick">&#10003;</span> macOS 13+</span>
+        </div>
+      </div>
+
+      <div class="hero-art">
+        <svg class="ring" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+          <circle cx="100" cy="100" r="92" stroke="rgba(255,255,255,0.07)" stroke-width="3"/>
+          <circle cx="100" cy="100" r="92" stroke="url(#rg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="160 600" transform="rotate(-90 100 100)"/>
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3478f6"/><stop offset="1" stop-color="#ff5656"/></linearGradient></defs>
+        </svg>
+        <img class="panel-shot" src="demo.gif" width="360" alt="Dusty scanning and revealing reclaimable disk space across cleanup levels">
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap"><div class="divider"></div></div>
+
+  <!-- TRUST -->
+  <section id="trust" class="dy-sec">
+    <div class="dy-motes" aria-hidden="true"><i class="dy-mote"></i><i class="dy-mote"></i><i class="dy-mote"></i><i class="dy-mote"></i></div>
+    <div class="wrap dy-fg">
+      <div class="sec-head reveal">
+        <span class="sec-tag">Why you can trust it</span>
+        <h2>Built so it cannot delete the wrong thing.</h2>
+        <p>Most "Mac cleaners" are closed software that deletes files you cannot see. Dusty is the opposite. The deletion logic is a separate, unit-tested Swift package, and a single validator is the only thing that can authorize a delete. These are the rules it enforces.</p>
+      </div>
+
+      <div class="dy-bento">
+
+        <!-- HERO -->
+        <article class="dy-card hero span2 reveal" style="--i:0">
+          <span class="dy-idx">01</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 6h8M5 11h8M5 16h5"/><path d="M14 15l2.4 2.4L21 12.6"/></svg>
+          </span>
+          <h3>Allowlist only</h3>
+          <p>A path is deletable only if it descends from an explicit target in the registry. There is no "delete everything except" logic anywhere in the codebase. The rules are data you can read.</p>
+        </article>
+
+        <article class="dy-card reveal" style="--i:1">
+          <span class="dy-idx">02</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 1 2-2h3.2l1.6 2H18a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><rect x="9.5" y="12.5" width="6" height="4.6" rx="1"/><path d="M10.8 12.5v-1.1a1.7 1.7 0 0 1 3.4 0v1.1"/></svg>
+          </span>
+          <h3>Protected folders off-limits</h3>
+          <p>Documents, Desktop, Photos, Mail, iCloud Drive, and Keychains are rejected even as path prefixes.</p>
+        </article>
+
+        <article class="dy-card reveal" style="--i:2">
+          <span class="dy-idx">03</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9.5 14.5l5-5"/><path d="M8 13l-1.4 1.4a3 3 0 0 0 4.2 4.2L12 17.4"/><path d="M16 11l1.4-1.4a3 3 0 0 0-4.2-4.2L12 6.6"/><path d="M5 19 19 5"/></svg>
+          </span>
+          <h3>No symlink escapes</h3>
+          <p>Symlinks are never followed, so a delete can never walk out of an allowed directory.</p>
+        </article>
+
+        <article class="dy-card reveal" style="--i:3">
+          <span class="dy-idx">04</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12" rx="2.5"/><path d="M3.5 12h17"/><circle cx="7" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="9.6" cy="15" r=".9" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <h3>Boot volume only</h3>
+          <p>Confined to the volume your home folder lives on. Never runs as root, never uses sudo.</p>
+        </article>
+
+        <article class="dy-card reveal" style="--i:4">
+          <span class="dy-idx">05</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M2.6 12S6 5.6 12 5.6 21.4 12 21.4 12 18 18.4 12 18.4 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </span>
+          <h3>Dry run</h3>
+          <p>Flip one toggle to scan and report exact bytes, without removing a thing.</p>
+        </article>
+
+        <article class="dy-card reveal" style="--i:5">
+          <span class="dy-idx">06</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4.5 7h15"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/><path d="M6.6 7l.85 11.1A2 2 0 0 0 9.45 20h5.1a2 2 0 0 0 2-1.9L17.4 7"/><path d="M12 11v5"/><path d="M9.6 13l2.4-2 2.4 2"/></svg>
+          </span>
+          <h3>Move to Trash, then undo</h3>
+          <p>Developer and Deep cleanups can land in the Trash, with an undo window right after. Nothing is irreversible by surprise.</p>
+        </article>
+
+        <!-- WIDE: the written record -->
+        <article class="dy-card span2 reveal" style="--i:6">
+          <span class="dy-idx">07</span>
+          <span class="dy-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6.5 3.5h6.5l5 5V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5A1.5 1.5 0 0 1 7.5 3.5"/><path d="M13 3.5V8h4.5"/><path d="M9 12.5h6M9 15.5h6M9 18.5h3"/></svg>
+          </span>
+          <h3>A written record</h3>
+          <p>Every action, with timestamp, path, and exact bytes, is appended to a plain JSON log in Application Support you can open any time. Nothing happens off the books.</p>
+          <div class="dy-logline"><span class="b"></span><span class="t"><span class="v">"ts":</span>"2026-05-31T22:14Z"<span class="v">, "path":</span><span class="k">"~/Library/Caches/…"</span><span class="v">, "bytes":</span>248512</span></div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT IT CLEANS -->
+  <section id="clean">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">What it cleans</span>
+        <h2>Three levels, from "anytime" to "look before you leap."</h2>
+      </div>
+      <div class="dy-levels">
+
+        <article class="dy-card dy-level safe reveal" style="--i:0">
+          <div class="dy-lvtop">
+            <span class="dy-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8"/><path d="M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 16"/><path d="M4 20v-4h4"/></svg></span>
+            <span class="dy-meter" role="img" aria-label="Risk level 1 of 3"><i class="dy-pip on"></i><i class="dy-pip"></i><i class="dy-pip"></i></span>
+          </div>
+          <p class="dy-lvtag">Level 01</p>
+          <h3>Safe</h3>
+          <div class="dy-rule"></div>
+          <p>User caches, app logs, the Trash, and browser caches. The everyday stuff that piles up on its own.</p>
+          <p class="dy-note">
+            <svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg>
+            Regenerates on its own. Zero functional impact.
+          </p>
+        </article>
+
+        <article class="dy-card dy-level dev reveal" style="--i:1">
+          <div class="dy-lvtop">
+            <span class="dy-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 8.5 4.5 12l4 3.5"/><path d="M15.5 8.5 19.5 12l-4 3.5"/><path d="M13.4 5.5 10.6 18.5"/></svg></span>
+            <span class="dy-meter" role="img" aria-label="Risk level 2 of 3"><i class="dy-pip on"></i><i class="dy-pip on"></i><i class="dy-pip"></i></span>
+          </div>
+          <p class="dy-lvtag">Level 02</p>
+          <h3>Developer</h3>
+          <div class="dy-rule"></div>
+          <p>Xcode DerivedData and simulators, plus caches for npm, pnpm, pip, Cargo, Go, Homebrew, Gradle, CocoaPods, SwiftPM, JetBrains, and Unity.</p>
+          <p class="dy-note">
+            <svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg>
+            Rebuilds or re-downloads next time you need it.
+          </p>
+        </article>
+
+        <article class="dy-card dy-level deep reveal" style="--i:2">
+          <div class="dy-lvtop">
+            <span class="dy-chip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20 7.5l-8 4-8-4 8-4Z"/><path d="M4 12.5l5 2.5"/><circle cx="16.5" cy="16.5" r="3"/><path d="M18.8 18.8 21 21"/></svg></span>
+            <span class="dy-meter" role="img" aria-label="Risk level 3 of 3"><i class="dy-pip on"></i><i class="dy-pip on"></i><i class="dy-pip on"></i></span>
+          </div>
+          <p class="dy-lvtag">Level 03</p>
+          <h3>Deep</h3>
+          <div class="dy-rule"></div>
+          <p>Old .dmg and .pkg installers in Downloads, Xcode archives, unused simulators, and aged diagnostic logs.</p>
+          <p class="dy-note">
+            <svg viewBox="0 0 24 24"><path d="M9 11.5l2 2 4-4.5"/><path d="M5 5.5h14v13a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5Z"/></svg>
+            Per-file checklist. Nothing goes without a tick.
+          </p>
+          <span class="dy-fda"><span class="d"></span>Some paths ask for Full Disk Access</span>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section id="compare">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">How it compares</span>
+        <h2>The honest version, against the paid cleaners.</h2>
+      </div>
+      <div class="compare reveal">
+        <table>
+          <thead>
+            <tr><th></th><th class="us">Dusty</th><th>CleanMyMac and similar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Price</td><td class="us col-us">Free, MIT licensed</td><td class="them">Paid license or subscription</td></tr>
+            <tr><td>Source code</td><td class="us col-us">Open, every rule is readable</td><td class="them">Closed</td></tr>
+            <tr><td>What it can delete</td><td class="us col-us">A fixed allowlist, nothing else</td><td class="them">Broad categories, not all visible</td></tr>
+            <tr><td>Sizes shown before deleting</td><td class="us col-us"><span class="yes">&#10003;</span> Always, per path</td><td class="them">Varies</td></tr>
+            <tr><td>Undo and a deletion log</td><td class="us col-us"><span class="yes">&#10003;</span> Yes</td><td class="them">Varies</td></tr>
+            <tr><td>Account or telemetry</td><td class="us col-us">None</td><td class="them">Often</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN SOURCE -->
+  <section id="oss">
+    <div class="wrap oss">
+      <div class="reveal">
+        <span class="sec-tag">Open source</span>
+        <h2 style="font-size:clamp(26px,3.6vw,34px);letter-spacing:-0.03em;margin-top:12px;line-height:1.12;font-weight:800;">Cleanup targets are data, not code.</h2>
+        <p style="margin-top:14px;color:var(--muted);font-size:16.5px;">Adding a cache is a single entry that the scanner, the UI, and the safety checks all pick up. That is the whole contribution model, so pull requests are easy.</p>
+        <div class="stacks">
+          <span class="chip">Xcode</span><span class="chip">npm</span><span class="chip">pnpm</span><span class="chip">pip</span><span class="chip">Cargo</span><span class="chip">Go</span><span class="chip">Homebrew</span><span class="chip">Composer</span><span class="chip">Gradle</span><span class="chip">CocoaPods</span><span class="chip">SwiftPM</span><span class="chip">JetBrains</span><span class="chip">Unity</span><span class="chip">Docker</span>
+        </div>
+      </div>
+      <div class="reveal">
+<pre class="code"><span class="k">CleanupTarget</span>(
+    id: <span class="s">"dart-pub-cache"</span>,
+    displayName: <span class="s">"Dart and Flutter pub cache"</span>,
+    level: .developer,
+    pathTemplates: [<span class="s">"~/.pub-cache"</span>],
+    category: <span class="s">"Package Manager"</span>,
+    deletesContentsNotDirectory: <span class="k">true</span>,
+    regenerates: <span class="k">true</span>
+)  <span class="c">// one entry, everywhere it needs to be</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final">
+    <div class="wrap">
+      <h2>Get your disk space back.</h2>
+      <p>Free, open source, signed and notarized. Installs in one line.</p>
+      <div class="cmd">
+        <code id="brew2"><span class="p">$ </span>brew install <span class="f">--</span>cask yagcioglutoprak/tap/dusty</code>
+        <button class="copy" id="copy2" aria-label="Copy install command">Copy</button>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/yagcioglutoprak/dusty/releases/latest" target="_blank" rel="noopener">Download for macOS</a>
+        <a class="btn btn-ghost" href="https://github.com/yagcioglutoprak/dusty" target="_blank" rel="noopener">Star on GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>Dusty &middot; MIT licensed</span>
+    <span class="made">made by <a href="https://toprak.sh">toprak.sh</a></span>
+    <a href="https://github.com/yagcioglutoprak/dusty" target="_blank" rel="noopener">github.com/yagcioglutoprak/dusty</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var CMD = "brew install --cask yagcioglutoprak/tap/dusty";
+    function wire(btnId) {
+      var btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(CMD).then(function () {
+          var old = btn.textContent;
+          btn.textContent = "Copied";
+          btn.classList.add("done");
+          setTimeout(function () { btn.textContent = old; btn.classList.remove("done"); }, 1600);
+        });
+      });
+    }
+    wire("copy"); wire("copy2");
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
+  })();
+</script>
+</body>
+</html>
