@@ -52,6 +52,21 @@ xcodebuild -project Dusty.xcodeproj -scheme Dusty -configuration Release \
   OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" build
 
 APP="build/Release/Build/Products/Release/Dusty.app"
+
+# Sparkle ships its nested helpers (Autoupdate, Updater.app, the XPC services)
+# ad-hoc signed. Re-sign them with the Developer ID inside-out, deepest first and
+# the app last, or notarization rejects the build. The app's outer signature is
+# then re-applied over the changed framework.
+ID="Developer ID Application: TOPRAK YAGCIOGLU (W4AZ5462W5)"
+SPK="$APP/Contents/Frameworks/Sparkle.framework"
+for item in "$SPK"/Versions/B/XPCServices/*.xpc "$SPK"/Versions/B/Autoupdate \
+            "$SPK"/Versions/B/Updater.app "$SPK"; do
+  codesign --force --options runtime --timestamp --sign "$ID" "$item"
+done
+codesign --force --options runtime --timestamp \
+  --entitlements Dusty/Dusty/Dusty.entitlements --sign "$ID" "$APP"
+codesign --verify --deep --strict "$APP"
+
 mkdir -p stage && ditto "$APP" stage/Dusty.app && ln -s /Applications stage/Applications
 hdiutil create -volname Dusty -srcfolder stage -ov -format UDZO Dusty.dmg
 

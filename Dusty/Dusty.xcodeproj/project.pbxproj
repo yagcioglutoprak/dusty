@@ -16,6 +16,7 @@
 		4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */; };
 		576D1523A3F53ACCB529265E /* AppProcessChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */; };
 		6B7BC6A048FBF3960E5CF301 /* LevelSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850F46E756285E383D2C0624 /* LevelSectionView.swift */; };
+		73C204FD5D80BD572D56BF8B /* AutoScanController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E1E00426119970F92C2079A /* AutoScanController.swift */; };
 		C537FF7D921343C05A7A8F26 /* DustyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01E0EAEA3611292C0B9AB9A /* DustyApp.swift */; };
 		C6B3BBD14B32DC58509FC3D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2907B709F4AEBC9EFA7F96C2 /* Assets.xcassets */; };
 		C8505AC6E4CABB304CDB60FB /* CleanerEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D395E7531274A6A48E031DBA /* CleanerEngine */; };
@@ -31,6 +32,7 @@
 		3C9697743997D4B2AE022063 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		3F1DADFC3B655A0F3ABECC2E /* ReclaimSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReclaimSummaryView.swift; sourceTree = "<group>"; };
 		42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
+		4E1E00426119970F92C2079A /* AutoScanController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoScanController.swift; sourceTree = "<group>"; };
 		6EE1880A2830CF07228CCB6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPanelView.swift; sourceTree = "<group>"; };
 		850F46E756285E383D2C0624 /* LevelSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSectionView.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */,
+				4E1E00426119970F92C2079A /* AutoScanController.swift */,
 				B5263AB93087BA090F6125B4 /* Notifications.swift */,
 				42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */,
 			);
@@ -215,6 +218,7 @@
 			files = (
 				576D1523A3F53ACCB529265E /* AppProcessChecker.swift in Sources */,
 				CBB9B6AD138D84D9BF08BC60 /* AppSettings.swift in Sources */,
+				73C204FD5D80BD572D56BF8B /* AutoScanController.swift in Sources */,
 				3011C579D83F771AD2D3387B /* ConfirmationSheet.swift in Sources */,
 				C537FF7D921343C05A7A8F26 /* DustyApp.swift in Sources */,
 				CE7A2E459C980847794391A2 /* DustyTheme.swift in Sources */,
@@ -295,7 +299,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10100;
+				CURRENT_PROJECT_VERSION = 10200;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dusty/Info.plist;
@@ -304,7 +308,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = sh.toprak.dusty;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
@@ -381,7 +385,7 @@
 				CODE_SIGN_ENTITLEMENTS = Dusty/Dusty.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10100;
+				CURRENT_PROJECT_VERSION = 10200;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dusty/Info.plist;
@@ -390,7 +394,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = sh.toprak.dusty;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;

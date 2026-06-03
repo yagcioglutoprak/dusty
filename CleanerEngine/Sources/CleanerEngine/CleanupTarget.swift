@@ -12,13 +12,16 @@ public enum CleanupAction: String, Codable, Sendable, Hashable {
     case simctlDeleteDevice
     /// `docker system prune -af` (no filesystem path, no `--volumes`).
     case dockerPrune
+    /// `tmutil deletelocalsnapshots <date>` for one Time Machine local snapshot
+    /// (no filesystem path; the date token is the resolved path).
+    case tmutilDeleteSnapshot
 
     /// True when the action is an external command with no real filesystem path,
     /// so path validation does not apply and must be skipped.
     public var isExternalCommand: Bool {
         switch self {
         case .files, .simctlDeleteDevice: return false
-        case .simctlDeleteUnavailable, .dockerPrune: return true
+        case .simctlDeleteUnavailable, .dockerPrune, .tmutilDeleteSnapshot: return true
         }
     }
 }

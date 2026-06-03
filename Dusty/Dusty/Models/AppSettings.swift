@@ -20,6 +20,10 @@ final class AppSettings: ObservableObject {
     @AppStorage("moveToTrashDefault") var moveToTrashDefault: Bool = true
     @AppStorage("logAgeThresholdDays") var logAgeThresholdDays: Int = 30
 
+    /// Background scanner: quietly keeps the menu bar "to clean" figure current. Never deletes.
+    @AppStorage("autoScanEnabled") var autoScanEnabled: Bool = true
+    @AppStorage("autoScanIntervalHours") var autoScanIntervalHours: Int = 4
+
     @Published var launchAtLogin: Bool = LoginItem.isEnabled {
         didSet { LoginItem.set(launchAtLogin) }
     }

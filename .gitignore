@@ -44,6 +44,9 @@ launch-drafts/
 traffic_agent_report.md
 CODE_REVIEW_AUDIT.md
 
+# Internal design specs (local only, never published)
+docs/superpowers/
+
 # Demo + card capture tooling (local scratch)
 scripts/winlist.swift
 scripts/sample_colors.swift

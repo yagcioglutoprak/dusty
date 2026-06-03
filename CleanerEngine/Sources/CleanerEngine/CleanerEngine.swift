@@ -12,6 +12,10 @@ public final class CleanerEngine: @unchecked Sendable {
     private let diskMonitor: DiskSpaceMonitor
     private let deletionLog: DeletionLogStore
 
+    /// Cap on concurrent directory walks during a scan, so a background scan stays a
+    /// good citizen on the disk instead of starting one walk per target at once.
+    private let maxConcurrentScans = 4
+
     public init(
         fileManager: FileManager = .default,
         validator: SafetyValidator? = nil,
@@ -21,7 +25,9 @@ public final class CleanerEngine: @unchecked Sendable {
     ) {
         self.fileManager = fileManager
         self.validator = validator ?? SafetyValidator(fileManager: fileManager)
-        self.sizeCalculator = sizeCalculator ?? SizeCalculator(fileManager: fileManager)
+        // The default calculator carries a size cache so `.cached` background scans
+        // can skip re-walking unchanged directories. Injected calculators decide for themselves.
+        self.sizeCalculator = sizeCalculator ?? SizeCalculator(fileManager: fileManager, cache: SizeCache())
         self.diskMonitor = diskMonitor ?? DiskSpaceMonitor(fileManager: fileManager)
         self.deletionLog = deletionLog ?? FileDeletionLogStore(fileManager: fileManager)
     }
@@ -33,29 +39,29 @@ public final class CleanerEngine: @unchecked Sendable {
     public func scan(
         levels: Set<CleanupLevel> = Set(CleanupLevel.allCases),
         options: CleanerOptions = CleanerOptions(),
+        sizingPolicy: SizeCachePolicy = .fresh,
         progress: ScanProgressHandler? = nil
     ) async -> FullScanResult {
         let targets = CleanupLevel.allCases
             .filter { levels.contains($0) }
             .flatMap { CleanupTargetRegistry.targets(for: $0) }
 
-        var resultsByTargetID: [String: TargetScanResult] = [:]
         let total = targets.count
+        let counter = ScanProgressCounter()
 
-        await withTaskGroup(of: (String, TargetScanResult, String).self) { group in
-            for target in targets {
-                group.addTask { [self] in
-                    let result = await self.scanTarget(target, options: options)
-                    return (target.id, result, target.displayName)
-                }
+        // Bounded concurrency keeps a background scan from starting a directory walk
+        // per target all at once. Progress is reported as each target finishes.
+        let scanned = await runBounded(targets, maxConcurrent: maxConcurrentScans) { [self] target in
+            let result = await self.scanTarget(target, options: options, sizingPolicy: sizingPolicy)
+            if let progress {
+                let done = await counter.increment()
+                progress(ScanProgress(completed: done, total: total, currentTargetName: target.displayName))
             }
-            var completed = 0
-            for await (id, result, name) in group {
-                completed += 1
-                resultsByTargetID[id] = result
-                progress?(ScanProgress(completed: completed, total: total, currentTargetName: name))
-            }
+            return (target.id, result)
         }
+
+        var resultsByTargetID: [String: TargetScanResult] = [:]
+        for (id, result) in scanned { resultsByTargetID[id] = result }
 
         var levelResults: [CleanupLevel: LevelScanResult] = [:]
         for level in CleanupLevel.allCases where levels.contains(level) {
@@ -67,11 +73,19 @@ public final class CleanerEngine: @unchecked Sendable {
         return FullScanResult(levelResults: levelResults)
     }
 
-    public func scanTarget(_ target: CleanupTarget, options: CleanerOptions) async -> TargetScanResult {
-        scanTargetSync(target, options: options)
+    public func scanTarget(
+        _ target: CleanupTarget,
+        options: CleanerOptions,
+        sizingPolicy: SizeCachePolicy = .fresh
+    ) async -> TargetScanResult {
+        scanTargetSync(target, options: options, sizingPolicy: sizingPolicy)
     }
 
-    private func scanTargetSync(_ target: CleanupTarget, options: CleanerOptions) -> TargetScanResult {
+    private func scanTargetSync(
+        _ target: CleanupTarget,
+        options: CleanerOptions,
+        sizingPolicy: SizeCachePolicy
+    ) -> TargetScanResult {
         if Task.isCancelled { return TargetScanResult(target: target, resolvedPaths: []) }
         var scanErrors: [String] = []
         var resolvedPaths: [ResolvedPath] = []
@@ -80,7 +94,7 @@ public final class CleanerEngine: @unchecked Sendable {
             let udids = SimulatorHelper.unavailableDeviceUDIDs()
             let base = validator.expandPath("~/Library/Developer/CoreSimulator/Devices")
             let bytes = udids.reduce(Int64(0)) { sum, udid in
-                sum + sizeCalculator.allocatedSize(at: (base as NSString).appendingPathComponent(udid))
+                sum + sizeCalculator.allocatedSize(at: (base as NSString).appendingPathComponent(udid), policy: sizingPolicy)
             }
             let count = udids.count
             let label = count > 0
@@ -115,12 +129,27 @@ public final class CleanerEngine: @unchecked Sendable {
             let base = validator.expandPath("~/Library/Developer/CoreSimulator/Devices")
             let devices = SimulatorHelper.unusedDevicePaths(basePath: base, fileManager: fileManager)
             for device in devices {
-                let bytes = sizeCalculator.allocatedSize(at: device.path)
+                if Task.isCancelled { break }
+                let bytes = sizeCalculator.allocatedSize(at: device.path, policy: sizingPolicy)
                 resolvedPaths.append(ResolvedPath(
                     path: device.path,
                     displayName: device.name,
                     targetID: target.id,
                     estimatedBytes: bytes,
+                    isSelected: false
+                ))
+            }
+            return TargetScanResult(target: target, resolvedPaths: resolvedPaths, scanErrors: scanErrors)
+        }
+
+        if target.action == .tmutilDeleteSnapshot {
+            for snapshot in TimeMachineSnapshotHelper.listSnapshots() {
+                resolvedPaths.append(ResolvedPath(
+                    path: snapshot.dateToken,
+                    displayName: snapshot.displayName,
+                    targetID: target.id,
+                    // tmutil reports no per-snapshot size; real reclaim shows in the free-space delta.
+                    estimatedBytes: 0,
                     isSelected: false
                 ))
             }
@@ -145,7 +174,8 @@ public final class CleanerEngine: @unchecked Sendable {
             if target.respectsLogAgeThreshold {
                 let agedFiles = logFilesOlderThan(days: options.logAgeThresholdDays, in: path)
                 for file in agedFiles {
-                    let bytes = sizeCalculator.allocatedSize(at: file)
+                    if Task.isCancelled { break }
+                    let bytes = sizeCalculator.allocatedSize(at: file, policy: sizingPolicy)
                     resolvedPaths.append(ResolvedPath(
                         path: file,
                         displayName: (file as NSString).lastPathComponent,
@@ -157,9 +187,10 @@ public final class CleanerEngine: @unchecked Sendable {
             } else if target.deletesContentsNotDirectory && isDir.boolValue {
                 if let children = try? fileManager.contentsOfDirectory(atPath: path) {
                     for child in children {
+                        if Task.isCancelled { break }
                         let childPath = (path as NSString).appendingPathComponent(child)
                         if case .failure = validator.validateDeletionPath(childPath, for: target) { continue }
-                        let bytes = sizeCalculator.allocatedSize(at: childPath)
+                        let bytes = sizeCalculator.allocatedSize(at: childPath, policy: sizingPolicy)
                         resolvedPaths.append(ResolvedPath(
                             path: childPath,
                             displayName: (childPath as NSString).lastPathComponent,
@@ -170,7 +201,7 @@ public final class CleanerEngine: @unchecked Sendable {
                     }
                 }
             } else {
-                let bytes = sizeCalculator.allocatedSize(at: path)
+                let bytes = sizeCalculator.allocatedSize(at: path, policy: sizingPolicy)
                 resolvedPaths.append(ResolvedPath(
                     path: path,
                     displayName: (path as NSString).lastPathComponent,
@@ -201,6 +232,7 @@ public final class CleanerEngine: @unchecked Sendable {
 
         var results: [String] = []
         for case let url as URL in enumerator {
+            if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .isRegularFileKey]),
                   values.isRegularFile == true,
                   let modified = values.contentModificationDate,
@@ -265,6 +297,12 @@ public final class CleanerEngine: @unchecked Sendable {
                 continue
             case .dockerPrune:
                 let result = runDockerPrune(dryRun: options.dryRun)
+                bytesFreed += result.bytes
+                entries.append(contentsOf: result.entries)
+                if let error = result.error { skipped.append((resolved.path, error)) }
+                continue
+            case .tmutilDeleteSnapshot:
+                let result = runTmutilDeleteSnapshot(token: resolved.path, dryRun: options.dryRun)
                 bytesFreed += result.bytes
                 entries.append(contentsOf: result.entries)
                 if let error = result.error { skipped.append((resolved.path, error)) }
@@ -465,6 +503,21 @@ public final class CleanerEngine: @unchecked Sendable {
         }
     }
 
+    private func runTmutilDeleteSnapshot(token: String, dryRun: Bool) -> CommandResult {
+        if dryRun {
+            return CommandResult(bytes: 0, entries: [
+                DeletionEntry(path: "tmutil deletelocalsnapshots \(token)", bytes: 0, movedToTrash: false, dryRun: true)
+            ], error: nil)
+        }
+        guard TimeMachineSnapshotHelper.deleteSnapshot(dateToken: token) else {
+            return CommandResult(bytes: 0, entries: [], error: "Snapshot \(token) could not be removed")
+        }
+        // tmutil reports no freed bytes; the real reclaim shows in the result's free-space delta.
+        let entry = DeletionEntry(path: "tmutil deletelocalsnapshots \(token)", bytes: 0, movedToTrash: false, dryRun: false)
+        try? deletionLog.append(entry)
+        return CommandResult(bytes: 0, entries: [entry], error: nil)
+    }
+
     private func runDockerPrune(dryRun: Bool) -> CommandResult {
         let dockerPath = ["/opt/homebrew/bin/docker", "/usr/local/bin/docker"].first { fileManager.fileExists(atPath: $0) }
         guard let docker = dockerPath else {
@@ -555,6 +608,18 @@ public final class CleanerEngine: @unchecked Sendable {
             }
         }
         return nil
+    }
+}
+
+// MARK: - Scan progress
+
+/// Thread-safe completion counter so a bounded, concurrent scan can report monotonic
+/// progress as each target finishes (the order targets finish in is not deterministic).
+private actor ScanProgressCounter {
+    private var count = 0
+    func increment() -> Int {
+        count += 1
+        return count
     }
 }
 

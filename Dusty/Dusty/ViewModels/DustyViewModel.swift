@@ -21,6 +21,12 @@ final class DustyViewModel: ObservableObject {
     @Published var canUndo = false
     @Published var bannerStyle: ResultBannerStyle = .reclaimed
 
+    /// Reclaimable Safe-level space found by the silent background scan. Drives the
+    /// menu bar "to clean" suffix. Separate from `scanResult` so a background scan never
+    /// clobbers the selections in an open panel.
+    @Published var backgroundReclaimableBytes: Int64 = 0
+    @Published var lastBackgroundScanAt: Date?
+
     private let engine = CleanerEngine()
     private let diskMonitor = DiskSpaceMonitor()
     private var refreshTask: Task<Void, Never>?
@@ -28,6 +34,13 @@ final class DustyViewModel: ObservableObject {
     private var undoEntries: [DeletionEntry] = []
     private var undoTask: Task<Void, Never>?
     private var wasDiskLow = false
+
+    private var autoScan: AutoScanController?
+    private var isBackgroundScanning = false
+    /// Free space at the last background scan, for the "free space dropped sharply" trigger.
+    private var freeSpaceAtLastBackgroundScan: Int64?
+    /// A background scan fires when free space falls by more than this since the last one.
+    private let freeSpaceDropTriggerBytes: Int64 = 2 * 1_073_741_824
 
     /// After a clean, macOS's "available" figure lags the real deletion by
     /// seconds (and Safe items sit briefly in the Trash before being purged).
@@ -41,6 +54,7 @@ final class DustyViewModel: ObservableObject {
         startAutoRefresh(interval: AppSettings.shared.refreshIntervalSeconds)
         LowDiskNotifier.configure(delegate: NotificationCoordinator.shared)
         NotificationCoordinator.shared.onCleanSafe = { [weak self] in self?.handleCleanSafeFromNotification() }
+        autoScan = AutoScanController(viewModel: self, settings: AppSettings.shared)
     }
 
     func startAutoRefresh(interval: TimeInterval) {
@@ -67,13 +81,57 @@ final class DustyViewModel: ObservableObject {
         }
         totalSpaceBytes = diskMonitor.totalSpaceBytes()
         let low = isDiskLow
-        if low && !wasDiskLow { LowDiskNotifier.notifyLowDisk(freeBytes: freeSpaceBytes) }
+        if low && !wasDiskLow {
+            LowDiskNotifier.notifyLowDisk(freeBytes: freeSpaceBytes)
+            // A fresh scan at the low-disk line keeps the menu bar figure honest.
+            requestBackgroundScan(trigger: .lowDisk)
+        }
         wasDiskLow = low
+
+        // Caches grew enough to be worth re-checking: rescan off the existing sampler.
+        if let baseline = freeSpaceAtLastBackgroundScan,
+           baseline - freeSpaceBytes > freeSpaceDropTriggerBytes {
+            requestBackgroundScan(trigger: .freeSpaceDrop)
+        }
     }
 
     private func clearFreeSpaceFloor() {
         freeSpaceFloor = nil
         freeSpaceFloorExpiry = nil
+    }
+
+    // MARK: - Background scanner (silent, scan-only)
+
+    /// Entry point for every background-scan trigger. Consults the pure policy, then runs a
+    /// silent Safe-level scan that updates only the menu bar figure, never the panel selections.
+    func requestBackgroundScan(trigger: AutoScanTrigger) {
+        guard AppSettings.shared.autoScanEnabled, !isBackgroundScanning else { return }
+        let allowed = AutoScanPolicy.shouldScan(
+            trigger: trigger,
+            now: Date(),
+            lastScanAt: lastBackgroundScanAt,
+            isUserScanning: isScanning,
+            isCleaning: isCleaning,
+            lowPowerMode: ProcessInfo.processInfo.isLowPowerModeEnabled
+        )
+        guard allowed else { return }
+        isBackgroundScanning = true
+        Task { await performBackgroundScan() }
+    }
+
+    private func performBackgroundScan() async {
+        let result = await engine.scan(levels: [.safe], sizingPolicy: .cached)
+        backgroundReclaimableBytes = result.levelResults[.safe]?.totalBytes ?? 0
+        lastBackgroundScanAt = Date()
+        freeSpaceAtLastBackgroundScan = freeSpaceBytes
+        isBackgroundScanning = false
+    }
+
+    /// Formatted reclaimable space for the menu bar, or nil when there is nothing worth
+    /// showing yet (no scan completed, or under 1 GB) so the label never reads "0 GB to clean".
+    var menuBarReclaimableSuffix: String? {
+        guard lastBackgroundScanAt != nil, backgroundReclaimableBytes >= 1_073_741_824 else { return nil }
+        return DiskSpaceMonitor.formatBytes(backgroundReclaimableBytes)
     }
 
     func scanIfNeeded(settings: AppSettings) {

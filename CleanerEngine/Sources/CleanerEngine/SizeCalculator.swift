@@ -4,13 +4,19 @@ import Foundation
 /// delegate-free, concurrency-safe size queries, so sharing across tasks is safe.
 public struct SizeCalculator: @unchecked Sendable {
     private let fileManager: FileManager
+    private let cache: SizeCache?
 
-    public init(fileManager: FileManager = .default) {
+    public init(fileManager: FileManager = .default, cache: SizeCache? = nil) {
         self.fileManager = fileManager
+        self.cache = cache
     }
 
     /// Calculates on-disk allocated size using `totalFileAllocatedSizeKey`.
-    public func allocatedSize(at path: String) -> Int64 {
+    ///
+    /// With `.cached` and a cache attached, an unchanged directory is not re-walked.
+    /// `.fresh` (the default) always re-walks, so callers that act on the number
+    /// (interactive scan, delete) never see a stale value.
+    public func allocatedSize(at path: String, policy: SizeCachePolicy = .fresh) -> Int64 {
         let url = URL(fileURLWithPath: path)
         if isSymlink(at: url) { return 0 }
 
@@ -18,9 +24,29 @@ public struct SizeCalculator: @unchecked Sendable {
         guard fileManager.fileExists(atPath: path, isDirectory: &isDirectory) else { return 0 }
 
         if isDirectory.boolValue {
-            return directoryAllocatedSize(at: url)
+            return cachedDirectorySize(at: url, policy: policy)
         }
         return fileAllocatedSize(at: url)
+    }
+
+    private func cachedDirectorySize(at url: URL, policy: SizeCachePolicy) -> Int64 {
+        guard policy == .cached, let cache else {
+            return directoryAllocatedSize(at: url)
+        }
+        let mtime = directoryMtime(at: url)
+        if let hit = cache.validSize(for: url.path, currentMtime: mtime) {
+            return hit
+        }
+        let size = directoryAllocatedSize(at: url)
+        // Never cache a partial total left by a cancelled walk.
+        if !Task.isCancelled {
+            cache.record(size, for: url.path, mtime: mtime)
+        }
+        return size
+    }
+
+    private func directoryMtime(at url: URL) -> Date? {
+        (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
     }
 
     public func directoryAllocatedSize(at url: URL) -> Int64 {

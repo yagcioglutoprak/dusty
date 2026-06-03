@@ -306,6 +306,20 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("Auto scan") {
+                    Toggle("Scan in the background", isOn: $settings.autoScanEnabled)
+                    Stepper(
+                        "Every \(settings.autoScanIntervalHours) h",
+                        value: $settings.autoScanIntervalHours,
+                        in: 1...24,
+                        step: 1
+                    )
+                    .disabled(!settings.autoScanEnabled)
+                    Text("Quietly keeps the menu bar figure current. Never deletes anything on its own.")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+
                 Section("Updates") {
                     Toggle("Check for updates automatically", isOn: Binding(
                         get: { updater.automaticallyChecksForUpdates },

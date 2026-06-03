@@ -87,6 +87,68 @@ public enum CleanupTargetRegistry {
             requiresAppClosed: "Arc",
             requiresAppBundleID: "company.thebrowser.Browser"
         ),
+        // App caches under Application Support that the blanket ~/Library/Caches sweep
+        // misses. Only the named cache subfolders are listed: never the app's whole
+        // Application Support folder, which holds real data.
+        CleanupTarget(
+            id: "discord-cache",
+            displayName: "Discord Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/discord/Cache",
+                "~/Library/Application Support/discord/Code Cache",
+                "~/Library/Application Support/discord/GPUCache",
+                "~/Library/Application Support/discord/Service Worker/CacheStorage"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Discord",
+            requiresAppBundleID: "com.hnc.Discord"
+        ),
+        CleanupTarget(
+            id: "spotify-cache",
+            displayName: "Spotify Cache",
+            level: .safe,
+            pathTemplates: ["~/Library/Application Support/Spotify/PersistentCache"],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Spotify",
+            requiresAppBundleID: "com.spotify.client"
+        ),
+        CleanupTarget(
+            id: "vscode-cache",
+            displayName: "VS Code Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/Code/Cache",
+                "~/Library/Application Support/Code/Code Cache",
+                "~/Library/Application Support/Code/GPUCache",
+                "~/Library/Application Support/Code/CachedData"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Code",
+            requiresAppBundleID: "com.microsoft.VSCode"
+        ),
+        CleanupTarget(
+            id: "slack-cache",
+            displayName: "Slack Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/Slack/Cache",
+                "~/Library/Application Support/Slack/Code Cache",
+                "~/Library/Application Support/Slack/GPUCache",
+                "~/Library/Application Support/Slack/Service Worker/CacheStorage"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Slack",
+            requiresAppBundleID: "com.tinyspeck.slackmacgap"
+        ),
     ]
 
     // MARK: - Level 2: Developer
@@ -301,6 +363,18 @@ public enum CleanupTargetRegistry {
             category: "Logs",
             requiresIndividualSelection: true,
             respectsLogAgeThreshold: true
+        ),
+        CleanupTarget(
+            id: "time-machine-snapshots",
+            displayName: "Time Machine Local Snapshots",
+            level: .deep,
+            pathTemplates: [],
+            category: "Snapshots",
+            // Each selected snapshot is removed with `tmutil deletelocalsnapshots <date>`.
+            // Backups, so manual selection only. OS-update snapshots are never offered.
+            action: .tmutilDeleteSnapshot,
+            usesDynamicPaths: true,
+            requiresIndividualSelection: true
         ),
     ]
 }

@@ -21,8 +21,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: sh.toprak.dusty
         # Marketing + build version. The release workflow overrides these from the
         # git tag (build number must increase each release so Sparkle sees the update).
-        MARKETING_VERSION: "1.1.0"
-        CURRENT_PROJECT_VERSION: "10100"
+        MARKETING_VERSION: "1.2.0"
+        CURRENT_PROJECT_VERSION: "10200"
         INFOPLIST_FILE: Dusty/Info.plist
         CODE_SIGN_ENTITLEMENTS: Dusty/Dusty.entitlements
         CODE_SIGN_STYLE: Automatic
