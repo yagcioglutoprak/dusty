@@ -96,6 +96,9 @@ delete. It enforces:
 
 If a permission error hits one file, that file is skipped and the run continues.
 
+Found a way to make it delete something outside the allowlist? Please report it
+privately: see [SECURITY.md](SECURITY.md).
+
 ## Full Disk Access
 
 Dusty is not sandboxed, because a sandboxed app cannot reach the caches and logs
