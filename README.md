@@ -15,9 +15,10 @@
 
 </div>
 
-Dusty lives in your menu bar and shows how much disk you have free. When you are
-running low, open it, scan, and reclaim the gigabytes that pile up in caches,
-logs, Xcode DerivedData, simulators, and package manager folders. It shows you
+Dusty lives in your menu bar and shows how much disk you have free. It can scan
+quietly in the background, so the moment space gets tight it already knows how
+much you can reclaim: caches, logs, Xcode DerivedData, simulators, package
+manager folders, app caches, and local Time Machine snapshots. It shows you
 every path and its size first, and it only ever deletes from a fixed allowlist.
 No "clean everything" button, no surprises.
 
@@ -45,9 +46,9 @@ Three levels, from "do this anytime" to "look before you leap."
 
 | Level | What it clears | Why it is safe |
 | --- | --- | --- |
-| **Safe** | User caches, app logs, Trash, browser caches | Regenerates on its own, zero functional impact |
+| **Safe** | User caches, app logs, Trash, browser caches, and app caches (Chrome, Slack, Discord, Spotify, VS Code) | Regenerates on its own, zero functional impact |
 | **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), JetBrains and Unity caches, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
-| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, aged diagnostic logs | Per-file checklist, nothing goes without a tick |
+| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs | Per-file checklist, nothing goes without a tick |
 
 Every scan is concurrent, shows live progress, and reports the exact bytes per
 target before you commit to anything.
@@ -111,6 +112,7 @@ Without it, those few paths are skipped, the rest works fine.
 ## Settings
 
 - Menu bar refresh interval (default 30s)
+- Background auto-scan and how often it runs (default every 4h), or turn it off
 - Dry run by default
 - Move to Trash by default for Developer and Deep
 - Age threshold for Deep level logs (default 30 days)
