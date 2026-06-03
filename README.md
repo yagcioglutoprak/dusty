@@ -97,7 +97,7 @@ delete. It enforces:
 If a permission error hits one file, that file is skipped and the run continues.
 
 Found a way to make it delete something outside the allowlist? Please report it
-privately: see [SECURITY.md](SECURITY.md).
+privately: see [SECURITY.md](.github/SECURITY.md).
 
 ## Full Disk Access
 
