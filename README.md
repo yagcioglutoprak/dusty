@@ -96,6 +96,9 @@ delete. It enforces:
 
 If a permission error hits one file, that file is skipped and the run continues.
 
+For the longer design writeup with code, see
+[How Dusty is built to avoid deleting the wrong thing](https://toprak.sh/dusty/safety/).
+
 Found a way to make it delete something outside the allowlist? Please report it
 privately: see [SECURITY.md](.github/SECURITY.md).
 
