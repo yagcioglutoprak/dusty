@@ -2,7 +2,7 @@
 
 # Dusty
 
-**A macOS menu bar app that frees up disk space, without deleting anything it shouldn't.**
+**A free, open-source CleanMyMac alternative for macOS that frees up disk space, without deleting anything it shouldn't.**
 
 [![CI](https://github.com/yagcioglutoprak/dusty/actions/workflows/ci.yml/badge.svg)](https://github.com/yagcioglutoprak/dusty/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/yagcioglutoprak/dusty?color=2dba4e)](https://github.com/yagcioglutoprak/dusty/releases/latest)
@@ -22,7 +22,7 @@ manager folders, app caches, and local Time Machine snapshots. It shows you
 every path and its size first, and it only ever deletes from a fixed allowlist.
 No "clean everything" button, no surprises.
 
-It is free, open source, and a calmer alternative to the paid cleaners.
+It is free, open source, and a calmer alternative to paid cleaners like CleanMyMac.
 
 ## Install
 
