@@ -12,6 +12,8 @@
 <img src="docs/screenshots/demo.gif?v=2" width="480" alt="Dusty scanning and revealing reclaimable disk space across Safe, Developer, and Deep levels">
 
 <sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size.</sub>
+<br>
+<sub>If Dusty saves you space, a GitHub star helps more Mac users find a safer cleaner.</sub>
 
 </div>
 
