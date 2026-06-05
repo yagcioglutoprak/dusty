@@ -50,6 +50,55 @@
 }
 </script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Dusty a CleanMyMac alternative?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dusty is a free, open-source CleanMyMac alternative for disk cleanup on macOS. It focuses on safe cache, log, Xcode, simulator, package-manager, and developer-artifact cleanup. It is not an antivirus, app updater, duplicate finder, or privacy scanner."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What can Dusty delete on macOS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dusty can clean only allowlisted targets such as user caches, app logs, browser caches, Trash, Xcode DerivedData, old simulators, package-manager caches, and selected old installer files. Cleanup targets are data in the open-source repository, so the rules are reviewable."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can Dusty delete my documents, photos, or iCloud files?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Dusty rejects protected folders such as Documents, Desktop, Photos, Mail, iCloud Drive, and Keychains, including paths that only use those folders as prefixes. It never runs as root and does not use sudo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I preview or undo a cleanup?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Dusty has a dry-run mode that shows exact paths and sizes before deletion. Developer and Deep cleanups can move files to Trash and expose an undo window immediately after the cleanup. Every action is also written to a local JSON log."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Dusty collect telemetry or require an account?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Dusty does not require an account and does not include telemetry. It is MIT licensed, open source, and its cleanup rules can be inspected in the public GitHub repository."
+      }
+    }
+  ]
+}
+</script>
+
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff5656' d='M12 0C12 6.2 5.8 12 0 12c5.8 0 12 5.8 12 12 0-6.2 6.2-12 12-12-5.8 0-12-5.8-12-12Z'/%3E%3C/svg%3E">
 
 <style>
@@ -195,6 +244,26 @@
   pre.code .k { color: #ff7b8a; } pre.code .s { color: #9ad26b; } pre.code .c { color: var(--faint); }
   .stacks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
   .chip { font-size: 13px; color: #cdced3; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; }
+
+  /* FAQ */
+  .faq-list { border-top: 1px solid var(--line); }
+  .faq-item { border-bottom: 1px solid var(--line); }
+  .faq-item summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    padding: 22px 0; cursor: pointer; list-style: none;
+    color: var(--text); font-size: 17px; font-weight: 700; letter-spacing: 0;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: "+"; flex: none; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center; color: var(--muted);
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 16px; line-height: 1;
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .faq-item[open] summary::after { content: "-"; color: var(--blue-soft); border-color: rgba(91,147,255,0.4); background: rgba(52,120,246,0.12); }
+  .faq-item p { max-width: 780px; padding: 0 52px 24px 0; color: var(--muted); font-size: 15.5px; line-height: 1.65; }
+  .faq-item a { color: var(--blue-soft); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
   /* final cta */
   .final { text-align: center; padding: 86px 0 30px; }
@@ -591,6 +660,39 @@
             <tr><td>Account or telemetry</td><td class="us col-us">None</td><td class="them">Often</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">FAQ</span>
+        <h2>Answers for cautious Mac users.</h2>
+        <p>Dusty is intentionally narrow: it cleans known safe targets, shows the exact paths first, and leaves personal folders alone.</p>
+      </div>
+      <div class="faq-list reveal">
+        <details class="faq-item">
+          <summary>Is Dusty a CleanMyMac alternative?</summary>
+          <p>Yes, if you want disk cleanup without a subscription or closed deletion rules. Dusty focuses on safe cache, log, Xcode, simulator, package-manager, and developer-artifact cleanup. It is not an antivirus, app updater, duplicate finder, or privacy scanner.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What can Dusty delete on macOS?</summary>
+          <p>Only allowlisted targets: user caches, app logs, browser caches, Trash, Xcode DerivedData, old simulators, package-manager caches, and selected old installer files. The cleanup targets are data in the open-source repository, so the rules are reviewable.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can Dusty delete my documents, photos, or iCloud files?</summary>
+          <p>No. Dusty rejects protected folders such as Documents, Desktop, Photos, Mail, iCloud Drive, and Keychains, including paths that only use those folders as prefixes. It never runs as root and does not use sudo.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can I preview or undo a cleanup?</summary>
+          <p>Yes. Dry-run mode shows exact paths and sizes before deletion. Developer and Deep cleanups can move files to Trash and expose an undo window immediately after cleanup. Every action is also written to a local JSON log.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Does Dusty collect telemetry or require an account?</summary>
+          <p>No. Dusty does not require an account and does not include telemetry. It is MIT licensed, open source, and its cleanup rules can be inspected in the <a href="https://github.com/yagcioglutoprak/dusty" target="_blank" rel="noopener">public GitHub repository</a>.</p>
+        </details>
       </div>
     </div>
   </section>
