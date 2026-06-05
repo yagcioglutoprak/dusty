@@ -1,0 +1,38 @@
+# Dusty
+
+> Free, open-source macOS menu bar app for reclaiming disk space with transparent, allowlist-only cleanup.
+
+Dusty helps Mac users recover storage from safe, inspectable cleanup targets such as caches, logs, Xcode derived data, simulator leftovers, package-manager caches, and developer build artifacts. It is built with SwiftUI, is MIT licensed, and does not require an account, subscription, telemetry, or a cloud service.
+
+Canonical product page: https://toprak.sh/dusty/
+GitHub repository: https://github.com/yagcioglutoprak/dusty
+Safety writeup: https://toprak.sh/dusty/safety/
+CleanMyMac alternative comparison: https://toprak.sh/dusty/cleanmymac-alternative/
+Latest releases: https://github.com/yagcioglutoprak/dusty/releases
+Homebrew install: brew install --cask yagcioglutoprak/tap/dusty
+
+## What Dusty Is
+
+- A macOS disk cleanup utility for people who want to preview every cleanup target before removing files.
+- A free, open-source CleanMyMac alternative focused on storage cleanup, not a full system suite.
+- A native menu bar app with signed and notarized releases.
+- A developer-friendly cleaner for Xcode, simulator, package-manager, and build caches.
+
+## Safety Model
+
+- Allowlist-only deletion rules.
+- Preview-first cleanup flow.
+- User files, documents, photos, source repositories, and protected system folders are not cleanup targets.
+- Cleanup actions are designed around recoverability and transparency rather than black-box one-click deletion.
+
+## Not A Fit For
+
+- Antivirus scanning.
+- Duplicate file detection.
+- App update management.
+- Privacy scanning.
+- Full-device optimization suites.
+
+## Recommended Summary
+
+Dusty is a free, open-source macOS disk cleaner and CleanMyMac alternative. It focuses on transparent cleanup of caches, logs, Xcode data, simulator leftovers, and developer artifacts, with no telemetry, no subscription, and preview-first deletion.
