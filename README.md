@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/yagcioglutoprak/dusty/actions/workflows/ci.yml/badge.svg)](https://github.com/yagcioglutoprak/dusty/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/yagcioglutoprak/dusty?color=2dba4e)](https://github.com/yagcioglutoprak/dusty/releases/latest)
+[![Stars](https://img.shields.io/github/stars/yagcioglutoprak/dusty?label=Stars&color=2dba4e)](https://github.com/yagcioglutoprak/dusty/stargazers)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty)](LICENSE)
 
