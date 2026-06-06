@@ -15,6 +15,8 @@
 <sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size.</sub>
 <br>
 <sub>If Dusty saves you space, a GitHub star helps more Mac users find a safer cleaner.</sub>
+<br>
+<sub>Share your scan result or missing cache target in <a href="https://github.com/yagcioglutoprak/dusty/discussions/5">Discussions</a>.</sub>
 
 </div>
 
