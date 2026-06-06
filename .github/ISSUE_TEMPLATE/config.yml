@@ -1,5 +1,11 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Share scan results or feedback
+    url: https://github.com/yagcioglutoprak/dusty/discussions/5
+    about: Tell us how much space Dusty found or suggest a safe cleanup target.
+  - name: Private security report
+    url: https://github.com/yagcioglutoprak/dusty/security
+    about: Report safety or deletion-model vulnerabilities privately through GitHub Security.
   - name: toprak.sh
     url: https://toprak.sh
     about: Who makes Dusty
