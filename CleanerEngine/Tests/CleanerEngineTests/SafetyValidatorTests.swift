@@ -25,7 +25,7 @@ final class SafetyValidatorTests: XCTestCase {
         let child = (cacheRoot as NSString).appendingPathComponent("com.example.app")
         try fileManager.createDirectory(atPath: child, withIntermediateDirectories: true)
 
-        var testValidator = SafetyValidator(
+        let testValidator = SafetyValidator(
             fileManager: fileManager,
             homeDirectory: tempHome,
             allowedTargets: [target]
@@ -53,7 +53,7 @@ final class SafetyValidatorTests: XCTestCase {
         let random = tempHome.appendingPathComponent("Library/Caches/evil").path
         try fileManager.createDirectory(atPath: random, withIntermediateDirectories: true)
 
-        var testValidator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, allowedTargets: [target])
+        let testValidator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, allowedTargets: [target])
         let result = testValidator.validateDeletionPath(random, for: target)
         XCTAssertEqual(result.error, .pathNotInAllowlist((random as NSString).standardizingPath))
     }
@@ -69,20 +69,17 @@ final class SafetyValidatorTests: XCTestCase {
         let symlink = cacheRoot.appendingPathComponent("link-to-docs")
         try fileManager.createSymbolicLink(at: symlink, withDestinationURL: realTarget)
 
-        var testValidator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, allowedTargets: [target])
+        let testValidator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, allowedTargets: [target])
         let result = testValidator.validateDeletionPath(symlink.path, for: target)
         XCTAssertEqual(result.error, .symlinkRefusal((symlink.path as NSString).standardizingPath))
     }
 
     func testBootVolumeCheck() throws {
-        let target = CleanupTargetRegistry.level1.first!
-        let bootValidator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, bootVolumeURL: tempHome)
-
         // Path on temp "boot" volume should pass volume check when under allowlist
         let cache = tempHome.appendingPathComponent("Library/Caches/item").path
         try fileManager.createDirectory(atPath: cache, withIntermediateDirectories: true)
 
-        var testValidator = SafetyValidator(
+        let testValidator = SafetyValidator(
             fileManager: fileManager,
             homeDirectory: tempHome,
             bootVolumeURL: tempHome,
@@ -98,7 +95,7 @@ final class SafetyValidatorTests: XCTestCase {
 
         // Non-existent volume path forces prefix fallback where cache is not under boot root
         let fakeBoot = URL(fileURLWithPath: "/Volumes/DustyTestVolume")
-        var testValidator = SafetyValidator(
+        let testValidator = SafetyValidator(
             fileManager: fileManager,
             homeDirectory: tempHome,
             bootVolumeURL: fakeBoot,

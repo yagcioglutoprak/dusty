@@ -16,9 +16,9 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Run unit tests
+      - name: Run unit tests (Swift 6 mode, warnings are errors)
         working-directory: CleanerEngine
-        run: swift test
+        run: swift test -Xswiftc -warnings-as-errors
 
   app-build:
     name: Build app
