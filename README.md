@@ -10,7 +10,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty)](LICENSE)
 
-<img src="docs/screenshots/demo.gif?v=2" width="480" alt="Dusty scanning and revealing reclaimable disk space across Safe, Developer, and Deep levels">
+<img src="docs/screenshots/demo.gif?v=3" width="480" alt="Dusty's first-run welcome, then a scan revealing reclaimable disk space across Safe, Developer, and Deep levels">
 
 <sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size.</sub>
 <br>
