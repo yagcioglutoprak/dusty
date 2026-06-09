@@ -289,6 +289,44 @@ public enum CleanupTargetRegistry {
             regenerates: true
         ),
         CleanupTarget(
+            id: "uv-cache",
+            displayName: "uv Cache",
+            level: .developer,
+            pathTemplates: ["~/Library/Caches/uv"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "bun-cache",
+            displayName: "Bun Install Cache",
+            level: .developer,
+            pathTemplates: ["~/.bun/install/cache"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "deno-cache",
+            displayName: "Deno Cache",
+            level: .developer,
+            pathTemplates: ["~/Library/Caches/deno"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            // Opt-in: `mvn install` puts locally built artifacts here that no remote
+            // repository can give back, unlike a pure download cache.
+            id: "maven-repository",
+            displayName: "Maven Local Repository",
+            level: .developer,
+            pathTemplates: ["~/.m2/repository"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            requiresExplicitOptIn: true
+        ),
+        CleanupTarget(
             id: "jetbrains-cache",
             displayName: "JetBrains IDE Caches",
             level: .developer,
