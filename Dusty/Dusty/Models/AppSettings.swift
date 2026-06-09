@@ -24,6 +24,13 @@ final class AppSettings: ObservableObject {
     @AppStorage("autoScanEnabled") var autoScanEnabled: Bool = true
     @AppStorage("autoScanIntervalHours") var autoScanIntervalHours: Int = 4
 
+    /// Menu bar free space as "37% free" instead of "182 GB free". `@Published` rather
+    /// than `@AppStorage` because the menu bar label has to re-render the moment the
+    /// toggle flips (`@AppStorage` inside an ObservableObject does not publish).
+    @Published var menuBarShowsPercentage: Bool = UserDefaults.standard.bool(forKey: "menuBarShowsPercentage") {
+        didSet { UserDefaults.standard.set(menuBarShowsPercentage, forKey: "menuBarShowsPercentage") }
+    }
+
     @Published var launchAtLogin: Bool = LoginItem.isEnabled {
         didSet { LoginItem.set(launchAtLogin) }
     }

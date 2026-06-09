@@ -23,12 +23,13 @@ struct DustyApp: App {
         .menuBarExtraStyle(.window)
     }
 
-    /// Free space, plus a quiet "to clean" suffix once a background scan has found a
-    /// meaningful amount. No suffix means nothing worth showing yet.
+    /// Free space (bytes or percentage, per settings), plus a quiet "to clean" suffix
+    /// once a background scan has found a meaningful amount.
     private var menuBarText: String {
+        let label = settings.menuBarShowsPercentage ? viewModel.menuBarPercentLabel : viewModel.menuBarLabel
         if let reclaimable = viewModel.menuBarReclaimableSuffix {
-            return "\(viewModel.menuBarLabel) · \(reclaimable) to clean"
+            return "\(label) · \(reclaimable) to clean"
         }
-        return viewModel.menuBarLabel
+        return label
     }
 }

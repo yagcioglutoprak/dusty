@@ -293,6 +293,7 @@ struct SettingsView: View {
             Form {
                 Section("General") {
                     Toggle("Launch at login", isOn: $settings.launchAtLogin)
+                    Toggle("Show free space as a percentage", isOn: $settings.menuBarShowsPercentage)
                 }
 
                 Section("Refresh") {

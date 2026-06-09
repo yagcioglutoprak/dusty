@@ -434,6 +434,13 @@ final class DustyViewModel: ObservableObject {
         DiskSpaceMonitor.formatFreeSpaceCompact(freeSpaceBytes)
     }
 
+    /// "37% free" variant of the menu bar label. Falls back to the byte form until
+    /// the total volume size is known (first refresh hasn't completed yet).
+    var menuBarPercentLabel: String {
+        guard totalSpaceBytes > 0 else { return menuBarLabel }
+        return "\(Int((freeSpaceRatio * 100).rounded()))% free"
+    }
+
     var freeSpaceRatio: Double {
         guard totalSpaceBytes > 0 else { return 0 }
         return Double(freeSpaceBytes) / Double(totalSpaceBytes)
