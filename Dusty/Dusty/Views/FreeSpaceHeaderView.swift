@@ -55,6 +55,9 @@ struct FreeSpaceHeaderView: View {
                 }
             }
             .frame(width: 150, height: 150)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Disk space")
+            .accessibilityValue("\(DiskSpaceMonitor.formatBytes(freeBytes)) free of \(DiskSpaceMonitor.formatBytes(totalBytes)), \(usedPercent) percent used")
 
             HStack(spacing: 10) {
                 statPill(label: "USED", value: "\(usedPercent)%")

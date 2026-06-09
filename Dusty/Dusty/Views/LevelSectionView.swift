@@ -38,6 +38,9 @@ struct LevelSectionView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("\(level.title) cleanup level")
+                .accessibilityValue(isExpanded ? "expanded" : "collapsed")
+                .accessibilityHint("Shows every path found for this level")
 
                 if selectedBytes > 0 {
                     Text(DiskSpaceMonitor.formatBytes(selectedBytes))
@@ -71,6 +74,8 @@ struct LevelSectionView: View {
         .tint(levelColor)
         .controlSize(.regular)
         .disabled(levelResult == nil || selectedBytes == 0 || isCleaning || !canClean)
+        .accessibilityLabel("Clean \(level.title) items")
+        .accessibilityValue(selectedBytes > 0 ? "\(DiskSpaceMonitor.formatBytes(selectedBytes)) selected" : "nothing selected")
     }
 
     @ViewBuilder private var detail: some View {

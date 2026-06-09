@@ -26,8 +26,12 @@ struct ReclaimSummaryView: View {
                     .font(.system(size: 40, weight: .heavy, design: .rounded))
                     .monospacedDigit()
                     .contentTransition(.numericText())
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8), value: totalBytes)
                     .foregroundStyle(.primary)
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Reclaimable space")
+            .accessibilityValue(DiskSpaceMonitor.formatBytes(totalBytes))
 
             HStack(spacing: 8) {
                 ForEach(bytesByLevel.filter { $0.bytes > 0 }, id: \.level) { item in

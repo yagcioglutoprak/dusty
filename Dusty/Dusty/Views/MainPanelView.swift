@@ -156,17 +156,23 @@ struct MainPanelView: View {
                 scanSection
                     .padding(.horizontal, 16)
 
-                if viewModel.hasScannedOnce && !viewModel.isScanning && viewModel.hasReclaimableSpace {
-                    ReclaimSummaryView(
-                        totalBytes: viewModel.totalReclaimableBytes,
-                        bytesByLevel: CleanupLevel.allCases.map { ($0, viewModel.reclaimableBytes(for: $0)) },
-                        safeBytes: viewModel.cleanableBytes(for: .safe),
-                        isCleaningSafe: viewModel.isCleaning && viewModel.cleaningLevel == .safe,
-                        canCleanSafe: viewModel.canClean(level: .safe),
-                        onCleanSafe: { viewModel.cleanSafe() }
-                    )
-                    .padding(.horizontal, 16)
-                    .transition(.scale(scale: 0.96).combined(with: .opacity))
+                if viewModel.hasScannedOnce && !viewModel.isScanning {
+                    if viewModel.hasReclaimableSpace {
+                        ReclaimSummaryView(
+                            totalBytes: viewModel.totalReclaimableBytes,
+                            bytesByLevel: CleanupLevel.allCases.map { ($0, viewModel.reclaimableBytes(for: $0)) },
+                            safeBytes: viewModel.cleanableBytes(for: .safe),
+                            isCleaningSafe: viewModel.isCleaning && viewModel.cleaningLevel == .safe,
+                            canCleanSafe: viewModel.canClean(level: .safe),
+                            onCleanSafe: { viewModel.cleanSafe() }
+                        )
+                        .padding(.horizontal, 16)
+                        .transition(.scale(scale: 0.96).combined(with: .opacity))
+                    } else {
+                        AllCleanCard(lastScanAt: viewModel.scanResult?.scannedAt)
+                            .padding(.horizontal, 16)
+                            .transition(.scale(scale: 0.96).combined(with: .opacity))
+                    }
                 }
 
                 if showFDABanner && needsFDABanner {
@@ -215,7 +221,7 @@ struct MainPanelView: View {
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: viewModel.isScanning)
             .animation(.easeInOut(duration: 0.25), value: viewModel.lastDeletionResult != nil)
             .animation(.easeInOut(duration: 0.25), value: viewModel.errorMessage)
-            .animation(.easeInOut(duration: 0.25), value: viewModel.expandedLevels)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: viewModel.expandedLevels)
         }
     }
 
@@ -341,6 +347,40 @@ struct MainPanelView: View {
         .padding(.horizontal, 18)
         .padding(.top, 12)
         .padding(.bottom, 13)
+    }
+}
+
+/// Empty state for a scan that found nothing: the good news deserves a moment,
+/// not a blank list. Quietly notes that the background scanner stays on watch.
+private struct AllCleanCard: View {
+    let lastScanAt: Date?
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(DustyTheme.levelColor(1).opacity(0.15))
+                    .frame(width: 44, height: 44)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.title2)
+                    .foregroundStyle(DustyTheme.levelColor(1))
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("All clean")
+                    .font(.body.weight(.semibold))
+                Text(lastScanAt.map { "Nothing reclaimable as of \($0.formatted(date: .omitted, time: .shortened)). Dusty keeps watching in the background." }
+                     ?? "Nothing reclaimable right now. Dusty keeps watching in the background.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(15)
+        .dustyCard()
+        .accessibilityElement(children: .combine)
     }
 }
 
