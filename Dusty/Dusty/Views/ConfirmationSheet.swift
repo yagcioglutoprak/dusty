@@ -65,12 +65,13 @@ struct ConfirmationCard: View {
                         .font(.footnote)
                         .foregroundStyle(.blue)
                 }
-                if moveToTrash {
-                    Label("Items will be moved to Trash", systemImage: "trash")
+                if !dryRun {
+                    Label("Recoverable for a few seconds via Undo", systemImage: "arrow.uturn.backward")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                } else if !dryRun && level == .safe {
-                    Label("Recoverable for a few seconds via Undo", systemImage: "arrow.uturn.backward")
+                }
+                if moveToTrash {
+                    Label("Items stay in the Trash until you empty it", systemImage: "trash")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -184,7 +185,7 @@ struct DeletionResultBanner: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             case .undoable:
-                Text("Recoverable for a few seconds, then permanently removed.")
+                Text("Undo is available for a few seconds.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             case .reclaimed:
@@ -341,7 +342,7 @@ struct SettingsView: View {
 
                 Section("Cleanup defaults") {
                     Toggle("Dry run by default", isOn: $settings.dryRunDefault)
-                    Toggle("Move to Trash (levels 2 & 3)", isOn: $settings.moveToTrashDefault)
+                    Toggle("Keep Developer & Deep items in Trash", isOn: $settings.moveToTrashDefault)
                     Stepper(
                         "System log age: \(settings.logAgeThresholdDays) days",
                         value: $settings.logAgeThresholdDays,

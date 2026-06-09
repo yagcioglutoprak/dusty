@@ -276,27 +276,30 @@ public struct CleanerOptions: Sendable {
     public var moveToTrash: Bool
     public var logAgeThresholdDays: Int
     public var cleanupLevel: CleanupLevel?
-    /// When set, Safe-level deletes go to Trash so they can be undone (then purged).
-    public var trashSafeForUndo: Bool
+    /// When set, deletes at every level are parked in the Trash first so the clean can
+    /// be undone for a short window. The caller decides afterwards whether to purge
+    /// them (reclaiming space) or leave them in the Trash.
+    public var trashForUndo: Bool
 
     public init(
         dryRun: Bool = false,
         moveToTrash: Bool = false,
         logAgeThresholdDays: Int = 30,
         cleanupLevel: CleanupLevel? = nil,
-        trashSafeForUndo: Bool = false
+        trashForUndo: Bool = false
     ) {
         self.dryRun = dryRun
         self.moveToTrash = moveToTrash
         self.logAgeThresholdDays = logAgeThresholdDays
         self.cleanupLevel = cleanupLevel
-        self.trashSafeForUndo = trashSafeForUndo
+        self.trashForUndo = trashForUndo
     }
 
-    /// Move to Trash applies to levels 2 & 3; Safe only when undo is requested.
+    /// The `moveToTrash` preference keeps Developer/Deep items in the Trash for the
+    /// user to empty later. Safe items are regenerable junk, so they only ever pass
+    /// through the Trash for the undo window, never to stay.
     public var effectiveMoveToTrash: Bool {
-        guard let level = cleanupLevel else { return false }
-        if level == .safe { return trashSafeForUndo }
-        return moveToTrash
+        if let level = cleanupLevel, level != .safe, moveToTrash { return true }
+        return trashForUndo
     }
 }

@@ -42,7 +42,7 @@ final class EngineHardeningTests: XCTestCase {
 
     func testBypassesTrashForcesPermanentDeleteEvenUnderSafeUndo() async throws {
         // Under Safe-undo, effectiveMoveToTrash is true...
-        let options = CleanerOptions(cleanupLevel: .safe, trashSafeForUndo: true)
+        let options = CleanerOptions(cleanupLevel: .safe, trashForUndo: true)
         XCTAssertTrue(options.effectiveMoveToTrash, "Precondition: Safe-undo would otherwise move to Trash")
 
         let trashTarget = CleanupTarget(

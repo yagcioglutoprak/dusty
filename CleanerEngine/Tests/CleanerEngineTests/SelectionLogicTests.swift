@@ -38,6 +38,17 @@ final class SelectionLogicTests: XCTestCase {
         options.cleanupLevel = .deep
         XCTAssertTrue(options.effectiveMoveToTrash)
     }
+
+    func testTrashForUndoAppliesAtEveryLevel() {
+        var options = CleanerOptions(cleanupLevel: .safe, trashForUndo: true)
+        XCTAssertTrue(options.effectiveMoveToTrash)
+        options.cleanupLevel = .developer
+        XCTAssertTrue(options.effectiveMoveToTrash)
+        options.cleanupLevel = .deep
+        XCTAssertTrue(options.effectiveMoveToTrash)
+        options.trashForUndo = false
+        XCTAssertFalse(options.effectiveMoveToTrash, "Without the undo window or the Trash preference, deletes are permanent")
+    }
 }
 
 final class PathTraversalTests: XCTestCase {

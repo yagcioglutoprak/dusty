@@ -33,6 +33,11 @@ final class DustyViewModel: ObservableObject {
     private var scanTask: Task<Void, Never>?
     private var undoEntries: [DeletionEntry] = []
     private var undoTask: Task<Void, Never>?
+    /// Level of the clean the current undo window belongs to, so undo can rescan it.
+    private var undoLevel: CleanupLevel = .safe
+    /// Whether the trashed items are purged when the undo window closes (reclaiming
+    /// space) or stay in the Trash because the user prefers emptying it themselves.
+    private var purgeAfterUndo = true
     private var wasDiskLow = false
 
     private var autoScan: AutoScanController?
@@ -199,17 +204,20 @@ final class DustyViewModel: ObservableObject {
 
         var options = settings.cleanerOptions
         options.cleanupLevel = level
-        let undoable = level == .safe && !options.dryRun
-        options.trashSafeForUndo = undoable
+        let undoable = !options.dryRun
+        options.trashForUndo = undoable
+        // Developer/Deep items stay in the Trash after the undo window when the user
+        // prefers emptying it themselves; everything else purges to reclaim space.
+        let keepInTrashAfterUndo = level != .safe && settings.moveToTrashDefault
 
         let result = await engine.delete(paths: paths, targets: levelResult.targetResults.map(\.target), options: options)
         lastDeletionResult = result
 
-        // Instant feedback: project the reclaimed space the moment a clean
-        // actually frees disk (direct delete, or Safe items that auto-purge from
-        // Trash). Trash-only cleans (levels 2 & 3) don't free space until the
-        // Trash is emptied, so those just re-read the real figure.
-        let willReclaim = !options.dryRun && result.bytesFreed > 0 && (undoable || !options.effectiveMoveToTrash)
+        // Instant feedback: project the reclaimed space the moment a clean actually
+        // frees disk (direct delete, or items that auto-purge from Trash after the
+        // undo window). Cleans whose items stay in the Trash don't free space until
+        // the Trash is emptied, so those just re-read the real figure.
+        let willReclaim = !options.dryRun && result.bytesFreed > 0 && !keepInTrashAfterUndo
         if willReclaim {
             let projected = freeSpaceBytes + result.bytesFreed
             freeSpaceFloor = projected
@@ -231,6 +239,8 @@ final class DustyViewModel: ObservableObject {
         let anyTrashed = result.entries.contains { $0.movedToTrash }
         if undoable && !restorable.isEmpty {
             undoEntries = restorable
+            undoLevel = level
+            purgeAfterUndo = !keepInTrashAfterUndo
             canUndo = true
             bannerStyle = .undoable
             scheduleUndoPurge()
@@ -244,11 +254,12 @@ final class DustyViewModel: ObservableObject {
         await rescan(level: level, settings: settings)
     }
 
-    /// Restore the just-trashed Safe items to their original locations.
+    /// Restore the just-trashed items of the last clean to their original locations.
     func undoLastDeletion() {
         undoTask?.cancel()
         guard !undoEntries.isEmpty else { canUndo = false; return }
         let entries = undoEntries
+        let level = undoLevel
         undoEntries = []
         canUndo = false
         lastDeletionResult = nil
@@ -260,7 +271,7 @@ final class DustyViewModel: ObservableObject {
                 self.errorMessage = "Restored \(result.restoredCount) of \(entries.count) items. Some could not be moved back (the original location may be occupied)."
             }
             self.refreshFreeSpace()
-            await self.rescan(level: .safe, settings: AppSettings.shared)
+            await self.rescan(level: level, settings: AppSettings.shared)
         }
     }
 
@@ -273,13 +284,19 @@ final class DustyViewModel: ObservableObject {
         }
     }
 
-    /// Permanently purge the trashed items once the undo window closes, reclaiming space.
+    /// Close the undo window: purge the trashed items to reclaim space, or leave them
+    /// in the Trash when the user prefers emptying it themselves (Developer/Deep with
+    /// the Trash preference on).
     private func finalizeUndo() {
         undoTask?.cancel()
         guard canUndo, !undoEntries.isEmpty else { canUndo = false; return }
         let entries = undoEntries
         undoEntries = []
         canUndo = false
+        guard purgeAfterUndo else {
+            bannerStyle = .trashed
+            return
+        }
         bannerStyle = .reclaimed
         let engine = self.engine
         Task {
