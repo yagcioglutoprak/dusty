@@ -155,6 +155,38 @@ public struct SafetyValidator: @unchecked Sendable {
         validateDeletionPath(path, for: target).error == nil
     }
 
+    /// Validate where a restore is allowed to put a file back. Runs the same pipeline as
+    /// deletion validation (traversal, prohibited paths, containment, ancestor symlinks),
+    /// but against the target's *static* roots: dynamic targets re-resolve their paths by
+    /// scanning the disk, and a just-deleted item is no longer there to be found, so the
+    /// resolved list can never contain a restore destination.
+    public func validateRestoreDestination(_ path: String, for target: CleanupTarget) -> Result<Void, SafetyError> {
+        validateDeletionPath(path, for: target, allowlistedRoots: restoreRoots(for: target))
+    }
+
+    /// Static directories a target's deleted items may be restored into. Mirrors
+    /// `resolveDynamicPaths`: each dynamic target maps to the fixed base directory its
+    /// scan enumerates. Targets with no filesystem paths (simctl, docker) return nothing,
+    /// because there is nothing of theirs a restore could legitimately recreate.
+    public func restoreRoots(for target: CleanupTarget) -> [String] {
+        guard allowedTargetIDs.contains(target.id) else { return [] }
+        guard target.usesDynamicPaths else {
+            return target.pathTemplates.map { expandPath($0) }
+        }
+        switch target.id {
+        case "xcode-device-support":
+            return [expandPath("~/Library/Developer/Xcode/iOS DeviceSupport")]
+        case "xcode-archives":
+            return [expandPath("~/Library/Developer/Xcode/Archives")]
+        case "downloads-installers":
+            return [expandPath("~/Downloads")]
+        case "old-simulators":
+            return [expandPath("~/Library/Developer/CoreSimulator/Devices")]
+        default:
+            return []
+        }
+    }
+
     // MARK: - Private
 
     private func isSymlink(at url: URL) -> Bool {

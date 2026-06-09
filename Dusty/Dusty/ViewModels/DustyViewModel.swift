@@ -255,9 +255,9 @@ final class DustyViewModel: ObservableObject {
         clearFreeSpaceFloor()
         let engine = self.engine
         Task {
-            let restored = await Task.detached { engine.restore(entries) }.value
-            if restored < entries.count {
-                self.errorMessage = "Restored \(restored) of \(entries.count) items. Some could not be moved back (the original location may be occupied)."
+            let result = await Task.detached { engine.restore(entries) }.value
+            if !result.failures.isEmpty {
+                self.errorMessage = "Restored \(result.restoredCount) of \(entries.count) items. Some could not be moved back (the original location may be occupied)."
             }
             self.refreshFreeSpace()
             await self.rescan(level: .safe, settings: AppSettings.shared)

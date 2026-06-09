@@ -11,6 +11,7 @@ public final class CleanerEngine: @unchecked Sendable {
     private let sizeCalculator: SizeCalculator
     private let diskMonitor: DiskSpaceMonitor
     private let deletionLog: DeletionLogStore
+    private let homeDirectory: URL
 
     /// Cap on concurrent directory walks during a scan, so a background scan stays a
     /// good citizen on the disk instead of starting one walk per target at once.
@@ -21,9 +22,11 @@ public final class CleanerEngine: @unchecked Sendable {
         validator: SafetyValidator? = nil,
         sizeCalculator: SizeCalculator? = nil,
         diskMonitor: DiskSpaceMonitor? = nil,
-        deletionLog: DeletionLogStore? = nil
+        deletionLog: DeletionLogStore? = nil,
+        homeDirectory: URL? = nil
     ) {
         self.fileManager = fileManager
+        self.homeDirectory = homeDirectory ?? fileManager.homeDirectoryForCurrentUser
         self.validator = validator ?? SafetyValidator(fileManager: fileManager)
         // The default calculator carries a size cache so `.cached` background scans
         // can skip re-walking unchanged directories. Injected calculators decide for themselves.
@@ -323,7 +326,7 @@ public final class CleanerEngine: @unchecked Sendable {
             let sizeBefore = sizeCalculator.allocatedSize(at: resolved.path)
 
             if options.dryRun {
-                let entry = DeletionEntry(path: resolved.path, bytes: sizeBefore, movedToTrash: false, dryRun: true)
+                let entry = DeletionEntry(path: resolved.path, bytes: sizeBefore, movedToTrash: false, dryRun: true, targetID: target.id)
                 entries.append(entry)
                 try? deletionLog.append(entry)
                 bytesFreed += sizeBefore
@@ -335,7 +338,7 @@ public final class CleanerEngine: @unchecked Sendable {
                 // device), not a raw filesystem remove. The path was validated above.
                 if target.action == .simctlDeleteDevice {
                     try runSimctlDelete(udid: (resolved.path as NSString).lastPathComponent)
-                    let entry = DeletionEntry(path: resolved.path, bytes: sizeBefore, movedToTrash: false, dryRun: false)
+                    let entry = DeletionEntry(path: resolved.path, bytes: sizeBefore, movedToTrash: false, dryRun: false, targetID: target.id)
                     entries.append(entry)
                     try? deletionLog.append(entry)
                     bytesFreed += sizeBefore
@@ -360,7 +363,8 @@ public final class CleanerEngine: @unchecked Sendable {
                     bytes: sizeBefore,
                     movedToTrash: moveThisToTrash,
                     dryRun: false,
-                    trashedPath: trashedPath
+                    trashedPath: trashedPath,
+                    targetID: target.id
                 )
                 entries.append(entry)
                 try? deletionLog.append(entry)
@@ -409,25 +413,47 @@ public final class CleanerEngine: @unchecked Sendable {
         (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == true
     }
 
-    // MARK: - Undo (Safe-level trash window)
+    // MARK: - Undo (trash window)
 
-    /// Move trashed items back to their original locations. Returns the count restored.
+    /// Move trashed items back to their original locations.
     ///
-    /// Only entries whose `trashedPath` resolves inside the user's Trash are acted on, so a
-    /// caller cannot use this to move arbitrary files around. The move source must exist in
-    /// the Trash; if the original location is occupied the move fails and that entry is skipped.
+    /// Both sides of the move are validated: the source must resolve inside the user's
+    /// Trash, and the destination must pass `SafetyValidator` against the entry's recorded
+    /// cleanup target. A crafted or stale entry can neither pull files from outside the
+    /// Trash nor plant them outside the allowlist (say, into LaunchAgents). Entries
+    /// without target metadata are refused rather than guessed at.
     @discardableResult
-    public func restore(_ entries: [DeletionEntry]) -> Int {
+    public func restore(_ entries: [DeletionEntry]) -> RestoreResult {
         var restored = 0
+        var failures: [(path: String, reason: String)] = []
         for entry in entries {
-            guard let trashed = entry.trashedPath, isInsideTrash(trashed) else { continue }
+            guard let trashed = entry.trashedPath else {
+                failures.append((entry.path, "No trashed copy recorded"))
+                continue
+            }
+            guard isInsideTrash(trashed) else {
+                failures.append((entry.path, "Trashed copy is not inside the Trash"))
+                continue
+            }
+            guard let targetID = entry.targetID,
+                  let target = CleanupTargetRegistry.all.first(where: { $0.id == targetID }) else {
+                failures.append((entry.path, "No cleanup target recorded for this entry"))
+                continue
+            }
+            if case .failure(let error) = validator.validateRestoreDestination(entry.path, for: target) {
+                failures.append((entry.path, String(describing: error)))
+                continue
+            }
             let dest = URL(fileURLWithPath: entry.path)
-            try? fileManager.createDirectory(at: dest.deletingLastPathComponent(), withIntermediateDirectories: true)
-            if (try? fileManager.moveItem(at: URL(fileURLWithPath: trashed), to: dest)) != nil {
+            do {
+                try fileManager.createDirectory(at: dest.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try fileManager.moveItem(at: URL(fileURLWithPath: trashed), to: dest)
                 restored += 1
+            } catch {
+                failures.append((entry.path, error.localizedDescription))
             }
         }
-        return restored
+        return RestoreResult(restoredCount: restored, failures: failures)
     }
 
     /// Permanently remove trashed items (reclaims space once the undo window closes).
@@ -449,7 +475,7 @@ public final class CleanerEngine: @unchecked Sendable {
     /// True only when `path` is the user's Trash or a descendant of it. Dusty operates on the
     /// boot volume, where `trashItem` lands files in `~/.Trash`, so that is the trusted boundary.
     private func isInsideTrash(_ path: String) -> Bool {
-        let trash = (fileManager.homeDirectoryForCurrentUser.path as NSString).appendingPathComponent(".Trash")
+        let trash = (homeDirectory.path as NSString).appendingPathComponent(".Trash")
         let standardized = (path as NSString).standardizingPath
         return standardized == trash || standardized.hasPrefix(trash + "/")
     }

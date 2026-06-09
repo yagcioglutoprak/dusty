@@ -212,6 +212,10 @@ public struct DeletionEntry: Codable, Sendable, Identifiable {
     public let dryRun: Bool
     /// Where the item landed in Trash (for Undo / later purge).
     public let trashedPath: String?
+    /// The cleanup target that authorized this deletion. Restore re-validates the
+    /// destination against this target's allowlist, so an entry without it (older
+    /// log lines, external commands) cannot be restored.
+    public let targetID: String?
 
     public init(
         id: UUID = UUID(),
@@ -220,7 +224,8 @@ public struct DeletionEntry: Codable, Sendable, Identifiable {
         bytes: Int64,
         movedToTrash: Bool,
         dryRun: Bool,
-        trashedPath: String? = nil
+        trashedPath: String? = nil,
+        targetID: String? = nil
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -229,6 +234,18 @@ public struct DeletionEntry: Codable, Sendable, Identifiable {
         self.movedToTrash = movedToTrash
         self.dryRun = dryRun
         self.trashedPath = trashedPath
+        self.targetID = targetID
+    }
+}
+
+/// Outcome of a restore pass: how many items moved back, and why the rest did not.
+public struct RestoreResult: Sendable {
+    public let restoredCount: Int
+    public let failures: [(path: String, reason: String)]
+
+    public init(restoredCount: Int, failures: [(path: String, reason: String)]) {
+        self.restoredCount = restoredCount
+        self.failures = failures
     }
 }
 
