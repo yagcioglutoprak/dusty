@@ -27,8 +27,13 @@ struct MainPanelView: View {
         .background(panelBackground)
         .animation(.easeInOut(duration: 0.18), value: viewModel.showSettings)
         .animation(.easeInOut(duration: 0.18), value: viewModel.pendingConfirmationLevel)
+        .animation(.easeInOut(duration: 0.18), value: settings.hasSeenWelcome)
         .task {
-            viewModel.scanIfNeeded(settings: settings)
+            // First launch holds the silent auto-scan: the welcome card explains the
+            // model first and its button starts the scan, so the first scan is chosen.
+            if settings.hasSeenWelcome {
+                viewModel.scanIfNeeded(settings: settings)
+            }
         }
         .onAppear {
             viewModel.startAutoRefresh(interval: settings.refreshIntervalSeconds)
@@ -67,7 +72,17 @@ struct MainPanelView: View {
     /// mid-action: the cause of "clicking Delete does nothing" and "buttons close
     /// the app". Keeping every interaction in-panel avoids the focus loss entirely.
     @ViewBuilder private var overlay: some View {
-        if viewModel.showSettings {
+        if !settings.hasSeenWelcome {
+            OverlayScrim {}
+            WelcomeCard(
+                onScan: {
+                    settings.hasSeenWelcome = true
+                    viewModel.startScan(settings: settings)
+                },
+                onSkip: { settings.hasSeenWelcome = true }
+            )
+            .transition(.scale(scale: 0.96).combined(with: .opacity))
+        } else if viewModel.showSettings {
             OverlayScrim { viewModel.showSettings = false }
             SettingsView(settings: settings, updater: updater, onRefreshIntervalChanged: { interval in
                 viewModel.startAutoRefresh(interval: interval)

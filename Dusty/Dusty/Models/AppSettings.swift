@@ -31,6 +31,12 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(menuBarShowsPercentage, forKey: "menuBarShowsPercentage") }
     }
 
+    /// First-run flag: the welcome overlay shows until the user starts (or skips)
+    /// their first scan. `@Published` so the panel dismisses the moment it flips.
+    @Published var hasSeenWelcome: Bool = UserDefaults.standard.bool(forKey: "hasSeenWelcome") {
+        didSet { UserDefaults.standard.set(hasSeenWelcome, forKey: "hasSeenWelcome") }
+    }
+
     @Published var launchAtLogin: Bool = LoginItem.isEnabled {
         didSet { LoginItem.set(launchAtLogin) }
     }
