@@ -52,11 +52,16 @@ Three levels, from "do this anytime" to "look before you leap."
 | Level | What it clears | Why it is safe |
 | --- | --- | --- |
 | **Safe** | User caches, app logs, Trash, browser caches, and app caches (Chrome, Slack, Discord, Spotify, VS Code) | Regenerates on its own, zero functional impact |
-| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), JetBrains and Unity caches, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
+| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
 | **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs | Per-file checklist, nothing goes without a tick |
 
 Every scan is concurrent, shows live progress, and reports the exact bytes per
-target before you commit to anything.
+target before you commit to anything. It is quick, too: a full three-level scan
+of a working dev machine (M3, ~18 GB of junk across 866 paths) takes about 5
+seconds.
+
+Every clean can be undone for a few seconds afterwards, at every level. Items
+pass through the Trash first, so a misclick costs you nothing.
 
 ## How it compares
 
@@ -84,7 +89,9 @@ delete. It enforces:
   There is no "delete everything except" logic anywhere in the codebase.
 - **Protected folders are off limits.** Documents, Desktop, Pictures, Photos
   library, Music, Movies, Mail, iCloud Drive, Keychains, and Application Support
-  (except one named browser cache path) are rejected even as prefixes.
+  are rejected even as prefixes. The only Application Support exceptions are a
+  short, named list of app cache subfolders (Chrome, Slack, Discord, Spotify,
+  VS Code caches), never an app's whole folder.
 - **No symlink escapes.** Symlinks are never followed, including a symlinked
   parent directory: the path is resolved and re-checked against the allowlist, so
   a delete cannot walk out of an allowed directory.
@@ -93,9 +100,11 @@ delete. It enforces:
   your home folder are the Deep level's system diagnostic logs under
   `/Library/Logs`, which need Full Disk Access. Nothing SIP-protected is touched.
 - **Dry run.** Flip one toggle to scan and report without removing a thing.
-- **Move to Trash and undo.** Safe cleans move to the Trash with a brief undo
-  window right after, then the space is reclaimed. Developer and Deep cleans can
-  also be sent to the Trash so you can recover them there yourself.
+- **Undo at every level.** Cleans park items in the Trash and offer Undo for a
+  few seconds. Safe items then purge to reclaim the space; Developer and Deep
+  items do the same, or stay in the Trash if you prefer emptying it yourself.
+  Restores are validated the same way deletes are: an entry can only go back to
+  a path its cleanup target is allowed to touch.
 - **A written record.** Every action (timestamp, path, bytes) is appended to
   `~/Library/Application Support/Dusty/deletion-log.jsonl`.
 
@@ -122,10 +131,10 @@ Without it, those few paths are skipped, the rest works fine.
 
 ## Settings
 
-- Menu bar refresh interval (default 30s)
+- Menu bar refresh interval (default 30s), and free space as GB or a percentage
 - Background auto-scan and how often it runs (default every 4h), or turn it off
 - Dry run by default
-- Move to Trash by default for Developer and Deep
+- Keep Developer and Deep items in the Trash instead of purging after Undo
 - Age threshold for Deep level logs (default 30 days)
 
 ## How it is put together
@@ -136,7 +145,9 @@ Dusty/            SwiftUI menu bar app (MenuBarExtra) that renders the engine.
 ```
 
 Keeping the engine UI free means the rules that matter are testable in isolation
-and the app stays a thin layer on top. Run the tests with:
+and the app stays a thin layer on top. The engine compiles in Swift 6 language
+mode with strict concurrency checking, and CI treats warnings as errors, so a
+data race or a quiet regression fails the build. Run the tests with:
 
 ```bash
 cd CleanerEngine && swift test
@@ -195,8 +206,8 @@ and artifact paths are ever in scope.
 app cannot reach the caches Dusty cleans. The trade off would defeat the point.
 
 **How is this different from `rm -rf ~/Library/Caches`?** It sizes everything
-first, skips paths that are in use, can move to Trash with undo, logs what it
-did, and refuses anything outside the allowlist.
+first, skips paths that are in use, gives every clean an undo window, logs what
+it did, and refuses anything outside the allowlist.
 
 ## License
 
