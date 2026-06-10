@@ -48,21 +48,11 @@ enum SimulatorHelper {
     }
 
     private static func runSimctl(arguments: [String]) -> String? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-        process.arguments = ["simctl"] + arguments
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = Pipe()
-        do {
-            try process.run()
-            process.waitUntilExit()
-            guard process.terminationStatus == 0 else { return nil }
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            return String(data: data, encoding: .utf8)
-        } catch {
-            return nil
-        }
+        // simctl can stall when CoreSimulatorService is wedged; a listing query
+        // should never hold a scan hostage, so it gets a hard timeout.
+        guard let result = ProcessRunner.run("/usr/bin/xcrun", arguments: ["simctl"] + arguments, timeout: 30),
+              result.status == 0 else { return nil }
+        return result.stdout
     }
 
     private static func parseUDIDs(from output: String) -> Set<String> {

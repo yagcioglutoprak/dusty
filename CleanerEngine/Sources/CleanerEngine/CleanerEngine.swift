@@ -489,16 +489,13 @@ public final class CleanerEngine: @unchecked Sendable {
     }
 
     private func runSimctlDelete(udid: String) throws {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-        process.arguments = ["simctl", "delete", udid]
-        let errPipe = Pipe()
-        process.standardError = errPipe
-        try process.run()
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else {
-            let err = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "simctl delete failed"
-            throw NSError(domain: "Dusty.simctl", code: Int(process.terminationStatus),
+        guard let result = ProcessRunner.run("/usr/bin/xcrun", arguments: ["simctl", "delete", udid], timeout: 120) else {
+            throw NSError(domain: "Dusty.simctl", code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "simctl delete timed out or could not launch"])
+        }
+        guard result.status == 0 else {
+            let err = result.stderr.isEmpty ? "simctl delete failed" : result.stderr
+            throw NSError(domain: "Dusty.simctl", code: Int(result.status),
                           userInfo: [NSLocalizedDescriptionKey: err.trimmingCharacters(in: .whitespacesAndNewlines)])
         }
     }
@@ -509,24 +506,16 @@ public final class CleanerEngine: @unchecked Sendable {
                 DeletionEntry(path: "simctl delete unavailable", bytes: 0, movedToTrash: false, dryRun: true)
             ], error: nil)
         }
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-        process.arguments = ["simctl", "delete", "unavailable"]
-        let errPipe = Pipe()
-        process.standardError = errPipe
-        do {
-            try process.run()
-            process.waitUntilExit()
-            if process.terminationStatus != 0 {
-                let err = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "simctl failed"
-                return CommandResult(bytes: 0, entries: [], error: err.trimmingCharacters(in: .whitespacesAndNewlines))
-            }
-            let entry = DeletionEntry(path: "simctl delete unavailable", bytes: 0, movedToTrash: false, dryRun: false)
-            try? deletionLog.append(entry)
-            return CommandResult(bytes: 0, entries: [entry], error: nil)
-        } catch {
-            return CommandResult(bytes: 0, entries: [], error: error.localizedDescription)
+        guard let result = ProcessRunner.run("/usr/bin/xcrun", arguments: ["simctl", "delete", "unavailable"], timeout: 300) else {
+            return CommandResult(bytes: 0, entries: [], error: "simctl delete timed out or could not launch")
         }
+        if result.status != 0 {
+            let err = result.stderr.isEmpty ? "simctl failed" : result.stderr
+            return CommandResult(bytes: 0, entries: [], error: err.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        let entry = DeletionEntry(path: "simctl delete unavailable", bytes: 0, movedToTrash: false, dryRun: false)
+        try? deletionLog.append(entry)
+        return CommandResult(bytes: 0, entries: [entry], error: nil)
     }
 
     private func runTmutilDeleteSnapshot(token: String, dryRun: Bool) -> CommandResult {
@@ -557,50 +546,32 @@ public final class CleanerEngine: @unchecked Sendable {
             ], error: nil)
         }
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: docker)
         // Prune unused images, build cache, stopped containers and networks. We
         // intentionally omit `--volumes`: anonymous volumes routinely hold real
         // data (databases, uploads, dev state) that cannot be re-downloaded.
-        process.arguments = ["system", "prune", "-af"]
-        let pipe = Pipe()
-        let errPipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = errPipe
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-            let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-            if process.terminationStatus != 0 {
-                let err = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "docker prune failed"
-                return CommandResult(bytes: 0, entries: [], error: err.trimmingCharacters(in: .whitespacesAndNewlines))
-            }
-            let bytes = parseDockerReclaimed(from: output)
-            let entry = DeletionEntry(path: "docker system prune", bytes: bytes, movedToTrash: false, dryRun: false)
-            try? deletionLog.append(entry)
-            return CommandResult(bytes: bytes, entries: [entry], error: nil)
-        } catch {
-            return CommandResult(bytes: 0, entries: [], error: error.localizedDescription)
+        // A big prune can legitimately run for minutes; a wedged daemon must not
+        // hold the clean forever, so it still gets a (generous) timeout.
+        guard let result = ProcessRunner.run(docker, arguments: ["system", "prune", "-af"], timeout: 600) else {
+            return CommandResult(bytes: 0, entries: [], error: "docker prune timed out or could not launch")
         }
+        if result.status != 0 {
+            let err = result.stderr.isEmpty ? "docker prune failed" : result.stderr
+            return CommandResult(bytes: 0, entries: [], error: err.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        let bytes = parseDockerReclaimed(from: result.stdout)
+        let entry = DeletionEntry(path: "docker system prune", bytes: bytes, movedToTrash: false, dryRun: false)
+        try? deletionLog.append(entry)
+        return CommandResult(bytes: bytes, entries: [entry], error: nil)
     }
 
     private func estimateDockerReclaimable() -> Int64 {
         let dockerPath = ["/opt/homebrew/bin/docker", "/usr/local/bin/docker"].first { fileManager.fileExists(atPath: $0) }
         guard let docker = dockerPath else { return 0 }
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: docker)
-        process.arguments = ["system", "df", "--format", "{{.Reclaimable}}"]
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        do {
-            try process.run()
-            process.waitUntilExit()
-            let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-            return parseDockerReclaimableLines(output)
-        } catch {
+        // A hung daemon must not stall the scan; a short timeout just yields a 0 estimate.
+        guard let result = ProcessRunner.run(docker, arguments: ["system", "df", "--format", "{{.Reclaimable}}"], timeout: 20) else {
             return 0
         }
+        return parseDockerReclaimableLines(result.stdout)
     }
 
     private func parseDockerReclaimableLines(_ output: String) -> Int64 {

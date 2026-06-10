@@ -55,19 +55,12 @@ enum TimeMachineSnapshotHelper {
     }
 
     private static func runTmutil(arguments: [String]) -> String? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/tmutil")
-        process.arguments = arguments
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = Pipe()
-        do {
-            try process.run()
-            process.waitUntilExit()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            return String(data: data, encoding: .utf8)
-        } catch {
+        // Listing is quick; deleting a big snapshot can legitimately take minutes,
+        // so the timeout is generous but still bounded.
+        let timeout: TimeInterval = arguments.first == "deletelocalsnapshots" ? 300 : 30
+        guard let result = ProcessRunner.run("/usr/bin/tmutil", arguments: arguments, timeout: timeout) else {
             return nil
         }
+        return result.stdout
     }
 }
