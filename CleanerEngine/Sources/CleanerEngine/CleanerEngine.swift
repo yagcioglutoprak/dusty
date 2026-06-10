@@ -323,7 +323,15 @@ public final class CleanerEngine: @unchecked Sendable {
                 break
             }
 
-            let sizeBefore = sizeCalculator.allocatedSize(at: resolved.path)
+            // The scan measured this item moments ago and the UI showed that number.
+            // Re-walking a directory tree here would double the clean time, and for
+            // trash-move cleans (a single rename per item) the walk would BE the
+            // clean time. Reuse the scan's figure; the free-space delta in the
+            // result reports the ground truth. Only measure when the scan did not
+            // (callers that construct ResolvedPath by hand).
+            let sizeBefore = resolved.estimatedBytes > 0
+                ? resolved.estimatedBytes
+                : sizeCalculator.allocatedSize(at: resolved.path)
 
             if options.dryRun {
                 let entry = DeletionEntry(path: resolved.path, bytes: sizeBefore, movedToTrash: false, dryRun: true, targetID: target.id)
@@ -386,11 +394,20 @@ public final class CleanerEngine: @unchecked Sendable {
 
     private func deleteDirectoryContents(at path: String, target: CleanupTarget, moveToTrash: Bool) throws {
         guard let children = try? fileManager.contentsOfDirectory(atPath: path) else { return }
+        // Best effort: one locked or in-use child must not abort the rest of the
+        // directory. The first error is still thrown afterwards so the caller
+        // reports the path as (partially) skipped instead of silently succeeding.
+        var firstError: Error?
         for child in children {
             let childPath = (path as NSString).appendingPathComponent(child)
             guard case .success = validator.validateDeletionPath(childPath, for: target) else { continue }
-            try deleteItem(at: childPath, moveToTrash: moveToTrash)
+            do {
+                try deleteItem(at: childPath, moveToTrash: moveToTrash)
+            } catch {
+                firstError = firstError ?? error
+            }
         }
+        if let firstError { throw firstError }
     }
 
     @discardableResult
