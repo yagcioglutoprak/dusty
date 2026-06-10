@@ -31,7 +31,10 @@ final class AppCacheTargetTests: XCTestCase {
         tempHome.appendingPathComponent("Library/Application Support/\(relative)").path
     }
 
-    private let appCacheIDs = ["discord-cache", "spotify-cache", "vscode-cache", "slack-cache"]
+    private let appCacheIDs = [
+        "discord-cache", "spotify-cache", "vscode-cache", "slack-cache",
+        "cursor-cache", "signal-cache", "obsidian-cache",
+    ]
 
     func testAppCacheTargetsAreSafeRegeneratingAndAppClosedGated() {
         for id in appCacheIDs {
@@ -77,5 +80,61 @@ final class AppCacheTargetTests: XCTestCase {
         for id in appCacheIDs {
             XCTAssertTrue(safeIDs.contains(id), "\(id) must be registered in level1 (Safe)")
         }
+    }
+
+    // MARK: - Derived Application Support exemptions
+
+    func testApplicationSupportExemptionsAreDerivedFromTargetTemplates() throws {
+        // A brand-new target under Application Support must validate with NO validator
+        // edit: the exemption list is derived from the target's own path templates.
+        let newApp = CleanupTarget(
+            id: "test-newapp-cache",
+            displayName: "NewApp Cache",
+            level: .safe,
+            pathTemplates: ["~/Library/Application Support/NewApp/Cache"],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        )
+        let v = validator(for: newApp)
+        let cache = appSupport("NewApp/Cache")
+        XCTAssertNil(v.validateDeletionPath(cache, for: newApp).error,
+                     "A registered App Support cache template must be exempt automatically")
+        XCTAssertNil(v.validateDeletionPath(cache + "/blob.bin", for: newApp).error,
+                     "Children of the derived cache dir must validate too")
+        XCTAssertNotNil(v.validateDeletionPath(appSupport("NewApp"), for: newApp).error,
+                        "The app's whole folder must stay prohibited")
+        XCTAssertNotNil(v.validateDeletionPath(appSupport("NewApp/Local Storage"), for: newApp).error,
+                        "Non-cache siblings must stay prohibited")
+    }
+
+    func testValidatorWithoutAppSupportTargetsBlocksAllOfApplicationSupport() throws {
+        // A validator allowing only a non-App-Support target derives no exemptions,
+        // so even a known cache-shaped path under Application Support is prohibited.
+        let target = CleanupTargetRegistry.all.first { $0.id == "user-caches" }!
+        let v = validator(for: target)
+        XCTAssertNotNil(v.validateDeletionPath(appSupport("discord/Cache"), for: target).error,
+                        "No exemption may leak in from targets the validator does not allow")
+    }
+
+    // MARK: - XDG cache target
+
+    func testXDGCacheTargetBasics() {
+        let t = target("xdg-cache")
+        XCTAssertEqual(t.level, .developer)
+        XCTAssertTrue(t.deletesContentsNotDirectory, "Clears contents, keeps ~/.cache itself")
+        XCTAssertTrue(t.regenerates)
+        XCTAssertEqual(t.pathTemplates, ["~/.cache"])
+        XCTAssertTrue(CleanupTargetRegistry.level2.contains { $0.id == "xdg-cache" })
+    }
+
+    func testXDGCacheChildValidatesAndHomeRootDoesNot() throws {
+        let t = target("xdg-cache")
+        let v = validator(for: t)
+        let child = tempHome.appendingPathComponent(".cache/huggingface").path
+        XCTAssertNil(v.validateDeletionPath(child, for: t).error, "Children of ~/.cache must validate")
+        XCTAssertNotNil(v.validateDeletionPath(tempHome.path, for: t).error, "Home itself must never validate")
+        XCTAssertNotNil(v.validateDeletionPath(tempHome.appendingPathComponent("Documents").path, for: t).error,
+                        "Prohibited prefixes stay blocked")
     }
 }

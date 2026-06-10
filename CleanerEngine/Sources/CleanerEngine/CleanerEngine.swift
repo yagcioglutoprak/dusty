@@ -621,15 +621,23 @@ public final class CleanerEngine: @unchecked Sendable {
         return 0
     }
 
+    /// Parse a docker CLI size like "591.7MB" or "1.082TB". `{{.Reclaimable}}` appends a
+    /// percentage ("591.7MB (4%)"), so anything from the first parenthesis on is dropped.
+    /// Docker prints decimal units (go-units): kB is 1000 bytes, GB is 10^9, up to PB.
     private func parseDockerSize(_ s: String) -> Int64? {
-        let trimmed = s.trimmingCharacters(in: .whitespaces)
+        var trimmed = s.trimmingCharacters(in: .whitespaces)
+        if let paren = trimmed.firstIndex(of: "(") {
+            trimmed = String(trimmed[..<paren]).trimmingCharacters(in: .whitespaces)
+        }
         if trimmed == "0B" || trimmed == "0" { return 0 }
-        let units: [(String, Int64)] = [("GB", 1_073_741_824), ("MB", 1_048_576), ("KB", 1024), ("kB", 1024), ("B", 1)]
+        let units: [(String, Double)] = [
+            ("PB", 1e15), ("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("kB", 1e3), ("B", 1)
+        ]
         for (suffix, multiplier) in units {
             if trimmed.hasSuffix(suffix) {
                 let num = trimmed.dropLast(suffix.count)
                 if let d = Double(num.trimmingCharacters(in: .whitespaces)) {
-                    return Int64(d * Double(multiplier))
+                    return Int64(d * multiplier)
                 }
             }
         }

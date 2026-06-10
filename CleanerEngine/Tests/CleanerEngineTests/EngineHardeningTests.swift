@@ -138,16 +138,24 @@ final class EngineHardeningTests: XCTestCase {
 
     func testParseDockerSizeVariants() {
         let engine = makeEngine(allowing: CleanupTargetRegistry.all)
+        // Docker prints decimal (go-units) sizes: kB = 1000, GB = 10^9.
         let cases: [(String, Int64?)] = [
             ("0B", 0),
             ("0", 0),
-            ("1.2GB", Int64(1.2 * 1_073_741_824)),
-            ("12.5MB", Int64(12.5 * 1_048_576)),
-            ("512KB", 512 * 1024),
-            ("512kB", 512 * 1024),
+            ("1.2GB", Int64(1.2 * 1e9)),
+            ("12.5MB", Int64(12.5 * 1e6)),
+            ("512KB", 512_000),
+            ("512kB", 512_000),
             ("256B", 256),
-            ("  3GB ", Int64(3 * 1_073_741_824)),
+            ("  3GB ", 3_000_000_000),
+            ("1.082TB", Int64(1.082 * 1e12)),
+            ("2PB", 2_000_000_000_000_000),
+            // `docker system df --format '{{.Reclaimable}}'` appends a percentage.
+            ("591.7MB (4%)", Int64(591.7 * 1e6)),
+            ("20.48kB (100%)", 20_480),
+            ("0B (0%)", 0),
             ("garbage", nil),
+            ("(4%)", nil),
             ("", nil),
         ]
         for (input, expected) in cases {

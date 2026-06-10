@@ -51,8 +51,8 @@ Three levels, from "do this anytime" to "look before you leap."
 
 | Level | What it clears | Why it is safe |
 | --- | --- | --- |
-| **Safe** | User caches, app logs, Trash, browser caches, and app caches (Chrome, Slack, Discord, Spotify, VS Code) | Regenerates on its own, zero functional impact |
-| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
+| **Safe** | User caches, app logs, Trash, browser caches, and app caches (Chrome, Slack, Discord, Spotify, VS Code, Cursor, Signal, Obsidian) | Regenerates on its own, zero functional impact |
+| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), dev tool caches in `~/.cache`, JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
 | **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs | Per-file checklist, nothing goes without a tick |
 
 Every scan is concurrent, shows live progress, and reports the exact bytes per
@@ -89,9 +89,9 @@ delete. It enforces:
   There is no "delete everything except" logic anywhere in the codebase.
 - **Protected folders are off limits.** Documents, Desktop, Pictures, Photos
   library, Music, Movies, Mail, iCloud Drive, Keychains, and Application Support
-  are rejected even as prefixes. The only Application Support exceptions are a
-  short, named list of app cache subfolders (Chrome, Slack, Discord, Spotify,
-  VS Code caches), never an app's whole folder.
+  are rejected even as prefixes. The only Application Support exceptions are the
+  specific cache subfolders named by registered targets (Chrome, Slack, Discord,
+  Spotify, VS Code, Cursor, Signal, Obsidian caches), never an app's whole folder.
 - **No symlink escapes.** Symlinks are never followed, including a symlinked
   parent directory: the path is resolved and re-checked against the allowlist, so
   a delete cannot walk out of an allowed directory.

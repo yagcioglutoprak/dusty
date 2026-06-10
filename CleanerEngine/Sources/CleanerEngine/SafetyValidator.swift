@@ -19,6 +19,7 @@ public struct SafetyValidator: @unchecked Sendable {
     private let homeDirectory: URL
     private let bootVolumeURL: URL
     private let allowedTargetIDs: Set<String>
+    private let allowedApplicationSupportSuffixes: [String]
 
     public init(
         fileManager: FileManager = .default,
@@ -31,6 +32,7 @@ public struct SafetyValidator: @unchecked Sendable {
         // Use the data volume containing the home directory (not the read-only system volume at "/").
         self.bootVolumeURL = bootVolumeURL ?? self.homeDirectory
         self.allowedTargetIDs = Set(allowedTargets.map(\.id))
+        self.allowedApplicationSupportSuffixes = Self.applicationSupportSuffixes(from: allowedTargets)
     }
 
     /// Paths that must NEVER be touched, even as prefixes.
@@ -46,31 +48,25 @@ public struct SafetyValidator: @unchecked Sendable {
         "Keychains",
     ]
 
-    /// Application Support is blocked unless the path is one of these explicit, named
-    /// cache subfolders. Each entry is a specific cache directory, never an app's whole
-    /// Application Support folder, so real data (workspaces, settings, databases) stays
-    /// protected. The allowlist-root containment check below is the real gate; this list
-    /// only decides what is NOT prohibited.
-    private static let allowedApplicationSupportSuffixes: [String] = [
-        "/Google/Chrome/Default/Service Worker/CacheStorage",
-        // Discord
-        "/discord/Cache",
-        "/discord/Code Cache",
-        "/discord/GPUCache",
-        "/discord/Service Worker/CacheStorage",
-        // Spotify
-        "/Spotify/PersistentCache",
-        // VS Code
-        "/Code/Cache",
-        "/Code/Code Cache",
-        "/Code/GPUCache",
-        "/Code/CachedData",
-        // Slack
-        "/Slack/Cache",
-        "/Slack/Code Cache",
-        "/Slack/GPUCache",
-        "/Slack/Service Worker/CacheStorage",
-    ]
+    /// Application Support is blocked unless the path is one of the explicit, named
+    /// cache subfolders an allowed target declares. The exemptions are derived from the
+    /// targets' own path templates, so registering a new app cache target is a single
+    /// registry edit and the validator can never drift out of sync with it. Each
+    /// template names a specific cache directory, never an app's whole Application
+    /// Support folder, so real data (workspaces, settings, databases) stays protected.
+    /// The allowlist-root containment check below is the real gate; this list only
+    /// decides what is NOT prohibited.
+    private static func applicationSupportSuffixes(from targets: [CleanupTarget]) -> [String] {
+        let prefix = "~/Library/Application Support"
+        var suffixes: [String] = []
+        for target in targets {
+            for template in target.pathTemplates where template.hasPrefix(prefix + "/") {
+                let suffix = String(template.dropFirst(prefix.count))
+                if suffix.count > 1 { suffixes.append(suffix) }
+            }
+        }
+        return suffixes
+    }
 
     public func expandPath(_ template: String) -> String {
         if template.hasPrefix("~/") {
@@ -243,7 +239,7 @@ public struct SafetyValidator: @unchecked Sendable {
 
         let appSupport = (homePath as NSString).appendingPathComponent("Library/Application Support")
         if path == appSupport || path.hasPrefix(appSupport + "/") {
-            let allowed = Self.allowedApplicationSupportSuffixes.contains { suffix in
+            let allowed = allowedApplicationSupportSuffixes.contains { suffix in
                 path.hasSuffix(suffix) || path.contains(suffix + "/")
             }
             if !allowed {

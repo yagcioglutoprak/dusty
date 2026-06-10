@@ -98,6 +98,8 @@ public enum CleanupTargetRegistry {
                 "~/Library/Application Support/discord/Cache",
                 "~/Library/Application Support/discord/Code Cache",
                 "~/Library/Application Support/discord/GPUCache",
+                "~/Library/Application Support/discord/DawnGraphiteCache",
+                "~/Library/Application Support/discord/DawnWebGPUCache",
                 "~/Library/Application Support/discord/Service Worker/CacheStorage"
             ],
             category: "App Cache",
@@ -125,6 +127,8 @@ public enum CleanupTargetRegistry {
                 "~/Library/Application Support/Code/Cache",
                 "~/Library/Application Support/Code/Code Cache",
                 "~/Library/Application Support/Code/GPUCache",
+                "~/Library/Application Support/Code/DawnGraphiteCache",
+                "~/Library/Application Support/Code/DawnWebGPUCache",
                 "~/Library/Application Support/Code/CachedData"
             ],
             category: "App Cache",
@@ -141,6 +145,8 @@ public enum CleanupTargetRegistry {
                 "~/Library/Application Support/Slack/Cache",
                 "~/Library/Application Support/Slack/Code Cache",
                 "~/Library/Application Support/Slack/GPUCache",
+                "~/Library/Application Support/Slack/DawnGraphiteCache",
+                "~/Library/Application Support/Slack/DawnWebGPUCache",
                 "~/Library/Application Support/Slack/Service Worker/CacheStorage"
             ],
             category: "App Cache",
@@ -148,6 +154,58 @@ public enum CleanupTargetRegistry {
             regenerates: true,
             requiresAppClosed: "Slack",
             requiresAppBundleID: "com.tinyspeck.slackmacgap"
+        ),
+        CleanupTarget(
+            id: "cursor-cache",
+            displayName: "Cursor Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/Cursor/Cache",
+                "~/Library/Application Support/Cursor/Code Cache",
+                "~/Library/Application Support/Cursor/GPUCache",
+                "~/Library/Application Support/Cursor/DawnGraphiteCache",
+                "~/Library/Application Support/Cursor/DawnWebGPUCache",
+                "~/Library/Application Support/Cursor/CachedData"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Cursor",
+            requiresAppBundleID: "com.todesktop.230313mzl4w4u92"
+        ),
+        CleanupTarget(
+            id: "signal-cache",
+            displayName: "Signal Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/Signal/Cache",
+                "~/Library/Application Support/Signal/Code Cache",
+                "~/Library/Application Support/Signal/GPUCache",
+                "~/Library/Application Support/Signal/DawnGraphiteCache",
+                "~/Library/Application Support/Signal/DawnWebGPUCache"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Signal",
+            requiresAppBundleID: "org.whispersystems.signal-desktop"
+        ),
+        CleanupTarget(
+            id: "obsidian-cache",
+            displayName: "Obsidian Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/obsidian/Cache",
+                "~/Library/Application Support/obsidian/Code Cache",
+                "~/Library/Application Support/obsidian/GPUCache",
+                "~/Library/Application Support/obsidian/DawnGraphiteCache",
+                "~/Library/Application Support/obsidian/DawnWebGPUCache"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Obsidian",
+            requiresAppBundleID: "md.obsidian"
         ),
     ]
 
@@ -312,6 +370,18 @@ public enum CleanupTargetRegistry {
             level: .developer,
             pathTemplates: ["~/Library/Caches/deno"],
             category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            // The XDG cache directory CLI tools use on macOS (Hugging Face, Puppeteer,
+            // pre-commit, gh, and friends). Cache-only by spec: tools must tolerate it
+            // being cleared, the same contract as ~/Library/Caches.
+            id: "xdg-cache",
+            displayName: "Dev Tool Caches (~/.cache)",
+            level: .developer,
+            pathTemplates: ["~/.cache"],
+            category: "Caches",
             deletesContentsNotDirectory: true,
             regenerates: true
         ),
