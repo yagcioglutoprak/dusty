@@ -65,7 +65,7 @@ models stay manual-pick only), and skips any target whose app is open. Installed
 from the DMG instead of brew? Link it once:
 
 ```bash
-ln -s /Applications/Dusty.app/Contents/MacOS/dusty /usr/local/bin/dusty
+ln -s /Applications/Dusty.app/Contents/Helpers/dusty /usr/local/bin/dusty
 ```
 
 There are also two Shortcuts actions, "Clean Safe Items" and "Get Reclaimable

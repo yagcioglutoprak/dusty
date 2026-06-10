@@ -17,6 +17,9 @@ cask "dusty" do
   depends_on macos: ">= :ventura"
 
   app "Dusty.app"
+  # The dusty CLI ships inside the app bundle (Contents/Helpers, not MacOS:
+  # a case-insensitive filesystem would collide "dusty" with "Dusty" there).
+  binary "#{appdir}/Dusty.app/Contents/Helpers/dusty"
 
   zap trash: [
     "~/Library/Application Support/Dusty",
