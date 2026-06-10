@@ -20,20 +20,20 @@ struct FreeSpaceHeaderView: View {
                 Circle()
                     .fill(diskColor)
                     .frame(width: 130, height: 130)
-                    .blur(radius: 38)
-                    .opacity(0.28)
+                    .blur(radius: 40)
+                    .opacity(0.26)
 
                 Circle()
-                    .stroke(Color.primary.opacity(0.07), lineWidth: 14)
+                    .stroke(Color.primary.opacity(0.06), lineWidth: 13)
 
                 Circle()
                     .trim(from: 0, to: max(0.02, ratio))
                     .stroke(
                         DustyTheme.diskGradient(ratio: ratio),
-                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                        style: StrokeStyle(lineWidth: 13, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .shadow(color: diskColor.opacity(0.5), radius: 6)
+                    .shadow(color: diskColor.opacity(0.45), radius: 6)
                     .animation(.spring(response: 0.8, dampingFraction: 0.8), value: ratio)
 
                 VStack(spacing: 4) {

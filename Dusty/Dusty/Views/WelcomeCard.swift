@@ -110,16 +110,8 @@ struct WelcomeCard: View {
         VStack(spacing: 10) {
             Button(action: onScan) {
                 Text("Run my first Safe scan")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(DustyTheme.onGold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 13, style: .continuous)
-                            .fill(DustyTheme.brandGradient)
-                    )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DustyPrimaryButtonStyle())
             .keyboardShortcut(.defaultAction)
             .accessibilityHint("Scans for reclaimable space. Nothing is deleted.")
 

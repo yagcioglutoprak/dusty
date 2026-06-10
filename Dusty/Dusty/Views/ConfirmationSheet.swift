@@ -14,7 +14,7 @@ struct ConfirmationCard: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
-    private var accent: Color { dryRun ? DustyTheme.gold : .red }
+    private var accent: Color { dryRun ? DustyTheme.gold : DustyTheme.danger }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,7 +24,7 @@ struct ConfirmationCard: View {
             Divider().opacity(0.5)
             footer
         }
-        .frame(width: 418, height: min(560, CGFloat(240 + paths.count * 27)))
+        .frame(width: 418, height: min(560, CGFloat(262 + paths.count * 27)))
         .background(
             RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
                 .fill(.regularMaterial)
@@ -40,10 +40,19 @@ struct ConfirmationCard: View {
 
     private var header: some View {
         VStack(spacing: 11) {
-            Image(systemName: dryRun ? "eye.circle.fill" : "trash.circle.fill")
-                .font(.system(size: 46))
-                .foregroundStyle(accent)
-                .symbolRenderingMode(.hierarchical)
+            ZStack {
+                Circle()
+                    .fill(accent.opacity(0.12))
+                    .frame(width: 64, height: 64)
+                Circle()
+                    .strokeBorder(accent.opacity(0.22), lineWidth: 1)
+                    .frame(width: 64, height: 64)
+                Image(systemName: dryRun ? "eye.fill" : "trash.fill")
+                    .font(.system(size: 26, weight: .medium))
+                    .foregroundStyle(accent)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .accessibilityHidden(true)
 
             Text(dryRun ? "Preview Cleanup" : "Confirm Cleanup")
                 .font(.title2.weight(.bold))
@@ -57,13 +66,13 @@ struct ConfirmationCard: View {
                 if !skippedApps.isEmpty {
                     Label("Skipping \(skippedApps.joined(separator: ", ")) cache, app is open", systemImage: "app.dashed")
                         .font(.footnote)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(DustyTheme.warn)
                         .multilineTextAlignment(.center)
                 }
                 if dryRun {
                     Label("Dry run: nothing will be deleted", systemImage: "eye")
                         .font(.footnote)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(DustyTheme.info)
                 }
                 if !dryRun {
                     Label("Recoverable for a few seconds via Undo", systemImage: "arrow.uturn.backward")
@@ -87,7 +96,7 @@ struct ConfirmationCard: View {
                     HStack(alignment: .top, spacing: 9) {
                         Image(systemName: "minus.circle.fill")
                             .font(.footnote)
-                            .foregroundStyle(.red.opacity(0.75))
+                            .foregroundStyle(DustyTheme.danger.opacity(0.75))
                             .padding(.top, 2)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(path.displayName)
@@ -124,18 +133,16 @@ struct ConfirmationCard: View {
     private var footer: some View {
         HStack(spacing: 12) {
             Button("Cancel", action: onCancel)
+                .buttonStyle(DustyGhostButtonStyle(fullWidth: false))
                 .keyboardShortcut(.cancelAction)
-                .controlSize(.large)
             Spacer()
             Button(action: onConfirm) {
                 Text(dryRun ? "Run Dry Run" : "Delete")
-                    .font(.body.weight(.semibold))
-                    .frame(minWidth: 80)
+                    .frame(minWidth: 86)
             }
+            .buttonStyle(DustyTintedButtonStyle(tint: accent, prominent: true,
+                                                prominentLabel: dryRun ? DustyTheme.onGold : .white))
             .keyboardShortcut(.defaultAction)
-            .buttonStyle(.borderedProminent)
-            .tint(accent)
-            .controlSize(.large)
         }
         .padding(18)
     }
@@ -154,7 +161,7 @@ struct DeletionResultBanner: View {
         case .reclaimed: return "Cleanup complete"
         }
     }
-    private var tint: Color { style == .trashed ? .orange : DustyTheme.diskColor(ratio: 1) }
+    private var tint: Color { style == .trashed ? DustyTheme.warn : DustyTheme.success }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -165,8 +172,7 @@ struct DeletionResultBanner: View {
                 Spacer()
                 if style == .undoable, let onUndo {
                     Button("Undo", action: onUndo)
-                        .buttonStyle(.bordered)
-                        .controlSize(.regular)
+                        .buttonStyle(DustyTintedButtonStyle(tint: tint))
                 }
             }
 
@@ -207,7 +213,7 @@ struct DeletionResultBanner: View {
                 } label: {
                     Label("\(result.skippedPaths.count) skipped, tap to \(showSkipped ? "hide" : "show")", systemImage: "exclamationmark.triangle")
                         .font(.footnote)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(DustyTheme.warn)
                 }
                 .buttonStyle(.plain)
 
@@ -240,7 +246,7 @@ struct FullDiskAccessBanner: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "lock.shield.fill")
-                .foregroundStyle(.orange)
+                .foregroundStyle(DustyTheme.warn)
                 .font(.title2)
             VStack(alignment: .leading, spacing: 3) {
                 Text("Full Disk Access recommended")
@@ -252,15 +258,15 @@ struct FullDiskAccessBanner: View {
             }
             Spacer()
             Button("Open", action: onOpenSettings)
-                .controlSize(.regular)
+                .buttonStyle(DustyTintedButtonStyle(tint: DustyTheme.warn))
         }
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
-                .fill(Color.orange.opacity(0.1))
+                .fill(DustyTheme.warn.opacity(0.10))
                 .overlay(
                     RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
-                        .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+                        .stroke(DustyTheme.warn.opacity(0.25), lineWidth: 1)
                 )
         )
     }

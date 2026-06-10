@@ -65,14 +65,12 @@ struct LevelSectionView: View {
                 if isCleaning {
                     ProgressView().controlSize(.small)
                 } else {
-                    Text("Clean").font(.subheadline.weight(.bold))
+                    Text("Clean")
                 }
             }
-            .frame(minWidth: 58, minHeight: 18)
+            .frame(minWidth: 44, minHeight: 18)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(levelColor)
-        .controlSize(.regular)
+        .buttonStyle(DustyTintedButtonStyle(tint: levelColor, prominent: selectedBytes > 0 && canClean && !isCleaning))
         .disabled(levelResult == nil || selectedBytes == 0 || isCleaning || !canClean)
         .accessibilityLabel("Clean \(level.title) items")
         .accessibilityValue(selectedBytes > 0 ? "\(DiskSpaceMonitor.formatBytes(selectedBytes)) selected" : "nothing selected")
@@ -104,11 +102,15 @@ struct LevelSectionView: View {
 
     private var levelBadge: some View {
         ZStack {
-            Circle()
-                .fill(levelColor.opacity(0.18))
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(levelColor.opacity(0.15))
+                .frame(width: 34, height: 34)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(levelColor.opacity(0.25), lineWidth: 1)
                 .frame(width: 34, height: 34)
             Text("\(level.rawValue)")
                 .font(.subheadline.weight(.heavy))
+                .monospacedDigit()
                 .foregroundStyle(levelColor)
         }
     }
@@ -118,15 +120,15 @@ struct LevelSectionView: View {
     private var blockingBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "app.dashed")
-                .foregroundStyle(.orange)
+                .foregroundStyle(DustyTheme.warn)
             Text("\(blockingApps.joined(separator: ", ")) open, its cache is skipped. Quit to include it.")
                 .font(.caption)
-                .foregroundStyle(.orange)
+                .foregroundStyle(DustyTheme.warn)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.1)))
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DustyTheme.warn.opacity(0.10)))
         .padding(.bottom, 8)
     }
 }
@@ -165,7 +167,7 @@ struct TargetRowView: View {
             if let app = targetResult.target.requiresAppClosed {
                 Label("Skipped while \(app) is open", systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(DustyTheme.warn)
             }
 
             if targetResult.target.needsUserSelection {
@@ -191,7 +193,7 @@ struct TargetRowView: View {
             ForEach(targetResult.scanErrors, id: \.self) { err in
                 Label(err, systemImage: "lock.fill")
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(DustyTheme.danger)
                     .lineLimit(3)
             }
         }
