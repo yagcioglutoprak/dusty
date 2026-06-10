@@ -8,9 +8,11 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [
         .library(name: "CleanerEngine", targets: ["CleanerEngine"]),
+        .executable(name: "dusty", targets: ["DustyCLI"]),
     ],
     targets: [
         .target(name: "CleanerEngine"),
+        .executableTarget(name: "DustyCLI", dependencies: ["CleanerEngine"]),
         .testTarget(name: "CleanerEngineTests", dependencies: ["CleanerEngine"]),
     ]
 )
