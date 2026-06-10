@@ -45,23 +45,57 @@ Dusty appears in your menu bar as a disk icon with your free space next to it.
 Prefer to build it yourself instead of downloading? See
 [Build from source](#build-from-source) at the bottom.
 
+## Command line
+
+The same engine, allowlist, and safety rules, scriptable. The `dusty` CLI ships
+inside the app bundle and the Homebrew cask links it into your `PATH`:
+
+```bash
+dusty scan                      # measure all three levels, deletes nothing
+dusty scan --json               # the same, machine-readable
+dusty clean                     # print the full deletion plan for the Safe level
+dusty clean --yes               # actually delete it
+dusty clean --level developer --trash --yes   # park dev caches in the Trash
+dusty targets                   # print the entire allowlist
+```
+
+`clean` never touches anything without `--yes`, only ever deletes the items the
+app would auto-select (installers, Xcode archives, simulators, Docker, and AI
+models stay manual-pick only), and skips any target whose app is open. Installed
+from the DMG instead of brew? Link it once:
+
+```bash
+ln -s /Applications/Dusty.app/Contents/MacOS/dusty /usr/local/bin/dusty
+```
+
+There are also two Shortcuts actions, "Clean Safe Items" and "Get Reclaimable
+Space", so Dusty can sit in any macOS automation.
+
 ## What it cleans
 
 Three levels, from "do this anytime" to "look before you leap."
 
 | Level | What it clears | Why it is safe |
 | --- | --- | --- |
-| **Safe** | User caches, app logs, Trash, browser caches, and app caches (Chrome, Slack, Discord, Spotify, VS Code, Cursor, Signal, Obsidian) | Regenerates on its own, zero functional impact |
+| **Safe** | User caches, app logs, Trash, browser caches, and app caches (Chrome, Slack, Discord, Spotify, VS Code, Cursor, Signal, Obsidian, Microsoft Teams, Zoom update installers, Telegram media cache) | Regenerates on its own, zero functional impact |
 | **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM), dev tool caches in `~/.cache`, JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
-| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs | Per-file checklist, nothing goes without a tick |
+| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs, opt-in Ollama models | Per-file checklist, nothing goes without a tick |
 
 Every scan is concurrent, shows live progress, and reports the exact bytes per
 target before you commit to anything. It is quick, too: a full three-level scan
 of a working dev machine (M3, ~18 GB of junk across 866 paths) takes about 5
 seconds.
 
+Every target folds open into its individual items, each with a checkbox, so you
+can keep one specific cache out of a clean without skipping the whole target.
+
 Every clean can be undone for a few seconds afterwards, at every level. Items
-pass through the Trash first, so a misclick costs you nothing.
+pass through the Trash first, so a misclick costs you nothing. The panel keeps a
+running total of what Dusty has reclaimed on your Mac since you installed it.
+
+Prefer it hands-off? An opt-in schedule (off by default) runs the Safe level
+daily, weekly, or every two weeks, skips anything whose app is open, and sends a
+notification with the result. Everything still lands in the deletion log.
 
 ## How it compares
 
@@ -74,6 +108,7 @@ The honest version, set against the paid cleaners (CleanMyMac and the like):
 | What it can delete | A fixed allowlist, nothing outside it | Broad categories, not all of them visible |
 | Sizes shown before deleting | Always, per path | Varies |
 | Undo and a written deletion log | Yes | Varies |
+| CLI and Shortcuts automation | Yes | Rare |
 | Account or telemetry | None | Often |
 
 ## Why you can trust it
@@ -91,7 +126,8 @@ delete. It enforces:
   library, Music, Movies, Mail, iCloud Drive, Keychains, and Application Support
   are rejected even as prefixes. The only Application Support exceptions are the
   specific cache subfolders named by registered targets (Chrome, Slack, Discord,
-  Spotify, VS Code, Cursor, Signal, Obsidian caches), never an app's whole folder.
+  Spotify, VS Code, Cursor, Signal, Obsidian, Telegram caches, Zoom's update
+  folder), never an app's whole folder.
 - **No symlink escapes.** Symlinks are never followed, including a symlinked
   parent directory: the path is resolved and re-checked against the allowlist, so
   a delete cannot walk out of an allowed directory.
@@ -132,10 +168,13 @@ Without it, those few paths are skipped, the rest works fine.
 ## Settings
 
 - Menu bar refresh interval (default 30s), and free space as GB or a percentage
+- Show or hide the "N GB to clean" suffix in the menu bar
 - Background auto-scan and how often it runs (default every 4h), or turn it off
+- Scheduled auto-clean of the Safe level (opt-in, off by default)
 - Dry run by default
 - Keep Developer and Deep items in the Trash instead of purging after Undo
 - Age threshold for Deep level logs (default 30 days)
+- Lifetime statistics and a recent-cleans history
 
 ## How it is put together
 
