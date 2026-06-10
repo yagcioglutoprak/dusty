@@ -144,9 +144,19 @@ struct TargetRowView: View {
     let targetResult: TargetScanResult
     let onTogglePath: (String, String) -> Void
     let onSelectAll: (String, Bool) -> Void
+    /// Auto-cleaned targets start folded; manual-pick targets always show their items.
+    @State private var showsPaths = false
 
     private var selectedInTarget: Int {
         targetResult.resolvedPaths.filter(\.isSelected).count
+    }
+
+    private var isManualPick: Bool { targetResult.target.needsUserSelection }
+    private var pathsVisible: Bool { isManualPick || showsPaths }
+
+    /// Largest first: the items worth reviewing are the ones holding the space.
+    private var sortedPaths: [ResolvedPath] {
+        targetResult.resolvedPaths.sorted { $0.estimatedBytes > $1.estimatedBytes }
     }
 
     var body: some View {
@@ -155,7 +165,7 @@ struct TargetRowView: View {
                 Text(targetResult.target.displayName)
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                if targetResult.target.needsUserSelection && !targetResult.resolvedPaths.isEmpty {
+                if pathsVisible && !targetResult.resolvedPaths.isEmpty {
                     Text("\(selectedInTarget)/\(targetResult.resolvedPaths.count)")
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.tertiary)
@@ -177,24 +187,43 @@ struct TargetRowView: View {
                     .foregroundStyle(DustyTheme.warn)
             }
 
-            if targetResult.target.needsUserSelection {
-                ForEach(targetResult.resolvedPaths) { path in
-                    HStack(alignment: .top, spacing: 6) {
-                        Toggle(isOn: Binding(
-                            get: { path.isSelected },
-                            set: { _ in onTogglePath(targetResult.id, path.id) }
-                        )) {
-                            PathLabel(path: path)
+            if pathsVisible {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(sortedPaths) { path in
+                        HStack(alignment: .top, spacing: 6) {
+                            Toggle(isOn: Binding(
+                                get: { path.isSelected },
+                                set: { _ in onTogglePath(targetResult.id, path.id) }
+                            )) {
+                                PathLabel(path: path)
+                            }
+                            .toggleStyle(.checkbox)
                         }
-                        .toggleStyle(.checkbox)
+                        .padding(.leading, 4)
+                        .padding(.vertical, 3)
                     }
-                    .padding(.leading, 4)
                 }
-            } else if !targetResult.resolvedPaths.isEmpty {
-                Text("\(targetResult.resolvedPaths.count) item\(targetResult.resolvedPaths.count == 1 ? "" : "s") · cleaned automatically")
+            }
+
+            if !isManualPick && !targetResult.resolvedPaths.isEmpty {
+                Button {
+                    withAnimation(DustyTheme.revealSpring) { showsPaths.toggle() }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.bold))
+                            .rotationEffect(.degrees(showsPaths ? 90 : 0))
+                        Text(showsPaths
+                             ? "Hide items"
+                             : "\(targetResult.resolvedPaths.count) item\(targetResult.resolvedPaths.count == 1 ? "" : "s") · review or untick")
+                    }
                     .font(.caption)
                     .foregroundStyle(.tertiary)
-                    .padding(.leading, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 4)
+                .accessibilityLabel("\(showsPaths ? "Hide" : "Show") the \(targetResult.resolvedPaths.count) items of \(targetResult.target.displayName)")
             }
 
             ForEach(targetResult.scanErrors, id: \.self) { err in
