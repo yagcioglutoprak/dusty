@@ -52,13 +52,13 @@ struct MainPanelView: View {
         ZStack {
             DustyTheme.panelBackground
             RadialGradient(
-                colors: [DustyTheme.gold.opacity(0.05), .clear],
+                colors: [DustyTheme.gold.opacity(0.07), .clear],
                 center: UnitPoint(x: 0.5, y: 0.12),
                 startRadius: 4,
-                endRadius: 280
+                endRadius: 290
             )
             LinearGradient(
-                colors: [.clear, Color.black.opacity(0.04)],
+                colors: [.clear, Color.black.opacity(0.05)],
                 startPoint: .center,
                 endPoint: .bottom
             )
@@ -109,37 +109,42 @@ struct MainPanelView: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            HStack {
-                HStack(spacing: 7) {
+            HStack(spacing: 9) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(DustyTheme.brandGradient)
+                        .frame(width: 26, height: 26)
+                        .shadow(color: DustyTheme.goldDeep.opacity(0.35), radius: 4, y: 1)
                     Image(systemName: "sparkles")
-                        .font(.body)
-                        .foregroundStyle(DustyTheme.gold)
-                    Text("Dusty")
-                        .font(.title3.weight(.bold))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(DustyTheme.onGold)
                 }
+                .accessibilityHidden(true)
+                Text("Dusty")
+                    .font(.title3.weight(.bold))
                 Spacer()
                 if viewModel.isDiskLow {
                     Text("LOW DISK")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(.red)
+                        .foregroundStyle(DustyTheme.danger)
                         .tracking(0.5)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
-                        .background(Capsule().fill(Color.red.opacity(0.14)))
+                        .background(Capsule().fill(DustyTheme.danger.opacity(0.14)))
                 }
                 Button {
                     viewModel.showSettings = true
                 } label: {
                     Image(systemName: "gearshape.fill")
-                        .font(.title3)
+                        .font(.body.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(DustyIconButtonStyle())
                 .help("Settings")
                 .accessibilityLabel("Settings")
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 16)
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
 
             FreeSpaceHeaderView(
                 freeBytes: viewModel.freeSpaceBytes,
@@ -236,28 +241,19 @@ struct MainPanelView: View {
                     } else {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.body.weight(.semibold))
+                            .foregroundStyle(DustyTheme.gold)
                     }
                     Text(viewModel.isScanning ? "Scanning…" : viewModel.hasScannedOnce ? "Rescan" : "Scan disk")
-                        .font(.body.weight(.semibold))
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .fill(Color.primary.opacity(0.06))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                .stroke(DustyTheme.hairline, lineWidth: 1)
-                        )
-                )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DustyGhostButtonStyle())
             .disabled(viewModel.isScanning || viewModel.isCleaning)
 
             if let progress = viewModel.scanProgress, viewModel.isScanning {
                 VStack(spacing: 6) {
                     ProgressView(value: progress.fraction)
                         .progressViewStyle(.linear)
+                        .tint(DustyTheme.gold)
                     HStack {
                         Text("\(progress.completed)/\(progress.total) · \(progress.currentTargetName)")
                             .font(.caption)
@@ -285,7 +281,7 @@ struct MainPanelView: View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.circle.fill")
                 .font(.body)
-                .foregroundStyle(.red)
+                .foregroundStyle(DustyTheme.danger)
             Text(message)
                 .font(.subheadline)
             Spacer()
@@ -294,12 +290,14 @@ struct MainPanelView: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DustyIconButtonStyle())
+            .accessibilityLabel("Dismiss error")
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(Color.red.opacity(0.1)))
-        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).stroke(Color.red.opacity(0.2), lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(DustyTheme.danger.opacity(0.10)))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).stroke(DustyTheme.danger.opacity(0.22), lineWidth: 1))
     }
 
     private func toggleLevel(_ level: CleanupLevel) {
@@ -359,11 +357,14 @@ private struct AllCleanCard: View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(DustyTheme.levelColor(1).opacity(0.15))
+                    .fill(DustyTheme.success.opacity(0.14))
+                    .frame(width: 44, height: 44)
+                Circle()
+                    .strokeBorder(DustyTheme.success.opacity(0.25), lineWidth: 1)
                     .frame(width: 44, height: 44)
                 Image(systemName: "checkmark.seal.fill")
                     .font(.title2)
-                    .foregroundStyle(DustyTheme.levelColor(1))
+                    .foregroundStyle(DustyTheme.success)
                     .symbolRenderingMode(.hierarchical)
             }
             .accessibilityHidden(true)
@@ -390,7 +391,7 @@ private struct OverlayScrim: View {
     let onTap: () -> Void
 
     var body: some View {
-        Color.black.opacity(0.3)
+        Color.black.opacity(0.38)
             .contentShape(Rectangle())
             .onTapGesture(perform: onTap)
             .transition(.opacity)

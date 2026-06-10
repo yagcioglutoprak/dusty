@@ -19,7 +19,7 @@ struct ReclaimSummaryView: View {
                         .foregroundStyle(DustyTheme.gold)
                     Text("RECLAIMABLE")
                         .font(.caption.weight(.bold))
-                        .tracking(1.5)
+                        .tracking(1.8)
                         .foregroundStyle(.secondary)
                 }
                 Text(DiskSpaceMonitor.formatBytes(totalBytes))
@@ -60,19 +60,10 @@ struct ReclaimSummaryView: View {
                     Text(safeBytes > 0
                          ? "Clean Safe · \(DiskSpaceMonitor.formatBytes(safeBytes))"
                          : "Nothing safe to clean")
-                        .font(.body.weight(.bold))
+                        .monospacedDigit()
                 }
-                .foregroundStyle(DustyTheme.onGold)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(DustyTheme.brandGradient)
-                        .shadow(color: DustyTheme.goldDeep.opacity(0.3), radius: 7, y: 3)
-                )
-                .opacity(canCleanSafe && !isCleaningSafe ? 1 : 0.5)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DustyPrimaryButtonStyle())
             .disabled(safeBytes == 0 || isCleaningSafe || !canCleanSafe)
         }
         .padding(17)
@@ -81,9 +72,28 @@ struct ReclaimSummaryView: View {
             RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+        .background(
+            // The brand moment: a faint pool of gold light behind the headline,
+            // so the hero card reads warmer than the cards below it.
+            RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [DustyTheme.gold.opacity(0.10), DustyTheme.gold.opacity(0.02)],
+                        startPoint: .topLeading,
+                        endPoint: .bottom
+                    )
+                )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: DustyTheme.cornerRadius, style: .continuous)
-                .stroke(DustyTheme.hairline, lineWidth: 1)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [DustyTheme.gold.opacity(0.30), DustyTheme.hairline],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 1
+                )
         )
         .shadow(color: DustyTheme.cardShadow, radius: 12, y: 5)
     }
