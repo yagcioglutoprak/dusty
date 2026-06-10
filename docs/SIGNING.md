@@ -53,6 +53,13 @@ xcodebuild -project Dusty.xcodeproj -scheme Dusty -configuration Release \
 
 APP="build/Release/Build/Products/Release/Dusty.app"
 
+# The dusty CLI ships inside the app bundle. It MUST go in Contents/Helpers,
+# never Contents/MacOS: on a case-insensitive filesystem "dusty" overwrites
+# the "Dusty" main executable there.
+swift build -c release --product dusty --package-path ../CleanerEngine
+mkdir -p "$APP/Contents/Helpers"
+cp ../CleanerEngine/.build/release/dusty "$APP/Contents/Helpers/dusty"
+
 # Sparkle ships its nested helpers (Autoupdate, Updater.app, the XPC services)
 # ad-hoc signed. Re-sign them with the Developer ID inside-out, deepest first and
 # the app last, or notarization rejects the build. The app's outer signature is
@@ -60,7 +67,7 @@ APP="build/Release/Build/Products/Release/Dusty.app"
 ID="Developer ID Application: TOPRAK YAGCIOGLU (W4AZ5462W5)"
 SPK="$APP/Contents/Frameworks/Sparkle.framework"
 for item in "$SPK"/Versions/B/XPCServices/*.xpc "$SPK"/Versions/B/Autoupdate \
-            "$SPK"/Versions/B/Updater.app "$SPK"; do
+            "$SPK"/Versions/B/Updater.app "$SPK" "$APP/Contents/Helpers/dusty"; do
   codesign --force --options runtime --timestamp --sign "$ID" "$item"
 done
 codesign --force --options runtime --timestamp \

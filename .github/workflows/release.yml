@@ -85,6 +85,29 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" \
             build
 
+      - name: Embed CLI and re-sign inside-out
+        if: steps.check.outputs.ok == 'true'
+        env:
+          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          # The dusty CLI ships inside the app bundle. It goes in Contents/Helpers,
+          # not Contents/MacOS: a case-insensitive filesystem would collide
+          # "dusty" with the "Dusty" main executable there.
+          swift build -c release --product dusty --package-path CleanerEngine
+          APP="Dusty/build/Build/Products/Release/Dusty.app"
+          mkdir -p "$APP/Contents/Helpers"
+          cp CleanerEngine/.build/release/dusty "$APP/Contents/Helpers/dusty"
+          # Sparkle's nested helpers build ad-hoc signed; notarization rejects
+          # them unless re-signed with the Developer ID, deepest first, app last.
+          SPK="$APP/Contents/Frameworks/Sparkle.framework"
+          for item in "$SPK"/Versions/B/XPCServices/*.xpc "$SPK"/Versions/B/Autoupdate \
+                      "$SPK"/Versions/B/Updater.app "$SPK" "$APP/Contents/Helpers/dusty"; do
+            codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$item"
+          done
+          codesign --force --options runtime --timestamp \
+            --entitlements Dusty/Dusty/Dusty.entitlements --sign "$SIGN_IDENTITY" "$APP"
+          codesign --verify --deep --strict "$APP"
+
       - name: Package, notarize, staple
         if: steps.check.outputs.ok == 'true'
         env:
