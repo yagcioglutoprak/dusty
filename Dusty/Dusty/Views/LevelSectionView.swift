@@ -121,7 +121,7 @@ struct LevelSectionView: View {
         HStack(spacing: 8) {
             Image(systemName: "app.dashed")
                 .foregroundStyle(DustyTheme.warn)
-            Text("\(blockingApps.joined(separator: ", ")) open, its cache is skipped. Quit to include it.")
+            Text(blockingBannerText)
                 .font(.caption)
                 .foregroundStyle(DustyTheme.warn)
                 .fixedSize(horizontal: false, vertical: true)
@@ -130,6 +130,13 @@ struct LevelSectionView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DustyTheme.warn.opacity(0.10)))
         .padding(.bottom, 8)
+    }
+
+    private var blockingBannerText: String {
+        let names = blockingApps.formatted(.list(type: .and))
+        return blockingApps.count == 1
+            ? "\(names) is open, so its cache is skipped. Quit it to include it."
+            : "\(names) are open, so their caches are skipped. Quit them to include them."
     }
 }
 

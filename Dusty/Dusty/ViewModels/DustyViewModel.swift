@@ -139,13 +139,26 @@ final class DustyViewModel: ObservableObject {
         return DiskSpaceMonitor.formatBytes(backgroundReclaimableBytes)
     }
 
+    /// A scan result older than this is refreshed automatically when the panel opens.
+    private static let scanStaleAfter: TimeInterval = 3600
+
     func scanIfNeeded(settings: AppSettings) {
-        if scanResult == nil && !isScanning { startScan(settings: settings) }
+        guard !isScanning, !isCleaning else { return }
+        guard let scannedAt = scanResult?.scannedAt else {
+            startScan(settings: settings)
+            return
+        }
+        // The app runs for weeks; without this, the panel keeps showing whatever the
+        // first open found. Cached sizing makes the refresh near-instant when the
+        // cache directories haven't changed.
+        if Date().timeIntervalSince(scannedAt) > Self.scanStaleAfter {
+            startScan(settings: settings, sizingPolicy: .cached)
+        }
     }
 
-    func startScan(settings: AppSettings) {
+    func startScan(settings: AppSettings, sizingPolicy: SizeCachePolicy = .fresh) {
         scanTask?.cancel()
-        scanTask = Task { await scan(settings: settings) }
+        scanTask = Task { await scan(settings: settings, sizingPolicy: sizingPolicy) }
     }
 
     func cancelScan() {
@@ -154,14 +167,14 @@ final class DustyViewModel: ObservableObject {
         scanProgress = nil
     }
 
-    func scan(settings: AppSettings, clearResult: Bool = true) async {
+    func scan(settings: AppSettings, clearResult: Bool = true, sizingPolicy: SizeCachePolicy = .fresh) async {
         guard !isScanning else { return }
         isScanning = true
         errorMessage = nil
         if clearResult { lastDeletionResult = nil }
         scanProgress = ScanProgress(completed: 0, total: CleanupTargetRegistry.all.count, currentTargetName: "Starting…")
 
-        let result = await engine.scan(options: settings.cleanerOptions) { [weak self] progress in
+        let result = await engine.scan(options: settings.cleanerOptions, sizingPolicy: sizingPolicy) { [weak self] progress in
             Task { @MainActor in
                 guard self?.isScanning == true else { return }
                 self?.scanProgress = progress

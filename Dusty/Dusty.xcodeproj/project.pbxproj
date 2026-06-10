@@ -14,6 +14,7 @@
 		1DF86AC8135E1F7BC0ABCF2A /* ReclaimSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1DADFC3B655A0F3ABECC2E /* ReclaimSummaryView.swift */; };
 		2791E0B41D497D4FA7E67F57 /* WelcomeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCB78A7F0473197C6C1764F /* WelcomeCard.swift */; };
 		3011C579D83F771AD2D3387B /* ConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20054ADE9B6A55A7FFAC287 /* ConfirmationSheet.swift */; };
+		38E41B6C84DC29DF23522B73 /* RelativeTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64AE312B6E01D2252DC39939 /* RelativeTime.swift */; };
 		4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */; };
 		576D1523A3F53ACCB529265E /* AppProcessChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */; };
 		6B7BC6A048FBF3960E5CF301 /* LevelSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850F46E756285E383D2C0624 /* LevelSectionView.swift */; };
@@ -34,6 +35,7 @@
 		3F1DADFC3B655A0F3ABECC2E /* ReclaimSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReclaimSummaryView.swift; sourceTree = "<group>"; };
 		42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 		4E1E00426119970F92C2079A /* AutoScanController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoScanController.swift; sourceTree = "<group>"; };
+		64AE312B6E01D2252DC39939 /* RelativeTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelativeTime.swift; sourceTree = "<group>"; };
 		6EE1880A2830CF07228CCB6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPanelView.swift; sourceTree = "<group>"; };
 		850F46E756285E383D2C0624 /* LevelSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSectionView.swift; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 				F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */,
 				4E1E00426119970F92C2079A /* AutoScanController.swift */,
 				B5263AB93087BA090F6125B4 /* Notifications.swift */,
+				64AE312B6E01D2252DC39939 /* RelativeTime.swift */,
 				42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */,
 			);
 			path = Utilities;
@@ -231,6 +234,7 @@
 				4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */,
 				1207961D090D64D814274B0C /* Notifications.swift in Sources */,
 				1DF86AC8135E1F7BC0ABCF2A /* ReclaimSummaryView.swift in Sources */,
+				38E41B6C84DC29DF23522B73 /* RelativeTime.swift in Sources */,
 				D66C7C1373F8CE4DDE938665 /* Updater.swift in Sources */,
 				2791E0B41D497D4FA7E67F57 /* WelcomeCard.swift in Sources */,
 			);

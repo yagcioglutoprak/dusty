@@ -51,3 +51,6 @@ docs/superpowers/
 scripts/winlist.swift
 scripts/sample_colors.swift
 scripts/capture_demo.sh
+
+# Release artifacts staged locally
+*.dmg

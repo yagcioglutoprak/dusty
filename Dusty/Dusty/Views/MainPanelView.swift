@@ -266,7 +266,9 @@ struct MainPanelView: View {
                     }
                 }
             } else if let scannedAt = viewModel.scanResult?.scannedAt {
-                Text("Last scan: \(scannedAt.formatted(date: .omitted, time: .shortened))")
+                // Relative on purpose: a bare clock time reads as today even when the
+                // scan is days old, and this panel can sit unopened for weeks.
+                Text("Last scan: \(RelativeTime.label(for: scannedAt))")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -371,7 +373,7 @@ private struct AllCleanCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("All clean")
                     .font(.body.weight(.semibold))
-                Text(lastScanAt.map { "Nothing reclaimable as of \($0.formatted(date: .omitted, time: .shortened)). Dusty keeps watching in the background." }
+                Text(lastScanAt.map { "Nothing reclaimable (checked \(RelativeTime.label(for: $0))). Dusty keeps watching in the background." }
                      ?? "Nothing reclaimable right now. Dusty keeps watching in the background.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
