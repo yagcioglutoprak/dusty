@@ -207,6 +207,51 @@ public enum CleanupTargetRegistry {
             requiresAppClosed: "Obsidian",
             requiresAppBundleID: "md.obsidian"
         ),
+        CleanupTarget(
+            // New (sandboxed) Teams keeps its caches in the standard container
+            // location, which the ~/Library/Caches sweep does not reach.
+            id: "teams-cache",
+            displayName: "Microsoft Teams Cache",
+            level: .safe,
+            pathTemplates: ["~/Library/Containers/com.microsoft.teams2/Data/Library/Caches"],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Microsoft Teams",
+            requiresAppBundleID: "com.microsoft.teams2"
+        ),
+        CleanupTarget(
+            // Zoom keeps every downloaded update installer around. Only the
+            // AutoUpdater folder is listed, never zoom.us itself (meeting data, settings).
+            id: "zoom-updates",
+            displayName: "Zoom Update Installers",
+            level: .safe,
+            pathTemplates: ["~/Library/Application Support/zoom.us/AutoUpdater"],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "zoom.us",
+            requiresAppBundleID: "us.zoom.xos"
+        ),
+        CleanupTarget(
+            // Media re-downloads from Telegram's cloud on demand. Resolved dynamically:
+            // the App Store build keeps a per-account media cache inside its group
+            // container, the telegram.org build uses fixed cache dirs under tdata.
+            // Only those cache dirs are reachable, never chat databases or settings.
+            id: "telegram-media-cache",
+            displayName: "Telegram Media Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/Telegram Desktop/tdata/user_data/cache",
+                "~/Library/Application Support/Telegram Desktop/tdata/user_data/media_cache"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Telegram",
+            requiresAppBundleID: "ru.keepcoder.Telegram",
+            usesDynamicPaths: true
+        ),
     ]
 
     // MARK: - Level 2: Developer
@@ -471,6 +516,16 @@ public enum CleanupTargetRegistry {
             category: "Logs",
             requiresIndividualSelection: true,
             respectsLogAgeThreshold: true
+        ),
+        CleanupTarget(
+            // Models are deliberate multi-gigabyte downloads, not regenerable junk:
+            // strictly opt-in, one explicit checkbox for the whole store.
+            id: "ollama-models",
+            displayName: "Ollama Models",
+            level: .deep,
+            pathTemplates: ["~/.ollama/models"],
+            category: "AI Models",
+            requiresExplicitOptIn: true
         ),
         CleanupTarget(
             id: "time-machine-snapshots",

@@ -178,6 +178,12 @@ public struct SafetyValidator: @unchecked Sendable {
             return [expandPath("~/Downloads")]
         case "old-simulators":
             return [expandPath("~/Library/Developer/CoreSimulator/Devices")]
+        case "telegram-media-cache":
+            return [
+                expandPath("~/Library/Application Support/Telegram Desktop/tdata/user_data/cache"),
+                expandPath("~/Library/Application Support/Telegram Desktop/tdata/user_data/media_cache"),
+                expandPath("~/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram")
+            ]
         default:
             return []
         }
@@ -298,9 +304,35 @@ public struct SafetyValidator: @unchecked Sendable {
             return installerPathsInDownloads()
         case "old-simulators":
             return unusedSimulatorDevicePaths()
+        case "telegram-media-cache":
+            return telegramMediaCachePaths()
         default:
             return target.pathTemplates.map { expandPath($0) }
         }
+    }
+
+    /// Telegram's re-downloadable media caches, and nothing else of Telegram's.
+    /// The telegram.org build uses two fixed cache dirs under tdata; the App Store
+    /// build keeps one media cache per signed-in account inside its group container.
+    /// Chat databases (`postbox/db`) and settings are never resolved.
+    private func telegramMediaCachePaths() -> [String] {
+        var paths: [String] = []
+        for template in [
+            "~/Library/Application Support/Telegram Desktop/tdata/user_data/cache",
+            "~/Library/Application Support/Telegram Desktop/tdata/user_data/media_cache"
+        ] {
+            let path = expandPath(template)
+            if fileManager.fileExists(atPath: path) { paths.append(path) }
+        }
+        let group = expandPath("~/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram")
+        for base in [group, (group as NSString).appendingPathComponent("appstore")] {
+            guard let entries = try? fileManager.contentsOfDirectory(atPath: base) else { continue }
+            for entry in entries where entry.hasPrefix("account-") {
+                let media = (base as NSString).appendingPathComponent("\(entry)/postbox/media")
+                if fileManager.fileExists(atPath: media) { paths.append(media) }
+            }
+        }
+        return paths
     }
 
     /// Individual `.xcarchive` bundles under `~/Library/Developer/Xcode/Archives/<date>/`.
