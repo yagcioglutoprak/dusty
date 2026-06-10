@@ -275,6 +275,7 @@ struct FullDiskAccessBanner: View {
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
     @ObservedObject var updater: Updater
+    @ObservedObject private var statsStore = CleanStatsStore.shared
     @Environment(\.dismiss) private var dismiss
     var onRefreshIntervalChanged: (TimeInterval) -> Void
     var onDone: (() -> Void)? = nil
@@ -300,6 +301,7 @@ struct SettingsView: View {
                 Section("General") {
                     Toggle("Launch at login", isOn: $settings.launchAtLogin)
                     Toggle("Show free space as a percentage", isOn: $settings.menuBarShowsPercentage)
+                    Toggle("Show reclaimable space in the menu bar", isOn: $settings.menuBarShowsReclaimable)
                 }
 
                 Section("Refresh") {
@@ -326,6 +328,56 @@ struct SettingsView: View {
                     Text("Quietly keeps the menu bar figure current. Never deletes anything on its own.")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
+                }
+
+                Section("Auto clean") {
+                    Toggle("Clean Safe items on a schedule", isOn: $settings.autoCleanEnabled)
+                        .disabled(settings.dryRunDefault)
+                    Picker("Frequency", selection: $settings.autoCleanFrequencyDays) {
+                        Text("Every day").tag(1)
+                        Text("Every week").tag(7)
+                        Text("Every two weeks").tag(14)
+                    }
+                    .disabled(!settings.autoCleanEnabled || settings.dryRunDefault)
+                    Text(settings.dryRunDefault
+                         ? "Off while dry run is the default: nothing is deleted unattended."
+                         : "Safe-level caches only, apps that are open are skipped, and a notification reports what was reclaimed. Every path lands in the deletion log.")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+
+                if statsStore.cleanCount > 0 {
+                    Section("Statistics") {
+                        LabeledContent("Reclaimed all-time") {
+                            Text(DiskSpaceMonitor.formatBytes(statsStore.lifetimeBytes))
+                                .monospacedDigit()
+                        }
+                        LabeledContent("Cleans") {
+                            Text("\(statsStore.cleanCount)")
+                                .monospacedDigit()
+                        }
+                        if let since = statsStore.firstCleanAt {
+                            LabeledContent("Since") {
+                                Text(since, format: .dateTime.day().month().year())
+                            }
+                        }
+                        if !statsStore.recent.isEmpty {
+                            DisclosureGroup("Recent cleans") {
+                                ForEach(statsStore.recent) { record in
+                                    HStack {
+                                        Text(RelativeTime.label(for: record.date))
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text("Level \(record.level)")
+                                            .foregroundStyle(.tertiary)
+                                        Text(DiskSpaceMonitor.formatBytes(record.bytes))
+                                            .monospacedDigit()
+                                    }
+                                    .font(.caption)
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Section("Updates") {

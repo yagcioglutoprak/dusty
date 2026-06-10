@@ -12,6 +12,7 @@ final class AutoScanController {
     private weak var viewModel: DustyViewModel?
     private let settings: AppSettings
     private var periodicTask: Task<Void, Never>?
+    private var autoCleanTask: Task<Void, Never>?
     private var wakeObserver: NSObjectProtocol?
 
     init(viewModel: DustyViewModel, settings: AppSettings) {
@@ -22,6 +23,7 @@ final class AutoScanController {
 
     deinit {
         periodicTask?.cancel()
+        autoCleanTask?.cancel()
         if let wakeObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver)
         }
@@ -35,10 +37,14 @@ final class AutoScanController {
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in self?.viewModel?.requestBackgroundScan(trigger: .wake) }
+            Task { @MainActor in
+                self?.viewModel?.requestBackgroundScan(trigger: .wake)
+                self?.viewModel?.autoCleanIfDue()
+            }
         }
 
         startPeriodic()
+        startAutoCleanHeartbeat()
     }
 
     private func startPeriodic() {
@@ -50,6 +56,22 @@ final class AutoScanController {
                 try? await Task.sleep(nanoseconds: UInt64(Double(hours) * 3600 * 1_000_000_000))
                 guard !Task.isCancelled else { break }
                 self?.viewModel?.requestBackgroundScan(trigger: .periodic)
+                self?.viewModel?.autoCleanIfDue()
+            }
+        }
+    }
+
+    /// The scan heartbeat can be hours apart, and an auto-clean whose period lapsed
+    /// while the Mac was off should not wait half a day for the next scan tick. An
+    /// hourly due-check is free: `autoCleanIfDue` refuses unless the period elapsed.
+    private func startAutoCleanHeartbeat() {
+        autoCleanTask?.cancel()
+        autoCleanTask = Task { @MainActor [weak self] in
+            // A few minutes after launch, then hourly.
+            try? await Task.sleep(nanoseconds: 180 * 1_000_000_000)
+            while !Task.isCancelled {
+                self?.viewModel?.autoCleanIfDue()
+                try? await Task.sleep(nanoseconds: 3600 * 1_000_000_000)
             }
         }
     }

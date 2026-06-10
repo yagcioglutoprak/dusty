@@ -132,6 +132,50 @@ final class DustyViewModel: ObservableObject {
         isBackgroundScanning = false
     }
 
+    // MARK: - Scheduled auto-clean (opt-in)
+
+    private var isAutoCleaning = false
+
+    /// Runs the opt-in scheduled Safe clean when its period has elapsed. Called from
+    /// the same triggers as the background scanner. Quietly refuses while the user is
+    /// mid-anything, in Low Power Mode, or when dry-run-by-default is on (that user
+    /// asked for nothing to be deleted unattended).
+    func autoCleanIfDue() {
+        let settings = AppSettings.shared
+        guard settings.autoCleanEnabled,
+              settings.hasSeenWelcome,
+              !settings.dryRunDefault,
+              !isScanning, !isCleaning, !isAutoCleaning,
+              !ProcessInfo.processInfo.isLowPowerModeEnabled else { return }
+        guard let last = settings.lastAutoCleanAt else {
+            // Enabled before this baseline existed: start the period now.
+            settings.lastAutoCleanAt = Date()
+            return
+        }
+        let interval = TimeInterval(max(1, settings.autoCleanFrequencyDays)) * 86400
+        guard Date().timeIntervalSince(last) >= interval else { return }
+        isAutoCleaning = true
+        Task { await performAutoClean() }
+    }
+
+    private func performAutoClean() async {
+        defer { isAutoCleaning = false }
+        // Stamp before running so a failing clean does not retry on every trigger.
+        AppSettings.shared.lastAutoCleanAt = Date()
+        guard let outcome = await SafeCleanRunner.run(engine: engine) else { return }
+        refreshFreeSpace()
+        if outcome.bytesFreed > 0 {
+            AutoCleanNotifier.notify(bytesFreed: outcome.bytesFreed)
+        }
+        // Keep the menu bar figure and an open panel honest after the clean.
+        backgroundReclaimableBytes = 0
+        lastBackgroundScanAt = Date()
+        freeSpaceAtLastBackgroundScan = freeSpaceBytes
+        if scanResult != nil {
+            await rescan(level: .safe, settings: AppSettings.shared)
+        }
+    }
+
     /// Formatted reclaimable space for the menu bar, or nil when there is nothing worth
     /// showing yet (no scan completed, or under 1 GB) so the label never reads "0 GB to clean".
     var menuBarReclaimableSuffix: String? {
@@ -246,6 +290,10 @@ final class DustyViewModel: ObservableObject {
             errorMessage = "Cleanup failed: check permissions or try again."
         }
 
+        if !options.dryRun && result.bytesFreed > 0 {
+            CleanStatsStore.shared.record(level: level, bytes: result.bytesFreed, items: result.entries.count)
+        }
+
         // Only items actually parked in the Trash can be undone or later purged.
         // Permanent deletes (e.g. Empty Trash, which bypasses the Trash) are already gone.
         let restorable = result.entries.filter { $0.trashedPath != nil }
@@ -275,6 +323,10 @@ final class DustyViewModel: ObservableObject {
         let level = undoLevel
         undoEntries = []
         canUndo = false
+        // The space comes back, so the lifetime stat must give it back too.
+        if let undone = lastDeletionResult?.bytesFreed {
+            CleanStatsStore.shared.unrecordLast(bytes: undone)
+        }
         lastDeletionResult = nil
         clearFreeSpaceFloor()
         let engine = self.engine

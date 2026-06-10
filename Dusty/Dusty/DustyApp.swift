@@ -27,7 +27,7 @@ struct DustyApp: App {
     /// once a background scan has found a meaningful amount.
     private var menuBarText: String {
         let label = settings.menuBarShowsPercentage ? viewModel.menuBarPercentLabel : viewModel.menuBarLabel
-        if let reclaimable = viewModel.menuBarReclaimableSuffix {
+        if settings.menuBarShowsReclaimable, let reclaimable = viewModel.menuBarReclaimableSuffix {
             return "\(label) · \(reclaimable) to clean"
         }
         return label

@@ -24,11 +24,33 @@ final class AppSettings: ObservableObject {
     @AppStorage("autoScanEnabled") var autoScanEnabled: Bool = true
     @AppStorage("autoScanIntervalHours") var autoScanIntervalHours: Int = 4
 
+    /// Scheduled auto-clean (opt-in, default OFF): a Safe-level clean on a cadence,
+    /// announced with a notification. Enabling starts the period from now, so the
+    /// first clean never fires the moment the toggle flips.
+    @Published var autoCleanEnabled: Bool = UserDefaults.standard.bool(forKey: "autoCleanEnabled") {
+        didSet {
+            UserDefaults.standard.set(autoCleanEnabled, forKey: "autoCleanEnabled")
+            if autoCleanEnabled && lastAutoCleanAt == nil { lastAutoCleanAt = Date() }
+        }
+    }
+    @AppStorage("autoCleanFrequencyDays") var autoCleanFrequencyDays: Int = 7
+
+    var lastAutoCleanAt: Date? {
+        get { UserDefaults.standard.object(forKey: "lastAutoCleanAt") as? Date }
+        set { UserDefaults.standard.set(newValue, forKey: "lastAutoCleanAt") }
+    }
+
     /// Menu bar free space as "37% free" instead of "182 GB free". `@Published` rather
     /// than `@AppStorage` because the menu bar label has to re-render the moment the
     /// toggle flips (`@AppStorage` inside an ObservableObject does not publish).
     @Published var menuBarShowsPercentage: Bool = UserDefaults.standard.bool(forKey: "menuBarShowsPercentage") {
         didSet { UserDefaults.standard.set(menuBarShowsPercentage, forKey: "menuBarShowsPercentage") }
+    }
+
+    /// The "N GB to clean" suffix in the menu bar. On by default; same `@Published`
+    /// pattern as above so the label re-renders the moment it flips.
+    @Published var menuBarShowsReclaimable: Bool = (UserDefaults.standard.object(forKey: "menuBarShowsReclaimable") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(menuBarShowsReclaimable, forKey: "menuBarShowsReclaimable") }
     }
 
     /// First-run flag: the welcome overlay shows until the user starts (or skips)

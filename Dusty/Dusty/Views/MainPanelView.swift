@@ -6,6 +6,7 @@ struct MainPanelView: View {
     @ObservedObject var viewModel: DustyViewModel
     @ObservedObject var settings: AppSettings
     @ObservedObject var updater: Updater
+    @ObservedObject private var stats = CleanStatsStore.shared
     @State private var showFDABanner = true
     @State private var appeared = false
 
@@ -312,6 +313,18 @@ struct MainPanelView: View {
 
     private var footer: some View {
         VStack(spacing: 8) {
+            if stats.cleanCount > 0 {
+                // The number people screenshot: what Dusty has earned on this Mac.
+                HStack(spacing: 5) {
+                    Image(systemName: "sparkles")
+                        .font(.caption2)
+                        .foregroundStyle(DustyTheme.gold)
+                    Text("\(DiskSpaceMonitor.formatBytes(stats.lifetimeBytes)) reclaimed all-time · \(stats.cleanCount) clean\(stats.cleanCount == 1 ? "" : "s")")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+            }
             HStack {
                 Button("Deletion log") {
                     viewModel.openDeletionLog()
