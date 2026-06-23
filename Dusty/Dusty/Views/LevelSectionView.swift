@@ -6,6 +6,7 @@ struct LevelSectionView: View {
     let levelResult: LevelScanResult?
     let selectedBytes: Int64
     let isExpanded: Bool
+    let isScanning: Bool
     let isCleaning: Bool
     let canClean: Bool
     let blockingApps: [String]
@@ -93,7 +94,10 @@ struct LevelSectionView: View {
                 }
             }
         } else {
-            Text("Scanning…")
+            // No result yet: only say "Scanning…" when a scan is actually running.
+            // After the user skips the welcome scan, nothing is in flight, so the
+            // honest state is "not scanned" rather than a spinner that never resolves.
+            Text(isScanning ? "Scanning…" : "Not scanned yet. Run a scan to see items.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

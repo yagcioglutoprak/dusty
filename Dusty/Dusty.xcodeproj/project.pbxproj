@@ -18,6 +18,7 @@
 		38E41B6C84DC29DF23522B73 /* RelativeTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64AE312B6E01D2252DC39939 /* RelativeTime.swift */; };
 		4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */; };
 		576D1523A3F53ACCB529265E /* AppProcessChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */; };
+		5A47149A9B71840BE7742911 /* CleanCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6636ABCA430E3763C8ED2E8A /* CleanCoordinator.swift */; };
 		5E844856B49F7ECED2FCB0FC /* SafeCleanRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1010F37A5FA14BF5F25585 /* SafeCleanRunner.swift */; };
 		6B7BC6A048FBF3960E5CF301 /* LevelSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850F46E756285E383D2C0624 /* LevelSectionView.swift */; };
 		73C204FD5D80BD572D56BF8B /* AutoScanController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E1E00426119970F92C2079A /* AutoScanController.swift */; };
@@ -40,6 +41,7 @@
 		4B6A31FA0432E380AC82F5A4 /* DustyIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DustyIntents.swift; sourceTree = "<group>"; };
 		4E1E00426119970F92C2079A /* AutoScanController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoScanController.swift; sourceTree = "<group>"; };
 		64AE312B6E01D2252DC39939 /* RelativeTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelativeTime.swift; sourceTree = "<group>"; };
+		6636ABCA430E3763C8ED2E8A /* CleanCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanCoordinator.swift; sourceTree = "<group>"; };
 		6EE1880A2830CF07228CCB6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPanelView.swift; sourceTree = "<group>"; };
 		850F46E756285E383D2C0624 /* LevelSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSectionView.swift; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 			children = (
 				F6A7A3177D4E2F4CE710F41D /* AppProcessChecker.swift */,
 				4E1E00426119970F92C2079A /* AutoScanController.swift */,
+				6636ABCA430E3763C8ED2E8A /* CleanCoordinator.swift */,
 				B5263AB93087BA090F6125B4 /* Notifications.swift */,
 				64AE312B6E01D2252DC39939 /* RelativeTime.swift */,
 				9F1010F37A5FA14BF5F25585 /* SafeCleanRunner.swift */,
@@ -242,6 +245,7 @@
 				576D1523A3F53ACCB529265E /* AppProcessChecker.swift in Sources */,
 				CBB9B6AD138D84D9BF08BC60 /* AppSettings.swift in Sources */,
 				73C204FD5D80BD572D56BF8B /* AutoScanController.swift in Sources */,
+				5A47149A9B71840BE7742911 /* CleanCoordinator.swift in Sources */,
 				195EE1EFC23634E72F5AA945 /* CleanStats.swift in Sources */,
 				3011C579D83F771AD2D3387B /* ConfirmationSheet.swift in Sources */,
 				C537FF7D921343C05A7A8F26 /* DustyApp.swift in Sources */,

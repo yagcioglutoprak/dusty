@@ -13,6 +13,9 @@ struct CleanSafeIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {
+        if CleanCoordinator.shared.isCleaning {
+            return .result(value: "0 B", dialog: "Dusty is already cleaning. Try again in a moment.")
+        }
         guard let outcome = await SafeCleanRunner.run(engine: CleanerEngine()) else {
             return .result(value: "0 B", dialog: "The scan failed, nothing was cleaned.")
         }

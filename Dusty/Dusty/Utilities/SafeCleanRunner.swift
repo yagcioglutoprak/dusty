@@ -15,6 +15,12 @@ enum SafeCleanRunner {
     }
 
     static func run(engine: CleanerEngine) async -> Outcome? {
+        // Refuse to start if any clean (panel, Shortcuts, or auto-clean) is already in
+        // flight: two deletes over the same targets would race on the filesystem and
+        // skew the stats. nil here means "busy", distinct from a real failure.
+        guard CleanCoordinator.shared.beginClean() else { return nil }
+        defer { CleanCoordinator.shared.endClean() }
+
         let scan = await engine.scan(levels: [.safe], sizingPolicy: .cached)
         guard let levelResult = scan.levelResults[.safe] else { return nil }
 

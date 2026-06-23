@@ -38,7 +38,8 @@ enum ProcessRunner {
     static func run(
         _ executablePath: String,
         arguments: [String],
-        timeout: TimeInterval
+        timeout: TimeInterval,
+        drainGrace: TimeInterval = 2
     ) -> Output? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executablePath)
@@ -63,14 +64,18 @@ enum ProcessRunner {
         let errHandle = errPipe.fileHandleForReading
         let drained = DispatchGroup()
         let drainQueue = DispatchQueue(label: "sh.toprak.dusty.process-drain", attributes: .concurrent)
+        // `readToEnd` (throwing) rather than `readDataToEndOfFile`: the latter raises an
+        // uncatchable Objective-C exception if the handle is closed mid-read, while the
+        // former surfaces a Swift error we can swallow. That lets the grace path below
+        // force the handles closed to unblock a wedged read without crashing.
         drained.enter()
         drainQueue.async {
-            outBox.store(outHandle.readDataToEndOfFile())
+            outBox.store((try? outHandle.readToEnd()) ?? Data())
             drained.leave()
         }
         drained.enter()
         drainQueue.async {
-            errBox.store(errHandle.readDataToEndOfFile())
+            errBox.store((try? errHandle.readToEnd()) ?? Data())
             drained.leave()
         }
 
@@ -83,8 +88,19 @@ enum ProcessRunner {
                 _ = exited.wait(timeout: .now() + 2)
             }
         }
-        // Once the process is dead the pipes hit EOF, so this wait is bounded.
-        drained.wait()
+
+        // The process is dead, so its own write ends are closed and the reads normally
+        // hit EOF at once. But a grandchild that inherited the pipe's write end (a
+        // backgrounded `sleep`, a daemon helper that simctl/docker can spawn) keeps it
+        // open, and the read would then block until that grandchild exits. Bound the
+        // wait: if EOF has not arrived within the grace window, force the read handles
+        // closed so the drain threads unblock, and return what was captured rather than
+        // hang the caller. The orphaned grandchild is left to exit on its own.
+        if drained.wait(timeout: .now() + drainGrace) == .timedOut {
+            try? outHandle.close()
+            try? errHandle.close()
+            _ = drained.wait(timeout: .now() + 1)
+        }
 
         if timedOut { return nil }
         return Output(status: process.terminationStatus, stdout: outBox.text, stderr: errBox.text)

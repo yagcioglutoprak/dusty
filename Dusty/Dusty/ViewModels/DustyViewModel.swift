@@ -38,6 +38,9 @@ final class DustyViewModel: ObservableObject {
     /// Whether the trashed items are purged when the undo window closes (reclaiming
     /// space) or stay in the Trash because the user prefers emptying it themselves.
     private var purgeAfterUndo = true
+    /// Whether the last clean was credited to the lifetime stats, so an undo only
+    /// reverses a figure that was actually recorded (keep-in-Trash cleans are not).
+    private var lastCleanRecordedInStats = false
     private var wasDiskLow = false
 
     private var autoScan: AutoScanController?
@@ -85,13 +88,17 @@ final class DustyViewModel: ObservableObject {
             freeSpaceBytes = real
         }
         totalSpaceBytes = diskMonitor.totalSpaceBytes()
-        let low = isDiskLow
-        if low && !wasDiskLow {
-            LowDiskNotifier.notifyLowDisk(freeBytes: freeSpaceBytes)
+        // Low-disk detection keys off the REAL free space, not the post-clean projected
+        // floor: during the floor window `freeSpaceBytes` is optimistic and could mask a
+        // genuine low-disk state (or vice versa). The displayed value can stay projected;
+        // the crossing and its notification must reflect ground truth.
+        let realLow = totalSpaceBytes > 0 && Double(real) / Double(totalSpaceBytes) < Self.lowDiskRatio
+        if realLow && !wasDiskLow {
+            LowDiskNotifier.notifyLowDisk(freeBytes: real)
             // A fresh scan at the low-disk line keeps the menu bar figure honest.
             requestBackgroundScan(trigger: .lowDisk)
         }
-        wasDiskLow = low
+        wasDiskLow = realLow
 
         // Caches grew enough to be worth re-checking: rescan off the existing sampler.
         if let baseline = freeSpaceAtLastBackgroundScan,
@@ -160,9 +167,15 @@ final class DustyViewModel: ObservableObject {
 
     private func performAutoClean() async {
         defer { isAutoCleaning = false }
-        // Stamp before running so a failing clean does not retry on every trigger.
+        guard let outcome = await SafeCleanRunner.run(engine: engine) else {
+            // nil means a clean is already in flight (gate held): leave the clock
+            // untouched so the next trigger retries this period instead of losing it.
+            return
+        }
+        // The clean ran (whether or not it found anything), so the period is satisfied:
+        // stamp now. Stamping here rather than before the run means a run that could not
+        // start does not silently push the next auto-clean out by a full period.
         AppSettings.shared.lastAutoCleanAt = Date()
-        guard let outcome = await SafeCleanRunner.run(engine: engine) else { return }
         refreshFreeSpace()
         if outcome.bytesFreed > 0 {
             AutoCleanNotifier.notify(bytesFreed: outcome.bytesFreed)
@@ -254,6 +267,13 @@ final class DustyViewModel: ObservableObject {
             return
         }
         pendingConfirmationLevel = nil
+        // Hold the process-wide gate so a Shortcuts action or scheduled auto-clean
+        // cannot delete the same targets underneath this clean.
+        guard CleanCoordinator.shared.beginClean() else {
+            errorMessage = "A clean is already in progress. Try again in a moment."
+            return
+        }
+        defer { CleanCoordinator.shared.endClean() }
         finalizeUndo()
         isCleaning = true
         cleaningLevel = level
@@ -290,9 +310,15 @@ final class DustyViewModel: ObservableObject {
             errorMessage = "Cleanup failed: check permissions or try again."
         }
 
-        if !options.dryRun && result.bytesFreed > 0 {
+        // Only credit lifetime stats when this clean actually reclaims space now.
+        // "Keep in Trash" cleans (Developer/Deep) do not free disk until the user
+        // empties the Trash, which Dusty never observes, so crediting them would
+        // overstate the lifetime total. `willReclaim` is the same gate the projected
+        // free-space bump uses, keeping the receipt and the stat consistent.
+        if willReclaim {
             CleanStatsStore.shared.record(level: level, bytes: result.bytesFreed, items: result.entries.count)
         }
+        lastCleanRecordedInStats = willReclaim
 
         // Only items actually parked in the Trash can be undone or later purged.
         // Permanent deletes (e.g. Empty Trash, which bypasses the Trash) are already gone.
@@ -323,10 +349,12 @@ final class DustyViewModel: ObservableObject {
         let level = undoLevel
         undoEntries = []
         canUndo = false
-        // The space comes back, so the lifetime stat must give it back too.
-        if let undone = lastDeletionResult?.bytesFreed {
+        // The space comes back, so the lifetime stat must give it back too, but only
+        // if this clean was actually credited (keep-in-Trash cleans never were).
+        if lastCleanRecordedInStats, let undone = lastDeletionResult?.bytesFreed {
             CleanStatsStore.shared.unrecordLast(bytes: undone)
         }
+        lastCleanRecordedInStats = false
         lastDeletionResult = nil
         clearFreeSpaceFloor()
         let engine = self.engine
@@ -511,7 +539,9 @@ final class DustyViewModel: ObservableObject {
         return Double(freeSpaceBytes) / Double(totalSpaceBytes)
     }
 
-    var isDiskLow: Bool { freeSpaceRatio < 0.15 }
+    /// Fraction of the volume below which the disk is treated as low.
+    private static let lowDiskRatio = 0.15
+    var isDiskLow: Bool { freeSpaceRatio < Self.lowDiskRatio }
 
     private func mutateScanResult(level: CleanupLevel, _ mutate: (inout LevelScanResult) -> Void) {
         guard var scan = scanResult, var levelResult = scan.levelResults[level] else { return }

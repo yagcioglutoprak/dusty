@@ -37,4 +37,22 @@ final class ProcessRunnerTests: XCTestCase {
     func testMissingBinaryReturnsNil() {
         XCTAssertNil(ProcessRunner.run("/no/such/binary", arguments: [], timeout: 5))
     }
+
+    func testGrandchildHoldingPipeDoesNotHangDrain() {
+        // The shell exits immediately but leaves a backgrounded grandchild that inherited
+        // the stdout pipe and keeps its write end open. A plain readDataToEndOfFile then
+        // never sees EOF and blocks until the grandchild's natural exit (~5s). The bounded
+        // drain must return within the grace window instead, the exact wedge ProcessRunner
+        // exists to survive.
+        let start = Date()
+        let result = ProcessRunner.run(
+            "/bin/sh",
+            arguments: ["-c", "sleep 5 & echo hi"],
+            timeout: 5,
+            drainGrace: 0.5
+        )
+        let elapsed = Date().timeIntervalSince(start)
+        XCTAssertLessThan(elapsed, 3, "Drain must be bounded even when a grandchild keeps the pipe open")
+        XCTAssertNotNil(result, "The process itself exited cleanly; only the orphan drain was slow")
+    }
 }
