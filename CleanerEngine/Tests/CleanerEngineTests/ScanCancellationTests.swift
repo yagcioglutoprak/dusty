@@ -29,10 +29,18 @@ final class ScanCancellationTests: XCTestCase {
     }
 
     /// Runs `body` inside a task that is guaranteed to be cancelled before the work starts.
+    ///
+    /// Suspends on a real cancellation handler rather than spinning on
+    /// `Task.yield()`. The spin form livelocks under a cooperative executor:
+    /// when the executor is contended (CI macOS runners under load), the
+    /// yielding task gets rescheduled without the cancel signal ever being
+    /// delivered, so `Task.isCancelled` is never observed and the test hangs.
+    /// `withTaskCancellationHandler` resumes the boxed continuation exactly
+    /// once when cancellation lands, deterministically, with no polling.
     private func runCancelled<T: Sendable>(_ body: @Sendable @escaping () -> T) async -> T {
+        let gate = CancellationGate()
         let task = Task { () -> T in
-            // Hold until the cancel below lands, so the walk starts already cancelled.
-            while !Task.isCancelled { await Task.yield() }
+            await gate.waitForCancellation()
             return body()
         }
         task.cancel()
@@ -67,8 +75,9 @@ final class ScanCancellationTests: XCTestCase {
             homeDirectory: tempHome
         )
 
+        let gate = CancellationGate()
         let task = Task { () -> FullScanResult in
-            while !Task.isCancelled { await Task.yield() }
+            await gate.waitForCancellation()
             return await engine.scan(levels: [.safe])
         }
         task.cancel()
@@ -91,7 +100,47 @@ final class ScanCancellationTests: XCTestCase {
         // A later cached read must re-walk and return the real size, not a cancelled partial.
         let size = calculator.allocatedSize(at: cacheRoot.path, policy: .cached)
         let fresh = calculator.allocatedSize(at: cacheRoot.path, policy: .fresh)
-        XCTAssertEqual(size, fresh, "Cancelled partial totals must never be served from cache")
+        XCTAssertEqual(size, fresh, "Cancelled partial totals must never be served from the cache")
         XCTAssertGreaterThan(size, 0)
+    }
+}
+
+/// A one-shot gate that suspends a task until it is cancelled, deterministically.
+///
+/// Per-instance (not static), so concurrent tests do not share state. The
+/// continuation is stored under a lock; if cancellation lands before the
+/// operation registers its continuation, the flag is set and the continuation
+/// (when it arrives) resumes immediately. `resume()` is called exactly once.
+/// `@unchecked Sendable`: both stored properties are touched only under the
+/// lock, so the type is safe to share across tasks despite the mutable state.
+private final class CancellationGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Void, Never>?
+    private var cancelled = false
+
+    func waitForCancellation() async {
+        await withTaskCancellationHandler {
+            await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                self.lock.lock()
+                if self.cancelled {
+                    self.lock.unlock()
+                    cont.resume()
+                } else {
+                    self.continuation = cont
+                    self.lock.unlock()
+                }
+            }
+        } onCancel: {
+            self.resume()
+        }
+    }
+
+    private func resume() {
+        lock.lock()
+        let cont = continuation
+        continuation = nil
+        cancelled = true
+        lock.unlock()
+        cont?.resume()
     }
 }
