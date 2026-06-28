@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+# Push runs use a per-commit group so rapid pushes (a release train) never
+# cancel each other. A cancelled run renders the repo badge as "failing", so
+# letting push runs complete keeps it honest. PR runs keep a per-ref group so
+# force-pushes still skip redundant macOS minutes without affecting the badge.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.event_name == 'pull_request' && format('ci-pr-{0}', github.ref) || format('ci-push-{0}', github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   engine-tests:
