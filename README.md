@@ -178,6 +178,9 @@ Without it, those few paths are skipped, the rest works fine.
 
 ## How it is put together
 
+For a one-screen map of the app, engine, and safety boundary, see
+[docs/architecture.md](docs/architecture.md).
+
 ```
 CleanerEngine/    Swift package: scan, size, delete, safety. No SwiftUI. Unit tested.
 Dusty/            SwiftUI menu bar app (MenuBarExtra) that renders the engine.
