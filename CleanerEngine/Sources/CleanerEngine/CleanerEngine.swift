@@ -184,7 +184,8 @@ public final class CleanerEngine: @unchecked Sendable {
                         displayName: (file as NSString).lastPathComponent,
                         targetID: target.id,
                         estimatedBytes: bytes,
-                        isSelected: target.needsUserSelection ? false : true
+                        isSelected: target.needsUserSelection ? false : true,
+                        lastModified: modificationDate(atPath: file)
                     ))
                 }
             } else if target.deletesContentsNotDirectory && isDir.boolValue {
@@ -199,7 +200,8 @@ public final class CleanerEngine: @unchecked Sendable {
                             displayName: (childPath as NSString).lastPathComponent,
                             targetID: target.id,
                             estimatedBytes: bytes,
-                            isSelected: target.needsUserSelection ? false : true
+                            isSelected: target.needsUserSelection ? false : true,
+                            lastModified: modificationDate(atPath: childPath)
                         ))
                     }
                 }
@@ -210,7 +212,8 @@ public final class CleanerEngine: @unchecked Sendable {
                     displayName: (path as NSString).lastPathComponent,
                     targetID: target.id,
                     estimatedBytes: bytes,
-                    isSelected: target.needsUserSelection ? false : true
+                    isSelected: target.needsUserSelection ? false : true,
+                    lastModified: modificationDate(atPath: path)
                 ))
             }
         }
@@ -223,6 +226,13 @@ public final class CleanerEngine: @unchecked Sendable {
             return validator.resolveAllowlistedPaths(for: target)
         }
         return target.pathTemplates.map { validator.expandPath($0) }
+    }
+
+    /// One stat, no walk. A directory's mtime only reflects direct-child changes,
+    /// so this is a shallow signal; SmartAdvisor re-verifies with a bounded walk
+    /// before claiming a cache is untouched.
+    private func modificationDate(atPath path: String) -> Date? {
+        (try? fileManager.attributesOfItem(atPath: path))?[.modificationDate] as? Date
     }
 
     private func logFilesOlderThan(days: Int, in directory: String) -> [String] {
