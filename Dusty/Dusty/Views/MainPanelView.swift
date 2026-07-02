@@ -181,6 +181,12 @@ struct MainPanelView: View {
                     }
                 }
 
+                if viewModel.hasScannedOnce && !viewModel.isScanning {
+                    InsightsCard(forecast: viewModel.diskForecast, advisories: viewModel.advisories)
+                        .padding(.horizontal, 16)
+                        .transition(.scale(scale: 0.96).combined(with: .opacity))
+                }
+
                 if showFDABanner && needsFDABanner {
                     FullDiskAccessBanner {
                         viewModel.openFullDiskAccessSettings()
@@ -226,6 +232,7 @@ struct MainPanelView: View {
             }
             .padding(.vertical, 16)
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: viewModel.isScanning)
+            .animation(.easeInOut(duration: 0.25), value: viewModel.advisories)
             .animation(.easeInOut(duration: 0.25), value: viewModel.lastDeletionResult != nil)
             .animation(.easeInOut(duration: 0.25), value: viewModel.errorMessage)
             .animation(.spring(response: 0.35, dampingFraction: 0.85), value: viewModel.expandedLevels)

@@ -27,8 +27,15 @@ final class DustyViewModel: ObservableObject {
     @Published var backgroundReclaimableBytes: Int64 = 0
     @Published var lastBackgroundScanAt: Date?
 
+    /// Scan-derived observations (orphaned tool data, untouched caches) and the
+    /// disk's direction of travel. Read-only pointers; nothing here selects or
+    /// deletes anything.
+    @Published var advisories: [Advisory] = []
+    @Published var diskForecast: DiskForecast?
+
     private let engine = CleanerEngine()
     private let diskMonitor = DiskSpaceMonitor()
+    private let diskHistory = DiskHistoryStore.shared
     private var refreshTask: Task<Void, Never>?
     private var scanTask: Task<Void, Never>?
     private var undoEntries: [DeletionEntry] = []
@@ -104,6 +111,12 @@ final class DustyViewModel: ObservableObject {
         if let baseline = freeSpaceAtLastBackgroundScan,
            baseline - freeSpaceBytes > freeSpaceDropTriggerBytes {
             requestBackgroundScan(trigger: .freeSpaceDrop)
+        }
+
+        // Feed the trend with the REAL figure, never the post-clean projected floor:
+        // an optimistic sample would flatten the very slope a clean should improve.
+        if diskHistory.record(freeBytes: real) {
+            diskForecast = diskHistory.forecast()
         }
     }
 
@@ -247,6 +260,21 @@ final class DustyViewModel: ObservableObject {
         hasScannedOnce = true
         isScanning = false
         scanProgress = nil
+        refreshAdvisories(for: result)
+    }
+
+    /// Advisories walk parts of the scanned trees to double-check staleness, so
+    /// they run off the main actor and land whenever they land.
+    private func refreshAdvisories(for result: FullScanResult) {
+        diskForecast = diskHistory.forecast()
+        Task { [weak self] in
+            let found = await Task.detached(priority: .utility) {
+                SmartAdvisor().advisories(for: result)
+            }.value
+            // A newer scan may have finished meanwhile; only publish for the current one.
+            guard let self, self.scanResult?.scannedAt == result.scannedAt else { return }
+            self.advisories = found
+        }
     }
 
     func requestClean(level: CleanupLevel) {

@@ -105,6 +105,10 @@ public struct ResolvedPath: Identifiable, Codable, Sendable, Hashable {
     public var estimatedBytes: Int64
     public var isSelected: Bool
     public var errorMessage: String?
+    /// When the item was last written to, from the scan. Nil for external commands
+    /// and for items the scan could not stat. Feeds the "untouched for N days"
+    /// advisories; decodes as nil from scan results recorded before it existed.
+    public var lastModified: Date?
 
     public init(
         id: String = UUID().uuidString,
@@ -113,7 +117,8 @@ public struct ResolvedPath: Identifiable, Codable, Sendable, Hashable {
         targetID: String,
         estimatedBytes: Int64 = 0,
         isSelected: Bool = true,
-        errorMessage: String? = nil
+        errorMessage: String? = nil,
+        lastModified: Date? = nil
     ) {
         self.id = id
         self.path = path
@@ -122,6 +127,7 @@ public struct ResolvedPath: Identifiable, Codable, Sendable, Hashable {
         self.estimatedBytes = estimatedBytes
         self.isSelected = isSelected
         self.errorMessage = errorMessage
+        self.lastModified = lastModified
     }
 }
 
