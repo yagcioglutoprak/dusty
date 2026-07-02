@@ -208,6 +208,7 @@ struct MainPanelView: View {
                         levelResult: viewModel.levelResult(for: level),
                         selectedBytes: viewModel.selectedLevelBytes(level),
                         isExpanded: viewModel.expandedLevels.contains(level),
+                        isScanning: viewModel.isScanning,
                         isCleaning: viewModel.isCleaning && viewModel.cleaningLevel == level,
                         canClean: viewModel.canClean(level: level),
                         blockingApps: viewModel.blockingApps(for: level),

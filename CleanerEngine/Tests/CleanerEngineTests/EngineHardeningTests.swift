@@ -101,6 +101,45 @@ final class EngineHardeningTests: XCTestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: secretFile.path), "Secret file must be untouched")
     }
 
+    func testAllowlistRootSymlinkedIntoProhibitedAreaIsRefused() throws {
+        // The allowlist root is a specific cache subfolder...
+        let target = CleanupTarget(
+            id: "relocatable-cache",
+            displayName: "Relocatable Cache",
+            level: .safe,
+            pathTemplates: ["~/Library/Caches/relocated"],
+            category: "Test",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        )
+        let validator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, bootVolumeURL: tempHome, allowedTargets: [target])
+
+        // ...but real user data lives in a PROHIBITED area (~/Documents).
+        let documents = tempHome.appendingPathComponent("Documents")
+        try fileManager.createDirectory(at: documents, withIntermediateDirectories: true)
+        let secretFile = documents.appendingPathComponent("taxes.pdf")
+        try Data("private".utf8).write(to: secretFile)
+
+        // The allowlist ROOT ITSELF is a symlink that points into Documents. The
+        // surface path stays under Caches (innocent), but it resolves into Documents.
+        let cacheRoot = tempHome.appendingPathComponent("Library/Caches")
+        try fileManager.createDirectory(at: cacheRoot, withIntermediateDirectories: true)
+        let relocated = cacheRoot.appendingPathComponent("relocated")
+        try fileManager.createSymbolicLink(at: relocated, withDestinationURL: documents)
+
+        let candidate = relocated.appendingPathComponent("taxes.pdf").path
+        let result = validator.validateDeletionPath(candidate, for: target)
+
+        guard case .failure(let error) = result else {
+            XCTFail("A path that resolves into a prohibited area must be refused")
+            return
+        }
+        if case .prohibitedPath = error {} else {
+            XCTFail("Expected .prohibitedPath, got \(error)")
+        }
+        XCTAssertTrue(fileManager.fileExists(atPath: secretFile.path), "Protected file must be untouched")
+    }
+
     func testNormalNestedCachePathStillValidates() throws {
         let target = CleanupTargetRegistry.level1.first { $0.id == "user-caches" }!
         let validator = SafetyValidator(fileManager: fileManager, homeDirectory: tempHome, bootVolumeURL: tempHome, allowedTargets: [target])

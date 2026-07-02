@@ -234,8 +234,30 @@ public struct SafetyValidator: @unchecked Sendable {
         }
     }
 
+    /// True when `path` is a prohibited home subtree. Checked twice: against the
+    /// surface (standardized) path, and against the symlink-resolved path. The second
+    /// pass is the real defense: an allowlist root that is itself a symlink into a
+    /// protected location (say `~/Library/Caches/x` -> `~/Documents`) produces a
+    /// surface path that looks innocent (under Caches) but resolves into Documents.
+    /// Without resolving here, only the containment check at `validateDeletionPath`
+    /// would run on the resolved path, and it merely confirms the leaf is *inside*
+    /// the (also-resolved) root, which it is. So the prohibition must be re-evaluated
+    /// after resolution, against a resolved home (so the `/var` -> `/private/var`
+    /// system symlink does not break the prefix match).
     private func matchesProhibitedPath(_ path: String) -> Bool {
-        let homePath = homeDirectory.path
+        if prohibits(path, relativeToHome: homeDirectory.path) { return true }
+
+        let resolved = realPath(path)
+        let resolvedHome = realPath(homeDirectory.path)
+        if resolved != path || resolvedHome != homeDirectory.path {
+            if prohibits(resolved, relativeToHome: resolvedHome) { return true }
+        }
+        return false
+    }
+
+    /// Prefix logic for `matchesProhibitedPath`, parameterized on the home root so it
+    /// can be applied to both the surface and the symlink-resolved path.
+    private func prohibits(_ path: String, relativeToHome homePath: String) -> Bool {
         for prohibited in Self.prohibitedPrefixes {
             let blocked = (homePath as NSString).appendingPathComponent(prohibited)
             if path == blocked || path.hasPrefix(blocked + "/") {
