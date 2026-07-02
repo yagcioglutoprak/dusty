@@ -28,7 +28,7 @@ final class PackageManagerTargetTests: XCTestCase {
     }
 
     func testDownloadCachesAreDeveloperLevelAndRegenerate() {
-        for id in ["uv-cache", "bun-cache", "deno-cache"] {
+        for id in ["uv-cache", "bun-cache", "deno-cache", "dart-pub-cache"] {
             let t = target(id)
             XCTAssertEqual(t.level, .developer, "\(id) belongs in the Developer level")
             XCTAssertTrue(t.regenerates, "\(id) is a pure download cache")
@@ -50,6 +50,9 @@ final class PackageManagerTargetTests: XCTestCase {
             ("bun-cache", "~/.bun"),
             ("deno-cache", "~/Library/Caches"),
             ("maven-repository", "~/.m2"),
+            // The directory above ~/.pub-cache is the home folder itself,
+            // which must never validate.
+            ("dart-pub-cache", "~"),
         ] {
             let t = target(id)
             let v = validator(for: t)

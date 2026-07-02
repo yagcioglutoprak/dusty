@@ -87,6 +87,33 @@ public enum CleanupTargetRegistry {
             requiresAppClosed: "Arc",
             requiresAppBundleID: "company.thebrowser.Browser"
         ),
+        CleanupTarget(
+            // Firefox keeps its per-profile disk cache (cache2) under this root.
+            id: "firefox-cache",
+            displayName: "Firefox Cache",
+            level: .safe,
+            pathTemplates: ["~/Library/Caches/Firefox/Profiles"],
+            category: "Browser",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Firefox",
+            requiresAppBundleID: "org.mozilla.firefox"
+        ),
+        CleanupTarget(
+            // Edge is Chromium, so the layout mirrors the Chrome target.
+            id: "edge-cache",
+            displayName: "Edge Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Caches/Microsoft Edge",
+                "~/Library/Application Support/Microsoft Edge/Default/Service Worker/CacheStorage"
+            ],
+            category: "Browser",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Microsoft Edge",
+            requiresAppBundleID: "com.microsoft.edgemac"
+        ),
         // App caches under Application Support that the blanket ~/Library/Caches sweep
         // misses. Only the named cache subfolders are listed: never the app's whole
         // Application Support folder, which holds real data.
@@ -206,6 +233,23 @@ public enum CleanupTargetRegistry {
             regenerates: true,
             requiresAppClosed: "Obsidian",
             requiresAppBundleID: "md.obsidian"
+        ),
+        CleanupTarget(
+            id: "notion-cache",
+            displayName: "Notion Cache",
+            level: .safe,
+            pathTemplates: [
+                "~/Library/Application Support/Notion/Cache",
+                "~/Library/Application Support/Notion/Code Cache",
+                "~/Library/Application Support/Notion/GPUCache",
+                "~/Library/Application Support/Notion/DawnGraphiteCache",
+                "~/Library/Application Support/Notion/DawnWebGPUCache"
+            ],
+            category: "App Cache",
+            deletesContentsNotDirectory: true,
+            regenerates: true,
+            requiresAppClosed: "Notion",
+            requiresAppBundleID: "notion.id"
         ),
         CleanupTarget(
             // New (sandboxed) Teams keeps its caches in the standard container
@@ -405,6 +449,15 @@ public enum CleanupTargetRegistry {
             displayName: "Bun Install Cache",
             level: .developer,
             pathTemplates: ["~/.bun/install/cache"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
+            id: "dart-pub-cache",
+            displayName: "Dart and Flutter pub cache",
+            level: .developer,
+            pathTemplates: ["~/.pub-cache"],
             category: "Package Manager",
             deletesContentsNotDirectory: true,
             regenerates: true

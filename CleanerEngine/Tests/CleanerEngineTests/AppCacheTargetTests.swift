@@ -33,7 +33,7 @@ final class AppCacheTargetTests: XCTestCase {
 
     private let appCacheIDs = [
         "discord-cache", "spotify-cache", "vscode-cache", "slack-cache",
-        "cursor-cache", "signal-cache", "obsidian-cache",
+        "cursor-cache", "signal-cache", "obsidian-cache", "notion-cache",
     ]
 
     func testAppCacheTargetsAreSafeRegeneratingAndAppClosedGated() {
@@ -73,6 +73,14 @@ final class AppCacheTargetTests: XCTestCase {
                         "A non-cache sibling holding real data must be blocked")
         XCTAssertNotNil(v.validateDeletionPath(appSupport(""), for: discord).error,
                         "Application Support itself must be blocked")
+
+        // Notion: same property. The app folder holds real workspace data.
+        let notion = target("notion-cache")
+        let nv = validator(for: notion)
+        XCTAssertNotNil(nv.validateDeletionPath(appSupport("Notion"), for: notion).error,
+                        "Notion's whole Application Support folder must be blocked")
+        XCTAssertNotNil(nv.validateDeletionPath(appSupport("Notion/Local Storage"), for: notion).error,
+                        "A non-cache Notion sibling holding real data must be blocked")
     }
 
     func testAppCacheTargetsLiveInTheSafeLevelRegistry() {
