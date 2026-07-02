@@ -184,6 +184,9 @@ public struct SafetyValidator: @unchecked Sendable {
                 expandPath("~/Library/Application Support/Telegram Desktop/tdata/user_data/media_cache"),
                 expandPath("~/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram")
             ]
+        case "stale-project-artifacts":
+            // Restores go back under the scanned project roots.
+            return target.pathTemplates.map { expandPath($0) }
         default:
             return []
         }
@@ -328,6 +331,11 @@ public struct SafetyValidator: @unchecked Sendable {
             return unusedSimulatorDevicePaths()
         case "telegram-media-cache":
             return telegramMediaCachePaths()
+        case "stale-project-artifacts":
+            return StaleProjectScanner.staleArtifacts(
+                scanRoots: target.pathTemplates.map { expandPath($0) },
+                fileManager: fileManager
+            ).map(\.path)
         default:
             return target.pathTemplates.map { expandPath($0) }
         }

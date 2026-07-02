@@ -79,7 +79,7 @@ Three levels, from "do this anytime" to "look before you leap."
 | --- | --- | --- |
 | **Safe** | User caches, app logs, Trash, browser caches (Safari, Chrome, Firefox, Edge, Brave, Arc), and app caches (Slack, Discord, Notion, Spotify, VS Code, Cursor, Signal, Obsidian, Microsoft Teams, Zoom update installers, Telegram media cache) | Regenerates on its own, zero functional impact |
 | **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM, Dart/Flutter pub), dev tool caches in `~/.cache`, JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
-| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs, opt-in Ollama models | Per-file checklist, nothing goes without a tick |
+| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs, opt-in Ollama models, stale project artifacts (the `node_modules`, Cargo `target` dir, or virtualenv of a project untouched for a month) | Per-file checklist, nothing goes without a tick |
 
 Every scan is concurrent, shows live progress, and reports the exact bytes per
 target before you commit to anything. It is quick, too: a full three-level scan
@@ -92,6 +92,20 @@ can keep one specific cache out of a clean without skipping the whole target.
 Every clean can be undone for a few seconds afterwards, at every level. Items
 pass through the Trash first, so a misclick costs you nothing. The panel keeps a
 running total of what Dusty has reclaimed on your Mac since you installed it.
+
+The Deep level also looks where cleaners never do: inside your projects. A
+`node_modules` from an app you shipped last year, a Cargo `target` dir from an
+abandoned experiment, a virtualenv for a script that already did its job. The
+rules are strict on purpose. The tool's manifest has to sit right next to the
+artifact (a folder you happened to name `target` is never offered), activity is
+judged by your files and your git history rather than by the artifact itself,
+and everything is a per-item checkbox. If you touch a project between the scan
+and the clean, its artifacts are refused at delete time.
+
+After a scan, the panel points out what a person would spot: 12 GB of
+DerivedData with no Xcode installed anymore, a cache nothing has written to
+since spring, a disk on course to fill up in three weeks. Insights only point;
+they never select or delete anything.
 
 Prefer it hands-off? An opt-in schedule (off by default) runs the Safe level
 daily, weekly, or every two weeks, skips anything whose app is open, and sends a

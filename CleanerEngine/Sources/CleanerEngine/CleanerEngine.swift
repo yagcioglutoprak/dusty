@@ -159,6 +159,30 @@ public final class CleanerEngine: @unchecked Sendable {
             return TargetScanResult(target: target, resolvedPaths: resolvedPaths, scanErrors: scanErrors)
         }
 
+        if target.id == "stale-project-artifacts" {
+            let roots = target.pathTemplates.map { validator.expandPath($0) }
+            let stale = StaleProjectScanner.staleArtifacts(scanRoots: roots, fileManager: fileManager)
+            // Resolve the allowlist once for the whole batch; validating each
+            // artifact through the one-shot API would re-run the project walk
+            // per path.
+            let allowlistedRoots = stale.map(\.path)
+            for artifact in stale {
+                if Task.isCancelled { break }
+                if case .failure = validator.validateDeletionPath(
+                    artifact.path, for: target, allowlistedRoots: allowlistedRoots) { continue }
+                let bytes = sizeCalculator.allocatedSize(at: artifact.path, policy: sizingPolicy)
+                resolvedPaths.append(ResolvedPath(
+                    path: artifact.path,
+                    displayName: "\(artifact.projectName)/\(artifact.artifactName)",
+                    targetID: target.id,
+                    estimatedBytes: bytes,
+                    isSelected: false,
+                    lastModified: artifact.lastActivity
+                ))
+            }
+            return TargetScanResult(target: target, resolvedPaths: resolvedPaths, scanErrors: scanErrors)
+        }
+
         let paths = pathsForScan(target: target, options: options)
 
         for path in paths {

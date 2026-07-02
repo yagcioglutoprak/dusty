@@ -581,6 +581,20 @@ public enum CleanupTargetRegistry {
             requiresExplicitOptIn: true
         ),
         CleanupTarget(
+            // node_modules, Cargo target dirs, virtualenvs, Pods: regenerable build
+            // artifacts inside projects nothing has touched for 30+ days. Detection
+            // is marker-based (the tool's manifest must sit next to the artifact)
+            // and the project's own files decide staleness, so an active project
+            // never shows up. Manual pick per artifact, like everything Deep.
+            id: "stale-project-artifacts",
+            displayName: "Stale Project Artifacts",
+            level: .deep,
+            pathTemplates: StaleProjectScanner.scanRootTemplates,
+            category: "Projects",
+            usesDynamicPaths: true,
+            requiresIndividualSelection: true
+        ),
+        CleanupTarget(
             id: "time-machine-snapshots",
             displayName: "Time Machine Local Snapshots",
             level: .deep,
