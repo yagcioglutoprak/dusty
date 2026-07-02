@@ -245,6 +245,10 @@ struct TargetRowView: View {
 private struct PathLabel: View {
     let path: ResolvedPath
 
+    /// Rows older than this get an age hint next to the size; fresher ages are
+    /// noise ("· 2 hours ago" would just churn).
+    private static let ageHintAfterDays: TimeInterval = 30 * 86400
+
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(path.displayName)
@@ -252,9 +256,18 @@ private struct PathLabel: View {
                 .lineLimit(3)
                 .textSelection(.enabled)
                 .help(path.path)
-            Text(DiskSpaceMonitor.formatBytes(path.estimatedBytes))
+            Text(subtitle)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.tertiary)
         }
+    }
+
+    private var subtitle: String {
+        let size = DiskSpaceMonitor.formatBytes(path.estimatedBytes)
+        if let modified = path.lastModified,
+           Date().timeIntervalSince(modified) > Self.ageHintAfterDays {
+            return "\(size) · untouched \(RelativeTime.label(for: modified))"
+        }
+        return size
     }
 }
