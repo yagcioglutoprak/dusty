@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dusty vs CleanMyMac: free open-source macOS cleanup alternative</title>
-<meta name="description" content="Dusty is a free, open-source CleanMyMac alternative for macOS disk cleanup. Compare pricing, safety, telemetry, source transparency, preview mode, and what each tool is built to clean.">
+<meta name="description" content="Dusty is a free, open-source CleanMyMac alternative for macOS disk cleanup. Compare pricing, safety, telemetry, source transparency, preview mode, CLI automation, and what each tool is built to clean.">
 <meta name="theme-color" content="#111214">
 <link rel="canonical" href="https://toprak.sh/dusty/cleanmymac-alternative/">
 
@@ -30,6 +30,7 @@
       "url": "https://toprak.sh/dusty/cleanmymac-alternative/",
       "name": "Dusty vs CleanMyMac: free open-source macOS cleanup alternative",
       "description": "A comparison page for Mac users considering Dusty as a free, open-source CleanMyMac alternative for disk cleanup.",
+      "dateModified": "2026-07-02",
       "isPartOf": {
         "@type": "WebSite",
         "name": "toprak.sh",
@@ -43,11 +44,11 @@
       "@type": "SoftwareApplication",
       "@id": "https://toprak.sh/dusty/#software",
       "name": "Dusty",
-      "description": "A free, open-source CleanMyMac alternative for macOS disk cleanup that uses allowlisted targets, preview-first deletion, and local logs.",
+      "description": "A free, open-source CleanMyMac alternative for macOS disk cleanup that uses allowlisted targets, preview-first deletion, local logs, a CLI, and Shortcuts actions.",
       "url": "https://toprak.sh/dusty/",
       "image": "https://toprak.sh/dusty/og-card.png",
       "downloadUrl": "https://github.com/yagcioglutoprak/dusty/releases/latest",
-      "softwareVersion": "1.2.0",
+      "softwareVersion": "1.6.0",
       "operatingSystem": "macOS 13+",
       "applicationCategory": "UtilitiesApplication",
       "applicationSubCategory": "Disk cleaner",
@@ -68,7 +69,7 @@
           "name": "Is Dusty a CleanMyMac alternative?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Dusty is a CleanMyMac alternative for Mac users who mainly want disk cleanup. It cleans allowlisted caches, logs, developer artifacts, Xcode data, package-manager caches, browser caches, Trash, and selected installers. It is not an antivirus, app updater, duplicate finder, or privacy scanner."
+            "text": "Dusty is a CleanMyMac alternative for Mac users who mainly want disk cleanup. It cleans allowlisted app caches, browser caches, logs, developer artifacts, Xcode data, package-manager caches, stale project build artifacts, Trash, local Time Machine snapshots, and selected installers. It is not an antivirus, app updater, duplicate finder, or privacy scanner."
           }
         },
         {
@@ -437,7 +438,7 @@
       <aside class="scope-panel reveal" aria-labelledby="scope-title">
         <h3 id="scope-title">What Dusty replaces, and what it does not</h3>
         <ul class="scope-list">
-          <li><b aria-hidden="true"></b><span>Replaces: cache cleanup, logs, Xcode junk, simulators, package-manager caches, Trash, and old installer cleanup.</span></li>
+          <li><b aria-hidden="true"></b><span>Replaces: app and browser cache cleanup, logs, Xcode junk, simulators, package-manager caches, stale project artifacts, Trash, local Time Machine snapshots, and old installer cleanup.</span></li>
           <li><b aria-hidden="true"></b><span>Improves transparency: open-source rules, preview-first cleanup, local deletion logs, and no root mode.</span></li>
           <li class="no"><b aria-hidden="true"></b><span>Does not replace: antivirus, duplicate finder, app updater, VPN, privacy scanner, or background monitoring suite features.</span></li>
         </ul>
@@ -493,6 +494,11 @@
               <td>Commercial apps often include licensing/account and analytics systems.</td>
             </tr>
             <tr>
+              <td>CLI and automation</td>
+              <td><span class="yes">Included.</span> The same engine ships as a <code>dusty</code> CLI and two Shortcuts actions.</td>
+              <td>Automation support varies by product and plan.</td>
+            </tr>
+            <tr>
               <td>Extra suite features</td>
               <td><span class="warn">Not included.</span> No malware scanner, updater, VPN, duplicate finder, or privacy scanner.</td>
               <td>Broader suite features beyond disk cleanup.</td>
@@ -543,7 +549,7 @@
       <div class="qa-list">
         <details class="qa-item reveal">
           <summary>Is Dusty a CleanMyMac alternative?</summary>
-          <p>Yes, if the CleanMyMac feature you care about is disk cleanup. Dusty focuses on safe cleanup for caches, logs, Xcode junk, simulators, package-manager caches, browser caches, Trash, and selected old installers. It is not an antivirus, app updater, duplicate finder, or privacy scanner.</p>
+          <p>Yes, if the CleanMyMac feature you care about is disk cleanup. Dusty focuses on safe cleanup for app caches, browser caches, logs, Xcode junk, simulators, package-manager caches, stale project artifacts, Trash, local Time Machine snapshots, and selected old installers. It is not an antivirus, app updater, duplicate finder, or privacy scanner.</p>
         </details>
         <details class="qa-item reveal">
           <summary>Is Dusty free?</summary>

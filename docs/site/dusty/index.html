@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dusty: free open-source CleanMyMac alternative for macOS</title>
-<meta name="description" content="Dusty is a free, open-source CleanMyMac alternative for macOS that reclaims disk space from caches, logs, Xcode junk, and developer leftovers with allowlist-only deletion.">
+<meta name="description" content="Dusty is a free, open-source CleanMyMac alternative for macOS that reclaims disk space from app caches, Xcode data, package-manager caches, stale project artifacts, logs, and installers with allowlist-only deletion.">
 <meta name="theme-color" content="#161618">
 <link rel="canonical" href="https://toprak.sh/dusty/">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Dusty: free open-source CleanMyMac alternative for macOS">
-<meta property="og:description" content="A safe macOS cleaner for caches, logs, Xcode junk, and developer leftovers. Open source, MIT, allowlist-only.">
+<meta property="og:description" content="A safe macOS cleaner for app caches, Xcode junk, package-manager caches, stale project artifacts, and logs. Open source, MIT, allowlist-only.">
 <meta property="og:url" content="https://toprak.sh/dusty/">
 <meta property="og:image" content="https://toprak.sh/dusty/og-card.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Dusty: free open-source CleanMyMac alternative for macOS">
-<meta name="twitter:description" content="A safe macOS cleaner for caches, logs, Xcode junk, and developer leftovers. Open source, MIT, allowlist-only.">
+<meta name="twitter:description" content="A safe macOS cleaner for app caches, Xcode junk, package-manager caches, stale project artifacts, and logs. Open source, MIT, allowlist-only.">
 <meta name="twitter:image" content="https://toprak.sh/dusty/og-card.png">
 
 <script type="application/ld+json">
@@ -25,13 +25,14 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Dusty",
-  "description": "A free, open-source CleanMyMac alternative for macOS that reclaims space from caches, logs, Xcode junk, and developer leftovers with an allowlist-only deletion engine.",
-  "keywords": "CleanMyMac alternative, macOS cleaner, disk cleaner, Xcode cleaner, cache cleaner",
+  "description": "A free, open-source CleanMyMac alternative for macOS that reclaims space from app caches, browser caches, Xcode data, package-manager caches, stale project artifacts, logs, and installers with an allowlist-only deletion engine.",
+  "keywords": "CleanMyMac alternative, macOS cleaner, disk cleaner, Xcode cleaner, cache cleaner, developer cache cleaner, stale node_modules cleaner",
   "url": "https://toprak.sh/dusty/",
   "image": "https://toprak.sh/dusty/og-card.png",
   "downloadUrl": "https://github.com/yagcioglutoprak/dusty/releases/latest",
-  "softwareVersion": "1.2.0",
+  "softwareVersion": "1.6.0",
   "datePublished": "2026-06-03",
+  "dateModified": "2026-07-02",
   "operatingSystem": "macOS 13+",
   "applicationCategory": "UtilitiesApplication",
   "applicationSubCategory": "Disk cleaner",
@@ -60,7 +61,7 @@
       "name": "Is Dusty a CleanMyMac alternative?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Dusty is a free, open-source CleanMyMac alternative for disk cleanup on macOS. It focuses on safe cache, log, Xcode, simulator, package-manager, and developer-artifact cleanup. It is not an antivirus, app updater, duplicate finder, or privacy scanner."
+        "text": "Dusty is a free, open-source CleanMyMac alternative for disk cleanup on macOS. It focuses on safe app cache, browser cache, log, Xcode, simulator, package-manager, stale project artifact, and developer cleanup. It is not an antivirus, app updater, duplicate finder, or privacy scanner."
       }
     },
     {
@@ -68,7 +69,7 @@
       "name": "What can Dusty delete on macOS?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Dusty can clean only allowlisted targets such as user caches, app logs, browser caches, Trash, Xcode DerivedData, old simulators, package-manager caches, and selected old installer files. Cleanup targets are data in the open-source repository, so the rules are reviewable."
+        "text": "Dusty can clean only allowlisted targets such as user caches, app logs, browser caches, app caches, Trash, Xcode DerivedData, old simulators, package-manager caches, local Time Machine snapshots, selected installers, opt-in AI models, and stale project build artifacts. Cleanup targets are data in the open-source repository, so the rules are reviewable."
       }
     },
     {
@@ -461,7 +462,7 @@
       <div class="hero-copy">
         <span class="eyebrow"><span class="pulse"></span>Free and open source for macOS</span>
         <h1>Free up disk space<span class="dim">without deleting the wrong file.</span></h1>
-        <p class="lede">Dusty lives in your menu bar and reclaims the gigabytes hiding in caches, logs, and developer junk. It can only ever delete from a <b>fixed allowlist</b>, and it shows you every path and its size <b>before</b> it removes a thing.</p>
+        <p class="lede">Dusty lives in your menu bar and reclaims the gigabytes hiding in app caches, Xcode data, package-manager caches, logs, and stale project artifacts. It can only ever delete from a <b>fixed allowlist</b>, and it shows you every path and its size <b>before</b> it removes a thing.</p>
 
         <div class="cmd">
           <code id="brew"><span class="p">$ </span>brew install <span class="f">--</span>cask yagcioglutoprak/tap/dusty</code>
@@ -613,7 +614,7 @@
           <p class="dy-lvtag">Level 02</p>
           <h3>Developer</h3>
           <div class="dy-rule"></div>
-          <p>Xcode DerivedData and simulators, plus caches for npm, pnpm, pip, Cargo, Go, Homebrew, Gradle, CocoaPods, SwiftPM, JetBrains, and Unity.</p>
+          <p>Xcode DerivedData and DeviceSupport, unavailable simulators, package-manager caches for npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM, and Dart/Flutter, plus JetBrains and Unity caches.</p>
           <p class="dy-note">
             <svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg>
             Rebuilds or re-downloads next time you need it.
@@ -628,7 +629,7 @@
           <p class="dy-lvtag">Level 03</p>
           <h3>Deep</h3>
           <div class="dy-rule"></div>
-          <p>Old .dmg and .pkg installers in Downloads, Xcode archives, unused simulators, and aged diagnostic logs.</p>
+          <p>Old .dmg and .pkg installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs, opt-in Ollama models, and stale project artifacts such as old node_modules, Cargo target dirs, and virtualenvs.</p>
           <p class="dy-note">
             <svg viewBox="0 0 24 24"><path d="M9 11.5l2 2 4-4.5"/><path d="M5 5.5h14v13a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5Z"/></svg>
             Per-file checklist. Nothing goes without a tick.
@@ -658,6 +659,7 @@
             <tr><td>What it can delete</td><td class="us col-us">A fixed allowlist, nothing else</td><td class="them">Broad categories, not all visible</td></tr>
             <tr><td>Sizes shown before deleting</td><td class="us col-us"><span class="yes">&#10003;</span> Always, per path</td><td class="them">Varies</td></tr>
             <tr><td>Undo and a deletion log</td><td class="us col-us"><span class="yes">&#10003;</span> Yes</td><td class="them">Varies</td></tr>
+            <tr><td>CLI and Shortcuts automation</td><td class="us col-us"><span class="yes">&#10003;</span> Yes</td><td class="them">Rare</td></tr>
             <tr><td>Account or telemetry</td><td class="us col-us">None</td><td class="them">Often</td></tr>
           </tbody>
         </table>
@@ -676,11 +678,11 @@
       <div class="faq-list reveal">
         <details class="faq-item">
           <summary>Is Dusty a CleanMyMac alternative?</summary>
-          <p>Yes, if you want disk cleanup without a subscription or closed deletion rules. Dusty focuses on safe cache, log, Xcode, simulator, package-manager, and developer-artifact cleanup. It is not an antivirus, app updater, duplicate finder, or privacy scanner. <a href="/dusty/cleanmymac-alternative/">Read the focused Dusty vs CleanMyMac comparison.</a></p>
+          <p>Yes, if you want disk cleanup without a subscription or closed deletion rules. Dusty focuses on safe app cache, browser cache, log, Xcode, simulator, package-manager, stale project artifact, and developer cleanup. It is not an antivirus, app updater, duplicate finder, or privacy scanner. <a href="/dusty/cleanmymac-alternative/">Read the focused Dusty vs CleanMyMac comparison.</a></p>
         </details>
         <details class="faq-item">
           <summary>What can Dusty delete on macOS?</summary>
-          <p>Only allowlisted targets: user caches, app logs, browser caches, Trash, Xcode DerivedData, old simulators, package-manager caches, and selected old installer files. The cleanup targets are data in the open-source repository, so the rules are reviewable.</p>
+          <p>Only allowlisted targets: user caches, app logs, browser caches, app caches, Trash, Xcode DerivedData, old simulators, package-manager caches, local Time Machine snapshots, selected installers, opt-in Ollama models, and stale project build artifacts. The cleanup targets are data in the open-source repository, so the rules are reviewable.</p>
         </details>
         <details class="faq-item">
           <summary>Can Dusty delete my documents, photos, or iCloud files?</summary>
@@ -706,7 +708,7 @@
         <h2 style="font-size:clamp(26px,3.6vw,34px);letter-spacing:-0.03em;margin-top:12px;line-height:1.12;font-weight:800;">Cleanup targets are data, not code.</h2>
         <p style="margin-top:14px;color:var(--muted);font-size:16.5px;">Adding a cache is a single entry that the scanner, the UI, and the safety checks all pick up. That is the whole contribution model, so pull requests are easy.</p>
         <div class="stacks">
-          <span class="chip">Xcode</span><span class="chip">npm</span><span class="chip">pnpm</span><span class="chip">pip</span><span class="chip">Cargo</span><span class="chip">Go</span><span class="chip">Homebrew</span><span class="chip">Composer</span><span class="chip">Gradle</span><span class="chip">CocoaPods</span><span class="chip">SwiftPM</span><span class="chip">JetBrains</span><span class="chip">Unity</span><span class="chip">Docker</span>
+          <span class="chip">Xcode</span><span class="chip">npm</span><span class="chip">yarn</span><span class="chip">pnpm</span><span class="chip">pip</span><span class="chip">uv</span><span class="chip">Bun</span><span class="chip">Deno</span><span class="chip">Cargo</span><span class="chip">Go</span><span class="chip">Homebrew</span><span class="chip">Composer</span><span class="chip">Gradle</span><span class="chip">CocoaPods</span><span class="chip">SwiftPM</span><span class="chip">Dart/Flutter</span><span class="chip">JetBrains</span><span class="chip">Unity</span><span class="chip">Docker</span>
         </div>
       </div>
       <div class="reveal">

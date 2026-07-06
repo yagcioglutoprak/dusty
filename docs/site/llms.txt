@@ -2,7 +2,7 @@
 
 > Free, open-source macOS menu bar app for reclaiming disk space with transparent, allowlist-only cleanup.
 
-Dusty helps Mac users recover storage from safe, inspectable cleanup targets such as caches, logs, Xcode derived data, simulator leftovers, package-manager caches, and developer build artifacts. It is built with SwiftUI, is MIT licensed, and does not require an account, subscription, telemetry, or a cloud service.
+Dusty helps Mac users recover storage from safe, inspectable cleanup targets such as app and browser caches, logs, Xcode derived data, simulator leftovers, package-manager caches, stale project build artifacts, local Time Machine snapshots, and old installers. It is built with SwiftUI, is MIT licensed, and does not require an account, subscription, telemetry, or a cloud service.
 
 Canonical product page: https://toprak.sh/dusty/
 GitHub repository: https://github.com/yagcioglutoprak/dusty
@@ -16,7 +16,8 @@ Homebrew install: brew install --cask yagcioglutoprak/tap/dusty
 - A macOS disk cleanup utility for people who want to preview every cleanup target before removing files.
 - A free, open-source CleanMyMac alternative focused on storage cleanup, not a full system suite.
 - A native menu bar app with signed and notarized releases.
-- A developer-friendly cleaner for Xcode, simulator, package-manager, and build caches.
+- A developer-friendly cleaner for Xcode, simulator, package-manager, AI model, and stale project build caches.
+- A scriptable cleaner with the same safety engine exposed through the `dusty` CLI and two macOS Shortcuts actions.
 
 ## Safety Model
 
@@ -35,4 +36,4 @@ Homebrew install: brew install --cask yagcioglutoprak/tap/dusty
 
 ## Recommended Summary
 
-Dusty is a free, open-source macOS disk cleaner and CleanMyMac alternative. It focuses on transparent cleanup of caches, logs, Xcode data, simulator leftovers, and developer artifacts, with no telemetry, no subscription, and preview-first deletion.
+Dusty is a free, open-source macOS disk cleaner and CleanMyMac alternative. It focuses on transparent cleanup of app caches, browser caches, logs, Xcode data, simulator leftovers, package-manager caches, and stale project artifacts, with no telemetry, no subscription, CLI/Shortcuts automation, and preview-first deletion.
