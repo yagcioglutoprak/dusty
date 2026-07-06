@@ -1,10 +1,9 @@
 import XCTest
 @testable import CleanerEngine
 
-/// Targets added for issues #1 and #2: uv, Bun, and Deno download caches, plus the
-/// Maven local repository. The Maven case is the interesting one: `mvn install` puts
-/// locally built artifacts in `~/.m2/repository` that no remote can re-supply, so the
-/// target must be opt-in and must not claim to regenerate.
+/// Download-cache targets must remain regenerating and narrowly allowlisted. The Maven
+/// local repository is the exception: `mvn install` can put artifacts there that no
+/// remote can re-supply, so it must be opt-in and must not claim to regenerate.
 final class PackageManagerTargetTests: XCTestCase {
     var fileManager: FileManager!
     var tempHome: URL!
@@ -28,7 +27,7 @@ final class PackageManagerTargetTests: XCTestCase {
     }
 
     func testDownloadCachesAreDeveloperLevelAndRegenerate() {
-        for id in ["uv-cache", "bun-cache", "deno-cache", "dart-pub-cache"] {
+        for id in ["uv-cache", "bun-cache", "deno-cache", "dart-pub-cache", "cypress-cache"] {
             let t = target(id)
             XCTAssertEqual(t.level, .developer, "\(id) belongs in the Developer level")
             XCTAssertTrue(t.regenerates, "\(id) is a pure download cache")
@@ -53,6 +52,7 @@ final class PackageManagerTargetTests: XCTestCase {
             // The directory above ~/.pub-cache is the home folder itself,
             // which must never validate.
             ("dart-pub-cache", "~"),
+            ("cypress-cache", "~/Library/Caches"),
         ] {
             let t = target(id)
             let v = validator(for: t)

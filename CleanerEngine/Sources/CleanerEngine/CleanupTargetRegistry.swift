@@ -472,6 +472,15 @@ public enum CleanupTargetRegistry {
             regenerates: true
         ),
         CleanupTarget(
+            id: "cypress-cache",
+            displayName: "Cypress Binary Cache",
+            level: .developer,
+            pathTemplates: ["~/Library/Caches/Cypress"],
+            category: "Package Manager",
+            deletesContentsNotDirectory: true,
+            regenerates: true
+        ),
+        CleanupTarget(
             // The XDG cache directory CLI tools use on macOS (Hugging Face, Puppeteer,
             // pre-commit, gh, and friends). Cache-only by spec: tools must tolerate it
             // being cleared, the same contract as ~/Library/Caches.
