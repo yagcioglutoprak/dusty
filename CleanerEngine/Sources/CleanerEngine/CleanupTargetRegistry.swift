@@ -476,7 +476,7 @@ public enum CleanupTargetRegistry {
             displayName: "Cypress Binary Cache",
             level: .developer,
             pathTemplates: ["~/Library/Caches/Cypress"],
-            category: "Developer Tools",
+            category: "Package Manager",
             deletesContentsNotDirectory: true,
             regenerates: true
         ),
