@@ -35,9 +35,30 @@ final class AppSettings: ObservableObject {
     }
     @AppStorage("autoCleanFrequencyDays") var autoCleanFrequencyDays: Int = 7
 
+    /// Reactive auto-clean (opt-in, default OFF): run the unattended clean the moment
+    /// free space drops below the threshold instead of waiting for the calendar.
+    /// `AutoCleanPolicy.reactiveCooldown` spaces out repeat attempts when a clean
+    /// cannot push free space back over the line.
+    @AppStorage("autoCleanWhenLowDisk") var autoCleanWhenLowDisk: Bool = false
+    @AppStorage("autoCleanLowDiskThresholdGB") var autoCleanLowDiskThresholdGB: Int = 10
+
+    /// Scope for unattended cleans: also include Developer-level caches (DerivedData,
+    /// package manager caches). Off by default; a rebuild after a surprise cache wipe
+    /// is a cost the user has to opt into.
+    @AppStorage("autoCleanIncludesDeveloper") var autoCleanIncludesDeveloper: Bool = false
+
+    var autoCleanLevels: [CleanupLevel] {
+        autoCleanIncludesDeveloper ? [.safe, .developer] : [.safe]
+    }
+
     var lastAutoCleanAt: Date? {
         get { UserDefaults.standard.object(forKey: "lastAutoCleanAt") as? Date }
         set { UserDefaults.standard.set(newValue, forKey: "lastAutoCleanAt") }
+    }
+
+    var lastReactiveAutoCleanAt: Date? {
+        get { UserDefaults.standard.object(forKey: "lastReactiveAutoCleanAt") as? Date }
+        set { UserDefaults.standard.set(newValue, forKey: "lastReactiveAutoCleanAt") }
     }
 
     /// Menu bar free space as "37% free" instead of "182 GB free". `@Published` rather

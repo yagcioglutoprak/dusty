@@ -107,6 +107,10 @@ final class DustyViewModel: ObservableObject {
         }
         wasDiskLow = realLow
 
+        // The reactive auto-clean keys off the same ground-truth figure, every tick,
+        // not just the crossing: the policy's threshold and cooldown do the gating.
+        reactiveAutoCleanIfNeeded(freeBytes: real)
+
         // Caches grew enough to be worth re-checking: rescan off the existing sampler.
         if let baseline = freeSpaceAtLastBackgroundScan,
            baseline - freeSpaceBytes > freeSpaceDropTriggerBytes {
@@ -156,49 +160,77 @@ final class DustyViewModel: ObservableObject {
 
     private var isAutoCleaning = false
 
-    /// Runs the opt-in scheduled Safe clean when its period has elapsed. Called from
-    /// the same triggers as the background scanner. Quietly refuses while the user is
-    /// mid-anything, in Low Power Mode, or when dry-run-by-default is on (that user
-    /// asked for nothing to be deleted unattended).
+    /// Runs the opt-in scheduled clean when its period has elapsed. Called from the
+    /// same triggers as the background scanner. The pure `AutoCleanPolicy` holds the
+    /// gates (busy, Low Power Mode, dry-run-by-default, period math).
     func autoCleanIfDue() {
         let settings = AppSettings.shared
-        guard settings.autoCleanEnabled,
-              settings.hasSeenWelcome,
-              !settings.dryRunDefault,
-              !isScanning, !isCleaning, !isAutoCleaning,
-              !ProcessInfo.processInfo.isLowPowerModeEnabled else { return }
-        guard let last = settings.lastAutoCleanAt else {
+        if settings.autoCleanEnabled, settings.lastAutoCleanAt == nil {
             // Enabled before this baseline existed: start the period now.
             settings.lastAutoCleanAt = Date()
             return
         }
-        let interval = TimeInterval(max(1, settings.autoCleanFrequencyDays)) * 86400
-        guard Date().timeIntervalSince(last) >= interval else { return }
+        guard autoCleanAllowed(trigger: .scheduled, freeBytes: freeSpaceBytes) else { return }
         isAutoCleaning = true
-        Task { await performAutoClean() }
+        Task { await performAutoClean(trigger: .scheduled) }
     }
 
-    private func performAutoClean() async {
+    /// The reactive path: free space dropped below the user's threshold, clean now
+    /// instead of waiting for the calendar. Fed by the free-space sampler with the
+    /// REAL figure (never the post-clean projected floor); the policy's cooldown
+    /// keeps a disk that stays low from turning into a delete attempt per tick.
+    private func reactiveAutoCleanIfNeeded(freeBytes: Int64) {
+        guard autoCleanAllowed(trigger: .lowDisk, freeBytes: freeBytes) else { return }
+        isAutoCleaning = true
+        Task { await performAutoClean(trigger: .lowDisk) }
+    }
+
+    private func autoCleanAllowed(trigger: AutoCleanTrigger, freeBytes: Int64) -> Bool {
+        let settings = AppSettings.shared
+        guard settings.hasSeenWelcome else { return false }
+        return AutoCleanPolicy.shouldClean(
+            trigger: trigger,
+            now: Date(),
+            scheduleEnabled: settings.autoCleanEnabled,
+            scheduleIntervalDays: settings.autoCleanFrequencyDays,
+            lastScheduledCleanAt: settings.lastAutoCleanAt,
+            reactiveEnabled: settings.autoCleanWhenLowDisk,
+            freeBytes: freeBytes,
+            reactiveThresholdBytes: Int64(settings.autoCleanLowDiskThresholdGB) * 1_073_741_824,
+            lastReactiveCleanAt: settings.lastReactiveAutoCleanAt,
+            isBusy: isScanning || isCleaning || isAutoCleaning,
+            lowPowerMode: ProcessInfo.processInfo.isLowPowerModeEnabled,
+            dryRunDefault: settings.dryRunDefault
+        )
+    }
+
+    private func performAutoClean(trigger: AutoCleanTrigger) async {
         defer { isAutoCleaning = false }
-        guard let outcome = await SafeCleanRunner.run(engine: engine) else {
-            // nil means a clean is already in flight (gate held): leave the clock
-            // untouched so the next trigger retries this period instead of losing it.
+        let settings = AppSettings.shared
+        guard let outcome = await SafeCleanRunner.run(engine: engine, levels: settings.autoCleanLevels) else {
+            // nil means a clean is already in flight (gate held): leave the clocks
+            // untouched so the next trigger retries instead of losing the period.
             return
         }
-        // The clean ran (whether or not it found anything), so the period is satisfied:
-        // stamp now. Stamping here rather than before the run means a run that could not
-        // start does not silently push the next auto-clean out by a full period.
-        AppSettings.shared.lastAutoCleanAt = Date()
+        // The clean ran (whether or not it found anything), so its clock is satisfied:
+        // stamp now. Each trigger stamps only its own clock; a reactive clean must not
+        // silently push the scheduled one out by a full period, or vice versa.
+        switch trigger {
+        case .scheduled: settings.lastAutoCleanAt = Date()
+        case .lowDisk: settings.lastReactiveAutoCleanAt = Date()
+        }
         refreshFreeSpace()
         if outcome.bytesFreed > 0 {
-            AutoCleanNotifier.notify(bytesFreed: outcome.bytesFreed)
+            AutoCleanNotifier.notify(bytesFreed: outcome.bytesFreed, trigger: trigger)
         }
         // Keep the menu bar figure and an open panel honest after the clean.
         backgroundReclaimableBytes = 0
         lastBackgroundScanAt = Date()
         freeSpaceAtLastBackgroundScan = freeSpaceBytes
         if scanResult != nil {
-            await rescan(level: .safe, settings: AppSettings.shared)
+            for level in settings.autoCleanLevels {
+                await rescan(level: level, settings: settings)
+            }
         }
     }
 

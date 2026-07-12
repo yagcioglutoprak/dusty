@@ -282,6 +282,13 @@ struct SettingsView: View {
 
     private func close() { if let onDone { onDone() } else { dismiss() } }
 
+    private var autoCleanCaption: String {
+        let scope = settings.autoCleanIncludesDeveloper
+            ? "Safe caches plus Developer caches (DerivedData, package managers)"
+            : "Safe-level caches only"
+        return scope + ". Apps that are open are skipped, a notification reports what was reclaimed, and every path lands in the deletion log."
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -339,9 +346,20 @@ struct SettingsView: View {
                         Text("Every two weeks").tag(14)
                     }
                     .disabled(!settings.autoCleanEnabled || settings.dryRunDefault)
+                    Toggle("Also clean when free space runs low", isOn: $settings.autoCleanWhenLowDisk)
+                        .disabled(settings.dryRunDefault)
+                    Stepper(
+                        "Below \(settings.autoCleanLowDiskThresholdGB) GB free",
+                        value: $settings.autoCleanLowDiskThresholdGB,
+                        in: 5...100,
+                        step: 5
+                    )
+                    .disabled(!settings.autoCleanWhenLowDisk || settings.dryRunDefault)
+                    Toggle("Include Developer caches", isOn: $settings.autoCleanIncludesDeveloper)
+                        .disabled((!settings.autoCleanEnabled && !settings.autoCleanWhenLowDisk) || settings.dryRunDefault)
                     Text(settings.dryRunDefault
                          ? "Off while dry run is the default: nothing is deleted unattended."
-                         : "Safe-level caches only, apps that are open are skipped, and a notification reports what was reclaimed. Every path lands in the deletion log.")
+                         : autoCleanCaption)
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }

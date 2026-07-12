@@ -45,18 +45,18 @@ enum LowDiskNotifier {
     }
 }
 
-/// Receipt for a scheduled auto-clean: the one moment an opt-in background
+/// Receipt for an unattended clean: the one moment an opt-in background
 /// delete must be loud about what it did.
 enum AutoCleanNotifier {
-    static func notify(bytesFreed: Int64) {
+    static func notify(bytesFreed: Int64, trigger: AutoCleanTrigger = .scheduled) {
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional:
-                post(bytesFreed: bytesFreed)
+                post(bytesFreed: bytesFreed, trigger: trigger)
             case .notDetermined:
                 center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
-                    if granted { post(bytesFreed: bytesFreed) }
+                    if granted { post(bytesFreed: bytesFreed, trigger: trigger) }
                 }
             default:
                 break // denied: respect the choice, never prompt again
@@ -64,10 +64,16 @@ enum AutoCleanNotifier {
         }
     }
 
-    private static func post(bytesFreed: Int64) {
+    private static func post(bytesFreed: Int64, trigger: AutoCleanTrigger) {
         let content = UNMutableNotificationContent()
-        content.title = "Auto-clean finished"
-        content.body = "Dusty reclaimed \(DiskSpaceMonitor.formatBytes(bytesFreed)) of Safe-level caches. Every path is in the deletion log."
+        switch trigger {
+        case .scheduled:
+            content.title = "Auto-clean finished"
+            content.body = "Dusty reclaimed \(DiskSpaceMonitor.formatBytes(bytesFreed)) of cached junk. Every path is in the deletion log."
+        case .lowDisk:
+            content.title = "Disk space was running low"
+            content.body = "Dusty freed \(DiskSpaceMonitor.formatBytes(bytesFreed)) automatically. Every path is in the deletion log."
+        }
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: "auto-clean-\(UUID().uuidString)", content: content, trigger: nil)
         )

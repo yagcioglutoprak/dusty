@@ -107,9 +107,14 @@ DerivedData with no Xcode installed anymore, a cache nothing has written to
 since spring, a disk on course to fill up in three weeks. Insights only point;
 they never select or delete anything.
 
-Prefer it hands-off? An opt-in schedule (off by default) runs the Safe level
-daily, weekly, or every two weeks, skips anything whose app is open, and sends a
-notification with the result. Everything still lands in the deletion log.
+Prefer it hands-off? Automatic cleaning is opt-in (off by default) and comes in
+two flavors: on a schedule (daily, weekly, or every two weeks), or the moment
+free space drops below a threshold you pick, so the clean happens right when
+the disk needs it instead of whenever the calendar says. You choose the scope
+(Safe caches only, or Developer caches too), anything whose app is open is
+skipped, a notification reports the result, and everything still lands in the
+deletion log. It also stands down on Low Power Mode and never runs while
+dry-run is your default.
 
 ## How it compares
 
