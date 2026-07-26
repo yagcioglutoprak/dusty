@@ -101,8 +101,8 @@ public final class CleanerEngine: @unchecked Sendable {
             }
             let count = udids.count
             let label = count > 0
-                ? "Unavailable simulators (\(count) device\(count == 1 ? "" : "s"))"
-                : "Unavailable simulators (none found)"
+                ? L10n.f("simctl.unavailable.count", "Unavailable simulators (%d devices)", count)
+                : L10n.t("simctl.unavailable.none", "Unavailable simulators (none found)")
             resolvedPaths.append(ResolvedPath(
                 path: "simctl:delete unavailable",
                 displayName: label,
@@ -115,12 +115,16 @@ public final class CleanerEngine: @unchecked Sendable {
 
         if target.action == .dockerPrune {
             if validator.resolveAllowlistedPaths(for: target).isEmpty {
-                return TargetScanResult(target: target, resolvedPaths: [], scanErrors: ["Docker not installed"])
+                return TargetScanResult(
+                    target: target,
+                    resolvedPaths: [],
+                    scanErrors: [L10n.t("error.dockerNotInstalled", "Docker not installed")]
+                )
             }
             let bytes = estimateDockerReclaimable()
             resolvedPaths.append(ResolvedPath(
                 path: "docker:system prune",
-                displayName: "All unused images, build cache & stopped containers",
+                displayName: L10n.t("docker.prune.item", "All unused images, build cache & stopped containers"),
                 targetID: target.id,
                 estimatedBytes: bytes,
                 isSelected: false

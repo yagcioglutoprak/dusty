@@ -48,7 +48,7 @@ struct FreeSpaceHeaderView: View {
                         .contentTransition(.numericText())
                         .animation(.spring(response: 0.6, dampingFraction: 0.85), value: freeBytes)
 
-                    Text("FREE")
+                    Text(L10n.t("header.free", "FREE"))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.secondary)
                         .tracking(2)
@@ -56,12 +56,15 @@ struct FreeSpaceHeaderView: View {
             }
             .frame(width: 150, height: 150)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Disk space")
-            .accessibilityValue("\(DiskSpaceMonitor.formatBytes(freeBytes)) free of \(DiskSpaceMonitor.formatBytes(totalBytes)), \(usedPercent) percent used")
+            .accessibilityLabel(L10n.t("header.a11y.label", "Disk space"))
+            .accessibilityValue(L10n.f("header.a11y.value", "%1$@ free of %2$@, %3$d percent used",
+                                        DiskSpaceMonitor.formatBytes(freeBytes),
+                                        DiskSpaceMonitor.formatBytes(totalBytes),
+                                        usedPercent))
 
             HStack(spacing: 10) {
-                statPill(label: "USED", value: "\(usedPercent)%")
-                statPill(label: "TOTAL", value: DiskSpaceMonitor.formatBytes(totalBytes))
+                statPill(label: L10n.t("header.used", "USED"), value: "\(usedPercent)%")
+                statPill(label: L10n.t("header.total", "TOTAL"), value: DiskSpaceMonitor.formatBytes(totalBytes))
             }
         }
         .frame(maxWidth: .infinity)

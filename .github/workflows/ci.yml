@@ -24,6 +24,14 @@ jobs:
         working-directory: CleanerEngine
         run: swift test -Xswiftc -warnings-as-errors
 
+  localization:
+    name: Localization coverage
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every string translated in every language
+        run: python3 scripts/check-localization.py
+
   app-build:
     name: Build app
     runs-on: macos-15

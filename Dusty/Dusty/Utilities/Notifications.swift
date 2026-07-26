@@ -11,7 +11,11 @@ enum LowDiskNotifier {
     /// Register the action category + delegate. Does NOT prompt for permission.
     static func configure(delegate: UNUserNotificationCenterDelegate) {
         let center = UNUserNotificationCenter.current()
-        let action = UNNotificationAction(identifier: cleanActionID, title: "Clean Safe", options: [.foreground])
+        let action = UNNotificationAction(
+            identifier: cleanActionID,
+            title: L10n.t("notification.action.cleanSafe", "Clean Safe"),
+            options: [.foreground]
+        )
         center.setNotificationCategories([
             UNNotificationCategory(identifier: categoryID, actions: [action], intentIdentifiers: [])
         ])
@@ -36,8 +40,12 @@ enum LowDiskNotifier {
 
     private static func post(freeBytes: Int64) {
         let content = UNMutableNotificationContent()
-        content.title = "Low disk space"
-        content.body = "\(DiskSpaceMonitor.formatBytes(freeBytes)) available. Reclaim space with a Safe clean."
+        content.title = L10n.t("notification.lowDisk.title", "Low disk space")
+        content.body = L10n.f(
+            "notification.lowDisk.body",
+            "%@ available. Reclaim space with a Safe clean.",
+            DiskSpaceMonitor.formatBytes(freeBytes)
+        )
         content.categoryIdentifier = categoryID
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: "low-disk", content: content, trigger: nil)
@@ -66,13 +74,22 @@ enum AutoCleanNotifier {
 
     private static func post(bytesFreed: Int64, trigger: AutoCleanTrigger) {
         let content = UNMutableNotificationContent()
+        let freed = DiskSpaceMonitor.formatBytes(bytesFreed)
         switch trigger {
         case .scheduled:
-            content.title = "Auto-clean finished"
-            content.body = "Dusty reclaimed \(DiskSpaceMonitor.formatBytes(bytesFreed)) of cached junk. Every path is in the deletion log."
+            content.title = L10n.t("notification.autoClean.title", "Auto-clean finished")
+            content.body = L10n.f(
+                "notification.autoClean.body",
+                "Dusty reclaimed %@ of cached junk. Every path is in the deletion log.",
+                freed
+            )
         case .lowDisk:
-            content.title = "Disk space was running low"
-            content.body = "Dusty freed \(DiskSpaceMonitor.formatBytes(bytesFreed)) automatically. Every path is in the deletion log."
+            content.title = L10n.t("notification.autoCleanLowDisk.title", "Disk space was running low")
+            content.body = L10n.f(
+                "notification.autoCleanLowDisk.body",
+                "Dusty freed %@ automatically. Every path is in the deletion log.",
+                freed
+            )
         }
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: "auto-clean-\(UUID().uuidString)", content: content, trigger: nil)

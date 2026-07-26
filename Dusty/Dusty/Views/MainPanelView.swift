@@ -125,7 +125,7 @@ struct MainPanelView: View {
                     .font(.title3.weight(.bold))
                 Spacer()
                 if viewModel.isDiskLow {
-                    Text("LOW DISK")
+                    Text(L10n.t("panel.badge.lowDisk", "LOW DISK"))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(DustyTheme.danger)
                         .tracking(0.5)
@@ -141,8 +141,8 @@ struct MainPanelView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(DustyIconButtonStyle())
-                .help("Settings")
-                .accessibilityLabel("Settings")
+                .help(L10n.t("common.settings", "Settings"))
+                .accessibilityLabel(L10n.t("common.settings", "Settings"))
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)
@@ -252,7 +252,11 @@ struct MainPanelView: View {
                             .font(.body.weight(.semibold))
                             .foregroundStyle(DustyTheme.gold)
                     }
-                    Text(viewModel.isScanning ? "Scanning…" : viewModel.hasScannedOnce ? "Rescan" : "Scan disk")
+                    Text(viewModel.isScanning
+                         ? L10n.t("panel.scan.scanning", "Scanning…")
+                         : viewModel.hasScannedOnce
+                           ? L10n.t("panel.scan.rescan", "Rescan")
+                           : L10n.t("panel.scan.start", "Scan disk"))
                 }
             }
             .buttonStyle(DustyGhostButtonStyle())
@@ -264,12 +268,13 @@ struct MainPanelView: View {
                         .progressViewStyle(.linear)
                         .tint(DustyTheme.gold)
                     HStack {
-                        Text("\(progress.completed)/\(progress.total) · \(progress.currentTargetName)")
+                        Text(L10n.f("panel.scan.progress", "%1$d/%2$d · %3$@",
+                                    progress.completed, progress.total, progress.currentTargetName))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                         Spacer()
-                        Button("Cancel") { viewModel.cancelScan() }
+                        Button(L10n.t("common.cancel", "Cancel")) { viewModel.cancelScan() }
                             .buttonStyle(.link)
                             .font(.caption.weight(.medium))
                     }
@@ -277,7 +282,7 @@ struct MainPanelView: View {
             } else if let scannedAt = viewModel.scanResult?.scannedAt {
                 // Relative on purpose: a bare clock time reads as today even when the
                 // scan is days old, and this panel can sit unopened for weeks.
-                Text("Last scan: \(RelativeTime.label(for: scannedAt))")
+                Text(L10n.f("panel.scan.lastScan", "Last scan: %@", RelativeTime.label(for: scannedAt)))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -304,7 +309,7 @@ struct MainPanelView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(DustyIconButtonStyle())
-            .accessibilityLabel("Dismiss error")
+            .accessibilityLabel(L10n.t("panel.error.dismiss", "Dismiss error"))
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(DustyTheme.danger.opacity(0.10)))
@@ -327,14 +332,15 @@ struct MainPanelView: View {
                     Image(systemName: "sparkles")
                         .font(.caption2)
                         .foregroundStyle(DustyTheme.gold)
-                    Text("\(DiskSpaceMonitor.formatBytes(stats.lifetimeBytes)) reclaimed all-time · \(stats.cleanCount) clean\(stats.cleanCount == 1 ? "" : "s")")
+                    Text(L10n.f("panel.footer.lifetime", "%1$@ reclaimed all-time · %2$d cleans",
+                                DiskSpaceMonitor.formatBytes(stats.lifetimeBytes), stats.cleanCount))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
                 .accessibilityElement(children: .combine)
             }
             HStack {
-                Button("Deletion log") {
+                Button(L10n.t("panel.footer.deletionLog", "Deletion log")) {
                     viewModel.openDeletionLog()
                 }
                 .buttonStyle(.link)
@@ -343,12 +349,12 @@ struct MainPanelView: View {
                 Spacer()
 
                 if settings.dryRunDefault {
-                    Label("Dry Run", systemImage: "eye")
+                    Label(L10n.t("common.dryRun", "Dry Run"), systemImage: "eye")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
 
-                Button("Quit") {
+                Button(L10n.t("panel.footer.quit", "Quit")) {
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.link)
@@ -357,11 +363,11 @@ struct MainPanelView: View {
             }
 
             HStack(spacing: 4) {
-                Text("made by")
+                Text(L10n.t("panel.footer.madeBy", "made by"))
                     .foregroundStyle(.tertiary)
                 Link("toprak.sh", destination: URL(string: "https://toprak.sh")!)
                     .foregroundStyle(.secondary)
-                    .help("Open toprak.sh")
+                    .help(L10n.t("panel.footer.openSite", "Open toprak.sh"))
             }
             .font(.caption)
         }
@@ -392,10 +398,14 @@ private struct AllCleanCard: View {
             }
             .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
-                Text("All clean")
+                Text(L10n.t("panel.allClean.title", "All clean"))
                     .font(.body.weight(.semibold))
-                Text(lastScanAt.map { "Nothing reclaimable (checked \(RelativeTime.label(for: $0))). Dusty keeps watching in the background." }
-                     ?? "Nothing reclaimable right now. Dusty keeps watching in the background.")
+                Text(lastScanAt.map {
+                        L10n.f("panel.allClean.bodyChecked",
+                               "Nothing reclaimable (checked %@). Dusty keeps watching in the background.",
+                               RelativeTime.label(for: $0))
+                     } ?? L10n.t("panel.allClean.body",
+                                 "Nothing reclaimable right now. Dusty keeps watching in the background."))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

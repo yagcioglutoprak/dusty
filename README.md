@@ -29,6 +29,9 @@ No "clean everything" button, no surprises.
 
 It is free, open source, and a calmer alternative to paid cleaners like CleanMyMac.
 
+The panel speaks English, French, Spanish, and Russian. It follows your Mac's
+language, and you can override it in Settings.
+
 ## Install
 
 The easy way, signed and notarized by Apple:
@@ -186,6 +189,7 @@ Without it, those few paths are skipped, the rest works fine.
 
 ## Settings
 
+- Panel language: English, French, Spanish, Russian, or follow the system
 - Menu bar refresh interval (default 30s), and free space as GB or a percentage
 - Show or hide the "N GB to clean" suffix in the menu bar
 - Background auto-scan and how often it runs (default every 4h), or turn it off

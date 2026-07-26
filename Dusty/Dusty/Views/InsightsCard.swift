@@ -17,8 +17,10 @@ struct InsightsCard: View {
         guard let forecast, let days = forecast.daysUntilFull,
               days <= Self.forecastHorizonDays else { return nil }
         let tint: Color = days < 14 ? DustyTheme.danger : DustyTheme.warn
-        return ("\(Self.horizonLabel(days: days)) until the disk fills at the current rate "
-                + "(\(DiskSpaceMonitor.formatBytes(forecast.consumedBytesPerDay))/day).", tint)
+        let text = L10n.f("insights.forecast", "%1$@ until the disk fills at the current rate (%2$@/day).",
+                          Self.horizonLabel(days: days),
+                          DiskSpaceMonitor.formatBytes(forecast.consumedBytesPerDay))
+        return (text, tint)
     }
 
     private var shownAdvisories: [Advisory] {
@@ -33,7 +35,7 @@ struct InsightsCard: View {
                         .font(.caption)
                         .foregroundStyle(DustyTheme.gold)
                         .accessibilityHidden(true)
-                    Text("Insights")
+                    Text(L10n.t("insights.title", "Insights"))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.secondary)
                         .tracking(0.4)
@@ -90,10 +92,10 @@ struct InsightsCard: View {
     /// linear fit does not deserve false precision.
     static func horizonLabel(days: Double) -> String {
         switch days {
-        case ..<1: return "Less than a day"
-        case ..<14: return "About \(max(1, Int(days.rounded()))) day\(Int(days.rounded()) == 1 ? "" : "s")"
-        case ..<56: return "About \(Int((days / 7).rounded())) weeks"
-        default: return "About \(Int((days / 30).rounded())) months"
+        case ..<1: return L10n.t("insights.horizon.lessThanDay", "Less than a day")
+        case ..<14: return L10n.f("insights.horizon.days", "About %d days", max(1, Int(days.rounded())))
+        case ..<56: return L10n.f("insights.horizon.weeks", "About %d weeks", Int((days / 7).rounded()))
+        default: return L10n.f("insights.horizon.months", "About %d months", Int((days / 30).rounded()))
         }
     }
 }

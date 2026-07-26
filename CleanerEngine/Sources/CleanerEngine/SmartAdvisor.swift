@@ -71,7 +71,7 @@ public struct SmartAdvisor: @unchecked Sendable {
         case "ollama-models":
             check = ("Ollama", appInstalled(named: "Ollama") || binaryInstalled(named: "ollama"))
         case "jetbrains-cache":
-            check = ("a JetBrains IDE", jetBrainsInstalled())
+            check = (L10n.t("advisory.tool.jetbrains", "a JetBrains IDE"), jetBrainsInstalled())
         case "unity-cache":
             check = ("Unity", appInstalled(named: "Unity") || directoryExists("\(applicationsDirectory)/Unity"))
         default:
@@ -81,9 +81,13 @@ public struct SmartAdvisor: @unchecked Sendable {
         guard let check, !check.installed else { return nil }
         return Advisory(
             id: "orphan-\(result.target.id)",
-            title: "\(result.target.displayName) left behind",
-            detail: "\(check.tool) does not appear to be installed anymore, but "
-                + "\(DiskSpaceMonitor.formatBytes(result.totalBytes)) of its data is still on disk.",
+            title: L10n.f("advisory.orphan.title", "%@ left behind", result.target.localizedName),
+            detail: L10n.f(
+                "advisory.orphan.detail",
+                "%1$@ does not appear to be installed anymore, but %2$@ of its data is still on disk.",
+                check.tool,
+                DiskSpaceMonitor.formatBytes(result.totalBytes)
+            ),
             targetID: result.target.id,
             bytes: result.totalBytes
         )
@@ -115,10 +119,18 @@ public struct SmartAdvisor: @unchecked Sendable {
 
         return Advisory(
             id: "stale-\(result.target.id)",
-            title: "\(result.target.displayName) untouched for \(days) days",
-            detail: "Nothing has written to this cache since "
-                + "\(Self.dayFormatter.string(from: newest)). "
-                + "\(DiskSpaceMonitor.formatBytes(result.totalBytes)) would regenerate only if something needs it.",
+            title: L10n.f(
+                "advisory.stale.title",
+                "%1$@ untouched for %2$d days",
+                result.target.localizedName,
+                days
+            ),
+            detail: L10n.f(
+                "advisory.stale.detail",
+                "Nothing has written to this cache since %1$@. %2$@ would regenerate only if something needs it.",
+                Self.dayFormatter.string(from: newest),
+                DiskSpaceMonitor.formatBytes(result.totalBytes)
+            ),
             targetID: result.target.id,
             bytes: result.totalBytes
         )

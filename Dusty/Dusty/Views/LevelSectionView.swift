@@ -39,9 +39,11 @@ struct LevelSectionView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("\(level.title) cleanup level")
-                .accessibilityValue(isExpanded ? "expanded" : "collapsed")
-                .accessibilityHint("Shows every path found for this level")
+                .accessibilityLabel(L10n.f("level.a11y.label", "%@ cleanup level", level.title))
+                .accessibilityValue(isExpanded
+                                    ? L10n.t("level.a11y.expanded", "expanded")
+                                    : L10n.t("level.a11y.collapsed", "collapsed"))
+                .accessibilityHint(L10n.t("level.a11y.hint", "Shows every path found for this level"))
 
                 if selectedBytes > 0 {
                     Text(DiskSpaceMonitor.formatBytes(selectedBytes))
@@ -66,15 +68,17 @@ struct LevelSectionView: View {
                 if isCleaning {
                     ProgressView().controlSize(.small)
                 } else {
-                    Text("Clean")
+                    Text(L10n.t("level.clean", "Clean"))
                 }
             }
             .frame(minWidth: 44, minHeight: 18)
         }
         .buttonStyle(DustyTintedButtonStyle(tint: levelColor, prominent: selectedBytes > 0 && canClean && !isCleaning))
         .disabled(levelResult == nil || selectedBytes == 0 || isCleaning || !canClean)
-        .accessibilityLabel("Clean \(level.title) items")
-        .accessibilityValue(selectedBytes > 0 ? "\(DiskSpaceMonitor.formatBytes(selectedBytes)) selected" : "nothing selected")
+        .accessibilityLabel(L10n.f("level.a11y.cleanLabel", "Clean %@ items", level.title))
+        .accessibilityValue(selectedBytes > 0
+                            ? L10n.f("level.a11y.selected", "%@ selected", DiskSpaceMonitor.formatBytes(selectedBytes))
+                            : L10n.t("level.a11y.nothingSelected", "nothing selected"))
     }
 
     @ViewBuilder private var detail: some View {
@@ -97,7 +101,9 @@ struct LevelSectionView: View {
             // No result yet: only say "Scanning…" when a scan is actually running.
             // After the user skips the welcome scan, nothing is in flight, so the
             // honest state is "not scanned" rather than a spinner that never resolves.
-            Text(isScanning ? "Scanning…" : "Not scanned yet. Run a scan to see items.")
+            Text(isScanning
+                 ? L10n.t("panel.scan.scanning", "Scanning…")
+                 : L10n.t("level.notScanned", "Not scanned yet. Run a scan to see items."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -137,10 +143,10 @@ struct LevelSectionView: View {
     }
 
     private var blockingBannerText: String {
-        let names = blockingApps.formatted(.list(type: .and))
-        return blockingApps.count == 1
-            ? "\(names) is open, so its cache is skipped. Quit it to include it."
-            : "\(names) are open, so their caches are skipped. Quit them to include them."
+        L10n.f("level.blocking",
+               "%2$@ are open, so their caches are skipped. Quit them to include them.",
+               blockingApps.count,
+               blockingApps.formatted(.list(type: .and)))
     }
 }
 
@@ -166,17 +172,17 @@ struct TargetRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack {
-                Text(targetResult.target.displayName)
+                Text(targetResult.target.localizedName)
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 if pathsVisible && !targetResult.resolvedPaths.isEmpty {
                     Text("\(selectedInTarget)/\(targetResult.resolvedPaths.count)")
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.tertiary)
-                    Button("All") { onSelectAll(targetResult.id, true) }
+                    Button(L10n.t("common.all", "All")) { onSelectAll(targetResult.id, true) }
                         .buttonStyle(.link)
                         .font(.caption.weight(.medium))
-                    Button("None") { onSelectAll(targetResult.id, false) }
+                    Button(L10n.t("common.none", "None")) { onSelectAll(targetResult.id, false) }
                         .buttonStyle(.link)
                         .font(.caption.weight(.medium))
                 }
@@ -186,7 +192,7 @@ struct TargetRowView: View {
             }
 
             if let app = targetResult.target.requiresAppClosed {
-                Label("Skipped while \(app) is open", systemImage: "exclamationmark.triangle.fill")
+                Label(L10n.f("target.skippedWhileOpen", "Skipped while %@ is open", app), systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
                     .foregroundStyle(DustyTheme.warn)
             }
@@ -218,8 +224,9 @@ struct TargetRowView: View {
                             .font(.caption2.weight(.bold))
                             .rotationEffect(.degrees(showsPaths ? 90 : 0))
                         Text(showsPaths
-                             ? "Hide items"
-                             : "\(targetResult.resolvedPaths.count) item\(targetResult.resolvedPaths.count == 1 ? "" : "s") · review or untick")
+                             ? L10n.t("target.hideItems", "Hide items")
+                             : L10n.f("target.showItems", "%d items · review or untick",
+                                      targetResult.resolvedPaths.count))
                     }
                     .font(.caption)
                     .foregroundStyle(.tertiary)
@@ -227,7 +234,10 @@ struct TargetRowView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 4)
-                .accessibilityLabel("\(showsPaths ? "Hide" : "Show") the \(targetResult.resolvedPaths.count) items of \(targetResult.target.displayName)")
+                .accessibilityLabel(L10n.f(showsPaths ? "target.a11y.hideItems" : "target.a11y.showItems",
+                                           showsPaths ? "Hide the %1$d items of %2$@" : "Show the %1$d items of %2$@",
+                                           targetResult.resolvedPaths.count,
+                                           targetResult.target.localizedName))
             }
 
             ForEach(targetResult.scanErrors, id: \.self) { err in
@@ -266,7 +276,7 @@ private struct PathLabel: View {
         let size = DiskSpaceMonitor.formatBytes(path.estimatedBytes)
         if let modified = path.lastModified,
            Date().timeIntervalSince(modified) > Self.ageHintAfterDays {
-            return "\(size) · untouched \(RelativeTime.label(for: modified))"
+            return L10n.f("path.untouched", "%1$@ · untouched %2$@", size, RelativeTime.label(for: modified))
         }
         return size
     }

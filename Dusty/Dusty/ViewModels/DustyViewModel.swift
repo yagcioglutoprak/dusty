@@ -274,7 +274,11 @@ final class DustyViewModel: ObservableObject {
         isScanning = true
         errorMessage = nil
         if clearResult { lastDeletionResult = nil }
-        scanProgress = ScanProgress(completed: 0, total: CleanupTargetRegistry.all.count, currentTargetName: "Starting…")
+        scanProgress = ScanProgress(
+            completed: 0,
+            total: CleanupTargetRegistry.all.count,
+            currentTargetName: L10n.t("panel.scan.starting", "Starting…")
+        )
 
         let result = await engine.scan(options: settings.cleanerOptions, sizingPolicy: sizingPolicy) { [weak self] progress in
             Task { @MainActor in
@@ -313,8 +317,9 @@ final class DustyViewModel: ObservableObject {
         guard !cleanablePaths(for: level).isEmpty else {
             let blocking = blockingApps(for: level)
             errorMessage = blocking.isEmpty
-                ? "Select at least one item to clean."
-                : "Quit \(blocking.joined(separator: ", ")) to clean their caches."
+                ? L10n.t("error.noSelection", "Select at least one item to clean.")
+                : L10n.f("error.quitApps", "Quit %@ to clean their caches.",
+                         blocking.formatted(.list(type: .and)))
             return
         }
         pendingConfirmationLevel = level
@@ -330,7 +335,7 @@ final class DustyViewModel: ObservableObject {
         // Hold the process-wide gate so a Shortcuts action or scheduled auto-clean
         // cannot delete the same targets underneath this clean.
         guard CleanCoordinator.shared.beginClean() else {
-            errorMessage = "A clean is already in progress. Try again in a moment."
+            errorMessage = L10n.t("error.cleanInProgress", "A clean is already in progress. Try again in a moment.")
             return
         }
         defer { CleanCoordinator.shared.endClean() }
@@ -367,7 +372,7 @@ final class DustyViewModel: ObservableObject {
         cleaningLevel = nil
 
         if !result.skippedPaths.isEmpty && result.entries.isEmpty {
-            errorMessage = "Cleanup failed: check permissions or try again."
+            errorMessage = L10n.t("error.cleanupFailed", "Cleanup failed: check permissions or try again.")
         }
 
         // Only credit lifetime stats when this clean actually reclaims space now.
@@ -421,7 +426,12 @@ final class DustyViewModel: ObservableObject {
         Task {
             let result = await Task.detached { engine.restore(entries) }.value
             if !result.failures.isEmpty {
-                self.errorMessage = "Restored \(result.restoredCount) of \(entries.count) items. Some could not be moved back (the original location may be occupied)."
+                self.errorMessage = L10n.f(
+                    "error.restorePartial",
+                    "Restored %1$d of %2$d items. Some could not be moved back (the original location may be occupied).",
+                    result.restoredCount,
+                    entries.count
+                )
             }
             self.refreshFreeSpace()
             await self.rescan(level: level, settings: AppSettings.shared)
@@ -591,7 +601,7 @@ final class DustyViewModel: ObservableObject {
     /// the total volume size is known (first refresh hasn't completed yet).
     var menuBarPercentLabel: String {
         guard totalSpaceBytes > 0 else { return menuBarLabel }
-        return "\(Int((freeSpaceRatio * 100).rounded()))% free"
+        return L10n.f("menubar.percentFree", "%d%% free", Int((freeSpaceRatio * 100).rounded()))
     }
 
     var freeSpaceRatio: Double {

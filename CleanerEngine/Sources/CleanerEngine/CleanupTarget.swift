@@ -95,6 +95,15 @@ public struct CleanupTarget: Identifiable, Codable, Sendable, Hashable {
     public var needsUserSelection: Bool {
         requiresIndividualSelection || requiresExplicitOptIn
     }
+
+    /// The name to put in front of a person, translated when a translation exists.
+    ///
+    /// `displayName` stays English on purpose: it is `Codable`, so it travels in
+    /// persisted scan results, and keeping it stable means the deletion log reads
+    /// the same on every machine no matter what language the panel is in.
+    public var localizedName: String {
+        L10n.t("target.\(id)", displayName)
+    }
 }
 
 public struct ResolvedPath: Identifiable, Codable, Sendable, Hashable {

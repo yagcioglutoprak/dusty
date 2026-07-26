@@ -84,6 +84,12 @@ final class AppSettings: ObservableObject {
         didSet { LoginItem.set(launchAtLogin) }
     }
 
+    private init() {
+        // Read the launch language before any code path can change it: the Settings
+        // picker compares against this to decide whether a restart is still pending.
+        _ = AppLanguage.launchLanguage
+    }
+
     var cleanerOptions: CleanerOptions {
         CleanerOptions(
             dryRun: dryRunDefault,

@@ -5,7 +5,7 @@ import Foundation
 /// when the event was days ago. Relative wording can't mislead that way.
 enum RelativeTime {
     static func label(for date: Date, now: Date = Date()) -> String {
-        if now.timeIntervalSince(date) < 90 { return "just now" }
+        if now.timeIntervalSince(date) < 90 { return L10n.t("time.justNow", "just now") }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
         return formatter.localizedString(for: date, relativeTo: now)

@@ -54,3 +54,6 @@ scripts/capture_demo.sh
 
 # Release artifacts staged locally
 *.dmg
+Dusty/*.zip
+Dusty/stage/
+Dusty/appcast.xml

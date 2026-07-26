@@ -1,0 +1,191 @@
+/* Shared */
+"common.settings" = "Réglages";
+"common.cancel" = "Annuler";
+"common.done" = "Terminé";
+"common.open" = "Ouvrir";
+"common.undo" = "Restaurer";
+"common.all" = "Tout";
+"common.none" = "Aucun";
+"common.dryRun" = "Simulation";
+"common.revealInFinder" = "Afficher dans le Finder";
+
+/* Menu bar */
+"menubar.percentFree" = "%d %% libre";
+"menubar.toClean" = "%1$@ · %2$@ à nettoyer";
+
+/* Panel header and scan */
+"panel.badge.lowDisk" = "DISQUE PLEIN";
+"panel.scan.scanning" = "Analyse…";
+"panel.scan.rescan" = "Relancer";
+"panel.scan.start" = "Analyser le disque";
+"panel.scan.starting" = "Démarrage…";
+"panel.scan.progress" = "%1$d/%2$d · %3$@";
+"panel.scan.lastScan" = "Dernière analyse : %@";
+"panel.error.dismiss" = "Masquer l'erreur";
+
+/* Panel footer */
+"panel.footer.deletionLog" = "Journal des suppressions";
+"panel.footer.quit" = "Quitter";
+"panel.footer.madeBy" = "créé par";
+"panel.footer.openSite" = "Ouvrir toprak.sh";
+
+/* All-clean card */
+"panel.allClean.title" = "Rien à nettoyer";
+"panel.allClean.body" = "Rien à récupérer pour l'instant. Dusty continue de surveiller en arrière-plan.";
+"panel.allClean.bodyChecked" = "Rien à récupérer (vérifié %@). Dusty continue de surveiller en arrière-plan.";
+
+/* Free space header */
+"header.free" = "LIBRE";
+"header.used" = "UTILISÉ";
+"header.total" = "TOTAL";
+"header.a11y.label" = "Espace disque";
+"header.a11y.value" = "%1$@ libres sur %2$@, %3$d pour cent utilisés";
+
+/* Reclaimable summary */
+"reclaim.title" = "RÉCUPÉRABLE";
+"reclaim.a11y.label" = "Espace récupérable";
+"reclaim.cleanSafe" = "Nettoyage sûr · %@";
+"reclaim.nothingToClean" = "Rien à nettoyer en toute sécurité";
+
+/* Insights */
+"insights.title" = "Observations";
+"insights.forecast" = "%1$@ avant saturation du disque au rythme actuel (%2$@/jour).";
+"insights.horizon.lessThanDay" = "Moins d'un jour";
+
+/* Cleanup level sections */
+"level.clean" = "Nettoyer";
+"level.notScanned" = "Pas encore analysé. Lancez une analyse pour voir les éléments.";
+"level.a11y.label" = "Niveau de nettoyage %@";
+"level.a11y.expanded" = "déplié";
+"level.a11y.collapsed" = "replié";
+"level.a11y.hint" = "Affiche tous les chemins trouvés pour ce niveau";
+"level.a11y.cleanLabel" = "Nettoyer les éléments %@";
+"level.a11y.selected" = "%@ sélectionnés";
+"level.a11y.nothingSelected" = "rien de sélectionné";
+
+/* Target rows */
+"target.skippedWhileOpen" = "Ignoré tant que %@ est ouvert";
+"target.hideItems" = "Masquer les éléments";
+"path.untouched" = "%1$@ · inutilisé %2$@";
+
+/* Confirmation */
+"confirm.title" = "Confirmer le nettoyage";
+"confirm.title.dryRun" = "Aperçu du nettoyage";
+"confirm.skippingApps" = "Cache de %@ ignoré, l'app est ouverte";
+"confirm.dryRunNote" = "Simulation : rien ne sera supprimé";
+"confirm.undoNote" = "Récupérable pendant quelques secondes";
+"confirm.trashNote" = "Les éléments restent dans la corbeille jusqu'à ce que vous la vidiez";
+"confirm.action.delete" = "Supprimer";
+"confirm.action.dryRun" = "Lancer la simulation";
+
+/* Result banner */
+"result.title.trashed" = "Placé dans la corbeille";
+"result.title.undoable" = "Nettoyé, récupérable";
+"result.title.reclaimed" = "Nettoyage terminé";
+"result.moved" = "déplacés";
+"result.cleaned" = "nettoyés";
+"result.body.trashed" = "Videz la corbeille pour récupérer cet espace.";
+"result.body.undoable" = "La restauration reste possible quelques secondes.";
+"result.skippedLine" = "%1$@ : %2$@";
+
+/* Full Disk Access */
+"fda.title" = "Accès complet au disque recommandé";
+"fda.body" = "Accordez l'accès dans Réglages Système pour analyser les journaux système et les caches protégés.";
+
+/* Errors */
+"error.noSelection" = "Sélectionnez au moins un élément à nettoyer.";
+"error.quitApps" = "Quittez %@ pour nettoyer leurs caches.";
+"error.cleanInProgress" = "Un nettoyage est déjà en cours. Réessayez dans un instant.";
+"error.cleanupFailed" = "Échec du nettoyage : vérifiez les autorisations ou réessayez.";
+"error.restorePartial" = "%1$d éléments restaurés sur %2$d. Certains n'ont pas pu être remis en place (l'emplacement d'origine est peut-être occupé).";
+
+/* Welcome */
+"welcome.title" = "Bienvenue dans Dusty";
+"welcome.subtitle" = "Un nettoyeur de disque qui montre ce qu'il fait.";
+"welcome.row1.title" = "Il montre ce qu'il fait";
+"welcome.row1.text" = "Une analyse liste chaque chemin et sa taille avant toute action. Analyser ne supprime jamais rien.";
+"welcome.row2.title" = "Liste blanche uniquement";
+"welcome.row2.text" = "Dusty ne peut supprimer que depuis un registre fixe de caches et de fichiers inutiles. Documents, Photos et Mail sont hors de portée par conception.";
+"welcome.row3.title" = "Restauration, et un reçu";
+"welcome.row3.text" = "Les nettoyages passent par la corbeille avec une fenêtre de restauration, et chaque suppression est écrite dans un journal consultable.";
+"welcome.scan" = "Lancer ma première analyse sûre";
+"welcome.scan.hint" = "Recherche l'espace récupérable. Rien n'est supprimé.";
+"welcome.skip" = "Je préfère explorer d'abord";
+
+/* Settings */
+"settings.section.general" = "Général";
+"settings.launchAtLogin" = "Ouvrir à la connexion";
+"settings.menuBarPercentage" = "Afficher l'espace libre en pourcentage";
+"settings.menuBarReclaimable" = "Afficher l'espace récupérable dans la barre des menus";
+
+"settings.section.language" = "Langue";
+"settings.language" = "Langue du panneau";
+"settings.language.system" = "Suivre le système";
+"settings.language.restartNote" = "Dusty doit redémarrer pour changer de langue.";
+"settings.language.restart" = "Redémarrer Dusty";
+
+"settings.section.refresh" = "Actualisation";
+"settings.refreshInterval" = "Intervalle de la barre des menus : %d s";
+
+"settings.section.autoScan" = "Analyse automatique";
+"settings.autoScanEnabled" = "Analyser en arrière-plan";
+"settings.autoScanCaption" = "Garde discrètement le chiffre de la barre des menus à jour. Ne supprime jamais rien de lui-même.";
+
+"settings.section.autoClean" = "Nettoyage automatique";
+"settings.autoCleanEnabled" = "Nettoyer les éléments sûrs selon un calendrier";
+"settings.autoCleanFrequency" = "Fréquence";
+"settings.frequency.daily" = "Chaque jour";
+"settings.frequency.weekly" = "Chaque semaine";
+"settings.frequency.biweekly" = "Toutes les deux semaines";
+"settings.autoCleanLowDisk" = "Nettoyer aussi quand l'espace libre devient faible";
+"settings.autoCleanThreshold" = "Sous %d Go libres";
+"settings.autoCleanDeveloper" = "Inclure les caches Développeur";
+"settings.autoCleanDryRunNote" = "Désactivé tant que la simulation est le mode par défaut : rien n'est supprimé sans surveillance.";
+"settings.autoCleanScope.safe" = "Caches de niveau sûr uniquement";
+"settings.autoCleanScope.developer" = "Caches sûrs et caches Développeur (DerivedData, gestionnaires de paquets)";
+"settings.autoCleanCaption" = "%@. Les apps ouvertes sont ignorées, une notification indique ce qui a été récupéré, et chaque chemin figure dans le journal des suppressions.";
+
+"settings.section.stats" = "Statistiques";
+"settings.stats.lifetime" = "Récupéré au total";
+"settings.stats.cleans" = "Nettoyages";
+"settings.stats.since" = "Depuis";
+"settings.stats.recent" = "Nettoyages récents";
+"settings.stats.level" = "Niveau %d";
+
+"settings.section.updates" = "Mises à jour";
+"settings.updates.auto" = "Rechercher les mises à jour automatiquement";
+"settings.updates.autoInstall" = "Télécharger et installer automatiquement";
+"settings.updates.checkNow" = "Rechercher les mises à jour";
+
+"settings.section.cleanupDefaults" = "Réglages de nettoyage";
+"settings.dryRunDefault" = "Simulation par défaut";
+"settings.moveToTrash" = "Garder les éléments Développeur et Profond dans la corbeille";
+
+"settings.section.safety" = "Sécurité";
+"settings.safety.body" = "Dusty applique une liste blanche stricte : seuls les chemins de CleanupTargetRegistry peuvent être supprimés, et jamais via un lien symbolique. Pas de sudo, aucun chemin protégé par SIP. Le seul dossier système accessible, /Library/Logs/DiagnosticReports, est optionnel et filtré par ancienneté.";
+"settings.safety.logPath" = "Journal des suppressions : ~/Library/Application Support/Dusty/";
+
+/* Notifications */
+"notification.action.cleanSafe" = "Nettoyage sûr";
+"notification.lowDisk.title" = "Espace disque faible";
+"notification.lowDisk.body" = "%@ disponibles. Récupérez de l'espace avec un nettoyage sûr.";
+"notification.autoClean.title" = "Nettoyage automatique terminé";
+"notification.autoClean.body" = "Dusty a récupéré %@ de caches inutiles. Chaque chemin figure dans le journal des suppressions.";
+"notification.autoCleanLowDisk.title" = "L'espace disque devenait faible";
+"notification.autoCleanLowDisk.body" = "Dusty a libéré %@ automatiquement. Chaque chemin figure dans le journal des suppressions.";
+
+/* Relative time */
+"time.justNow" = "à l'instant";
+
+/* Shortcuts actions */
+"intent.cleanSafe.title" = "Nettoyer les éléments sûrs";
+"intent.cleanSafe.shortTitle" = "Nettoyage sûr";
+"intent.cleanSafe.description" = "Supprime les caches et journaux sûrs trouvés par Dusty, exactement comme le bouton Nettoyage sûr. Les cibles dont l'app est ouverte sont ignorées, et chaque chemin supprimé est consigné dans le journal des suppressions.";
+"intent.cleanSafe.busy" = "Dusty est déjà en train de nettoyer. Réessayez dans un instant.";
+"intent.cleanSafe.scanFailed" = "L'analyse a échoué, rien n'a été nettoyé.";
+"intent.cleanSafe.nothing" = "Rien à nettoyer en toute sécurité pour l'instant.";
+"intent.cleanSafe.nothingSkipped" = "Rien à nettoyer en toute sécurité pour l'instant. %@ était ouvert, son cache a donc été ignoré.";
+"intent.reclaimable.title" = "Obtenir l'espace récupérable";
+"intent.reclaimable.shortTitle" = "Espace récupérable";
+"intent.reclaimable.description" = "Analyse les trois niveaux de nettoyage et renvoie l'espace que Dusty pourrait récupérer. Lecture seule : ne supprime rien.";
+"intent.reclaimable.result" = "%1$@ récupérables (dont %2$@ nettoyables automatiquement en toute sécurité).";

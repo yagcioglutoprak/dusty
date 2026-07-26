@@ -106,7 +106,9 @@ final class SmartAdvisorTests: XCTestCase {
         let result = try scanResult(targetID: "gradle-cache", bytes: 3 * gigabyte, ageDays: 120)
         let advisories = advisor().advisories(for: scan([result]), now: now)
         XCTAssertEqual(advisories.first?.id, "stale-gradle-cache")
-        XCTAssertTrue(advisories.first?.title.contains("120 days") == true)
+        // The age, not the English wording: the title is localized, so asserting on
+        // "120 days" would fail on any machine whose language is not English.
+        XCTAssertTrue(advisories.first?.title.contains("120") == true)
     }
 
     func testRecentlyTouchedCacheIsNotFlagged() throws {

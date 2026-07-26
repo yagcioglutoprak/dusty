@@ -176,7 +176,7 @@ func runScan(engine: CleanerEngine, levels: Set<CleanupLevel>, json: Bool) async
             if blocked.contains(tr.id) { note = "  (skipped: \(tr.target.requiresAppClosed ?? "app") is open)" }
             else if tr.target.needsUserSelection { note = "  (manual pick in the app)" }
             let size = formatBytes(tr.totalBytes).padding(toLength: 10, withPad: " ", startingAt: 0)
-            print("  \(size) \(tr.target.displayName)\(note)")
+            print("  \(size) \(tr.target.localizedName)\(note)")
         }
         if rows.isEmpty { print("  nothing found") }
         print("")
@@ -292,7 +292,7 @@ func runTargets(json: Bool) -> Int32 {
         print("\(level.title)")
         for target in CleanupTargetRegistry.targets(for: level) {
             let mark = target.needsUserSelection ? " (manual pick)" : ""
-            print("  \(target.displayName)\(mark)")
+            print("  \(target.localizedName)\(mark)")
             for template in target.pathTemplates { print("      \(template)") }
         }
         print("")

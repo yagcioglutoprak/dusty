@@ -1,0 +1,191 @@
+/* Shared */
+"common.settings" = "Settings";
+"common.cancel" = "Cancel";
+"common.done" = "Done";
+"common.open" = "Open";
+"common.undo" = "Undo";
+"common.all" = "All";
+"common.none" = "None";
+"common.dryRun" = "Dry Run";
+"common.revealInFinder" = "Reveal in Finder";
+
+/* Menu bar */
+"menubar.percentFree" = "%d%% free";
+"menubar.toClean" = "%1$@ · %2$@ to clean";
+
+/* Panel header and scan */
+"panel.badge.lowDisk" = "LOW DISK";
+"panel.scan.scanning" = "Scanning…";
+"panel.scan.rescan" = "Rescan";
+"panel.scan.start" = "Scan disk";
+"panel.scan.starting" = "Starting…";
+"panel.scan.progress" = "%1$d/%2$d · %3$@";
+"panel.scan.lastScan" = "Last scan: %@";
+"panel.error.dismiss" = "Dismiss error";
+
+/* Panel footer */
+"panel.footer.deletionLog" = "Deletion log";
+"panel.footer.quit" = "Quit";
+"panel.footer.madeBy" = "made by";
+"panel.footer.openSite" = "Open toprak.sh";
+
+/* All-clean card */
+"panel.allClean.title" = "All clean";
+"panel.allClean.body" = "Nothing reclaimable right now. Dusty keeps watching in the background.";
+"panel.allClean.bodyChecked" = "Nothing reclaimable (checked %@). Dusty keeps watching in the background.";
+
+/* Free space header */
+"header.free" = "FREE";
+"header.used" = "USED";
+"header.total" = "TOTAL";
+"header.a11y.label" = "Disk space";
+"header.a11y.value" = "%1$@ free of %2$@, %3$d percent used";
+
+/* Reclaimable summary */
+"reclaim.title" = "RECLAIMABLE";
+"reclaim.a11y.label" = "Reclaimable space";
+"reclaim.cleanSafe" = "Clean Safe · %@";
+"reclaim.nothingToClean" = "Nothing safe to clean";
+
+/* Insights */
+"insights.title" = "Insights";
+"insights.forecast" = "%1$@ until the disk fills at the current rate (%2$@/day).";
+"insights.horizon.lessThanDay" = "Less than a day";
+
+/* Cleanup level sections */
+"level.clean" = "Clean";
+"level.notScanned" = "Not scanned yet. Run a scan to see items.";
+"level.a11y.label" = "%@ cleanup level";
+"level.a11y.expanded" = "expanded";
+"level.a11y.collapsed" = "collapsed";
+"level.a11y.hint" = "Shows every path found for this level";
+"level.a11y.cleanLabel" = "Clean %@ items";
+"level.a11y.selected" = "%@ selected";
+"level.a11y.nothingSelected" = "nothing selected";
+
+/* Target rows */
+"target.skippedWhileOpen" = "Skipped while %@ is open";
+"target.hideItems" = "Hide items";
+"path.untouched" = "%1$@ · untouched %2$@";
+
+/* Confirmation */
+"confirm.title" = "Confirm Cleanup";
+"confirm.title.dryRun" = "Preview Cleanup";
+"confirm.skippingApps" = "Skipping %@ cache, app is open";
+"confirm.dryRunNote" = "Dry run: nothing will be deleted";
+"confirm.undoNote" = "Recoverable for a few seconds via Undo";
+"confirm.trashNote" = "Items stay in the Trash until you empty it";
+"confirm.action.delete" = "Delete";
+"confirm.action.dryRun" = "Run Dry Run";
+
+/* Result banner */
+"result.title.trashed" = "Moved to Trash";
+"result.title.undoable" = "Cleaned, recoverable";
+"result.title.reclaimed" = "Cleanup complete";
+"result.moved" = "moved";
+"result.cleaned" = "cleaned";
+"result.body.trashed" = "Empty Trash to reclaim this space.";
+"result.body.undoable" = "Undo is available for a few seconds.";
+"result.skippedLine" = "%1$@: %2$@";
+
+/* Full Disk Access */
+"fda.title" = "Full Disk Access recommended";
+"fda.body" = "Grant access in System Settings to scan system logs and protected caches.";
+
+/* Errors */
+"error.noSelection" = "Select at least one item to clean.";
+"error.quitApps" = "Quit %@ to clean their caches.";
+"error.cleanInProgress" = "A clean is already in progress. Try again in a moment.";
+"error.cleanupFailed" = "Cleanup failed: check permissions or try again.";
+"error.restorePartial" = "Restored %1$d of %2$d items. Some could not be moved back (the original location may be occupied).";
+
+/* Welcome */
+"welcome.title" = "Welcome to Dusty";
+"welcome.subtitle" = "A disk cleaner that shows its work.";
+"welcome.row1.title" = "It shows its work";
+"welcome.row1.text" = "A scan lists every path and its size before anything happens. Scanning never deletes.";
+"welcome.row2.title" = "Allowlist only";
+"welcome.row2.text" = "Dusty can only delete from a fixed registry of cache and junk paths. Documents, Photos, and Mail are unreachable by design.";
+"welcome.row3.title" = "Undo, plus a receipt";
+"welcome.row3.text" = "Cleans pass through the Trash with an Undo window, and every deletion is written to a log you can open.";
+"welcome.scan" = "Run my first Safe scan";
+"welcome.scan.hint" = "Scans for reclaimable space. Nothing is deleted.";
+"welcome.skip" = "I'll look around first";
+
+/* Settings */
+"settings.section.general" = "General";
+"settings.launchAtLogin" = "Launch at login";
+"settings.menuBarPercentage" = "Show free space as a percentage";
+"settings.menuBarReclaimable" = "Show reclaimable space in the menu bar";
+
+"settings.section.language" = "Language";
+"settings.language" = "Panel language";
+"settings.language.system" = "Match system";
+"settings.language.restartNote" = "Dusty has to restart to change language.";
+"settings.language.restart" = "Restart Dusty";
+
+"settings.section.refresh" = "Refresh";
+"settings.refreshInterval" = "Menu bar interval: %ds";
+
+"settings.section.autoScan" = "Auto scan";
+"settings.autoScanEnabled" = "Scan in the background";
+"settings.autoScanCaption" = "Quietly keeps the menu bar figure current. Never deletes anything on its own.";
+
+"settings.section.autoClean" = "Auto clean";
+"settings.autoCleanEnabled" = "Clean Safe items on a schedule";
+"settings.autoCleanFrequency" = "Frequency";
+"settings.frequency.daily" = "Every day";
+"settings.frequency.weekly" = "Every week";
+"settings.frequency.biweekly" = "Every two weeks";
+"settings.autoCleanLowDisk" = "Also clean when free space runs low";
+"settings.autoCleanThreshold" = "Below %d GB free";
+"settings.autoCleanDeveloper" = "Include Developer caches";
+"settings.autoCleanDryRunNote" = "Off while dry run is the default: nothing is deleted unattended.";
+"settings.autoCleanScope.safe" = "Safe-level caches only";
+"settings.autoCleanScope.developer" = "Safe caches plus Developer caches (DerivedData, package managers)";
+"settings.autoCleanCaption" = "%@. Apps that are open are skipped, a notification reports what was reclaimed, and every path lands in the deletion log.";
+
+"settings.section.stats" = "Statistics";
+"settings.stats.lifetime" = "Reclaimed all-time";
+"settings.stats.cleans" = "Cleans";
+"settings.stats.since" = "Since";
+"settings.stats.recent" = "Recent cleans";
+"settings.stats.level" = "Level %d";
+
+"settings.section.updates" = "Updates";
+"settings.updates.auto" = "Check for updates automatically";
+"settings.updates.autoInstall" = "Download and install automatically";
+"settings.updates.checkNow" = "Check for Updates Now";
+
+"settings.section.cleanupDefaults" = "Cleanup defaults";
+"settings.dryRunDefault" = "Dry run by default";
+"settings.moveToTrash" = "Keep Developer & Deep items in Trash";
+
+"settings.section.safety" = "Safety";
+"settings.safety.body" = "Dusty uses a strict allowlist: only paths in CleanupTargetRegistry can be deleted, and never through a symlink. No sudo, no SIP-protected paths. The one system folder it can touch, /Library/Logs/DiagnosticReports, is opt-in and age-filtered.";
+"settings.safety.logPath" = "Deletion log: ~/Library/Application Support/Dusty/";
+
+/* Notifications */
+"notification.action.cleanSafe" = "Clean Safe";
+"notification.lowDisk.title" = "Low disk space";
+"notification.lowDisk.body" = "%@ available. Reclaim space with a Safe clean.";
+"notification.autoClean.title" = "Auto-clean finished";
+"notification.autoClean.body" = "Dusty reclaimed %@ of cached junk. Every path is in the deletion log.";
+"notification.autoCleanLowDisk.title" = "Disk space was running low";
+"notification.autoCleanLowDisk.body" = "Dusty freed %@ automatically. Every path is in the deletion log.";
+
+/* Relative time */
+"time.justNow" = "just now";
+
+/* Shortcuts actions */
+"intent.cleanSafe.title" = "Clean Safe Items";
+"intent.cleanSafe.shortTitle" = "Clean Safe";
+"intent.cleanSafe.description" = "Deletes the auto-safe caches and logs Dusty found, exactly like the Clean Safe button. Targets whose app is open are skipped, and every deleted path is recorded in the deletion log.";
+"intent.cleanSafe.busy" = "Dusty is already cleaning. Try again in a moment.";
+"intent.cleanSafe.scanFailed" = "The scan failed, nothing was cleaned.";
+"intent.cleanSafe.nothing" = "Nothing safe to clean right now.";
+"intent.cleanSafe.nothingSkipped" = "Nothing safe to clean right now. %@ was open, so its cache was skipped.";
+"intent.reclaimable.title" = "Get Reclaimable Space";
+"intent.reclaimable.shortTitle" = "Reclaimable Space";
+"intent.reclaimable.description" = "Scans all three cleanup levels and returns how much space Dusty could reclaim. Read-only: deletes nothing.";
+"intent.reclaimable.result" = "%1$@ reclaimable (%2$@ of it safe to clean automatically).";

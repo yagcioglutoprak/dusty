@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>confirm.itemCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@ · %2$@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d élément</string>
+			<key>other</key>
+			<string>%d éléments</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Environ %d jour</string>
+			<key>other</key>
+			<string>Environ %d jours</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.months</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@months@</string>
+		<key>months</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Environ %d mois</string>
+			<key>other</key>
+			<string>Environ %d mois</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.weeks</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@weeks@</string>
+		<key>weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Environ %d semaine</string>
+			<key>other</key>
+			<string>Environ %d semaines</string>
+		</dict>
+	</dict>
+	<key>intent.cleanSafe.done</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@, %2$@ libérés.</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d élément nettoyé</string>
+			<key>other</key>
+			<string>%d éléments nettoyés</string>
+		</dict>
+	</dict>
+	<key>level.blocking</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@apps@</string>
+		<key>apps</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$@ est ouvert, son cache est donc ignoré. Quittez-le pour l'inclure.</string>
+			<key>other</key>
+			<string>%2$@ sont ouverts, leurs caches sont donc ignorés. Quittez-les pour les inclure.</string>
+		</dict>
+	</dict>
+	<key>panel.footer.lifetime</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ %2$#@cleans@</string>
+		<key>cleans</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>récupérés au total · %d nettoyage</string>
+			<key>other</key>
+			<string>récupérés au total · %d nettoyages</string>
+		</dict>
+	</dict>
+	<key>result.skipped.hide</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d ignoré, toucher pour masquer</string>
+			<key>other</key>
+			<string>%d ignorés, toucher pour masquer</string>
+		</dict>
+	</dict>
+	<key>result.skipped.show</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d ignoré, toucher pour afficher</string>
+			<key>other</key>
+			<string>%d ignorés, toucher pour afficher</string>
+		</dict>
+	</dict>
+	<key>settings.autoScanInterval</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@hours@</string>
+		<key>hours</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Toutes les %d heure</string>
+			<key>other</key>
+			<string>Toutes les %d heures</string>
+		</dict>
+	</dict>
+	<key>settings.logAge</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Âge des journaux système : %d jour</string>
+			<key>other</key>
+			<string>Âge des journaux système : %d jours</string>
+		</dict>
+	</dict>
+	<key>target.a11y.hideItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Masquer le %d élément de %2$@</string>
+			<key>other</key>
+			<string>Masquer les %d éléments de %2$@</string>
+		</dict>
+	</dict>
+	<key>target.a11y.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Afficher le %d élément de %2$@</string>
+			<key>other</key>
+			<string>Afficher les %d éléments de %2$@</string>
+		</dict>
+	</dict>
+	<key>target.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d élément · à revoir ou décocher</string>
+			<key>other</key>
+			<string>%d éléments · à revoir ou décocher</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

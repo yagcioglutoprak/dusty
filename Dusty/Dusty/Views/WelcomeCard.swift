@@ -15,14 +15,14 @@ struct WelcomeCard: View {
             hero
             VStack(spacing: 14) {
                 trustRow(index: 0, icon: "list.bullet.rectangle",
-                         title: "It shows its work",
-                         text: "A scan lists every path and its size before anything happens. Scanning never deletes.")
+                         title: L10n.t("welcome.row1.title", "It shows its work"),
+                         text: L10n.t("welcome.row1.text", "A scan lists every path and its size before anything happens. Scanning never deletes."))
                 trustRow(index: 1, icon: "checklist",
-                         title: "Allowlist only",
-                         text: "Dusty can only delete from a fixed registry of cache and junk paths. Documents, Photos, and Mail are unreachable by design.")
+                         title: L10n.t("welcome.row2.title", "Allowlist only"),
+                         text: L10n.t("welcome.row2.text", "Dusty can only delete from a fixed registry of cache and junk paths. Documents, Photos, and Mail are unreachable by design."))
                 trustRow(index: 2, icon: "arrow.uturn.backward",
-                         title: "Undo, plus a receipt",
-                         text: "Cleans pass through the Trash with an Undo window, and every deletion is written to a log you can open.")
+                         title: L10n.t("welcome.row3.title", "Undo, plus a receipt"),
+                         text: L10n.t("welcome.row3.text", "Cleans pass through the Trash with an Undo window, and every deletion is written to a log you can open."))
             }
             .padding(.horizontal, 22)
             .padding(.bottom, 20)
@@ -66,9 +66,9 @@ struct WelcomeCard: View {
             .padding(.top, 6)
             .accessibilityHidden(true)
 
-            Text("Welcome to Dusty")
+            Text(L10n.t("welcome.title", "Welcome to Dusty"))
                 .font(.title2.weight(.bold))
-            Text("A disk cleaner that shows its work.")
+            Text(L10n.t("welcome.subtitle", "A disk cleaner that shows its work."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -109,13 +109,13 @@ struct WelcomeCard: View {
     private var actions: some View {
         VStack(spacing: 10) {
             Button(action: onScan) {
-                Text("Run my first Safe scan")
+                Text(L10n.t("welcome.scan", "Run my first Safe scan"))
             }
             .buttonStyle(DustyPrimaryButtonStyle())
             .keyboardShortcut(.defaultAction)
-            .accessibilityHint("Scans for reclaimable space. Nothing is deleted.")
+            .accessibilityHint(L10n.t("welcome.scan.hint", "Scans for reclaimable space. Nothing is deleted."))
 
-            Button("I'll look around first", action: onSkip)
+            Button(L10n.t("welcome.skip", "I'll look around first"), action: onSkip)
                 .buttonStyle(.link)
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)

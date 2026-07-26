@@ -9,20 +9,20 @@ public enum CleanupLevel: Int, CaseIterable, Codable, Sendable, Comparable, Iden
 
     public var title: String {
         switch self {
-        case .safe: return "Level 1: Safe"
-        case .developer: return "Level 2: Developer"
-        case .deep: return "Level 3: Deep"
+        case .safe: return L10n.t("level.safe.title", "Level 1: Safe")
+        case .developer: return L10n.t("level.developer.title", "Level 2: Developer")
+        case .deep: return L10n.t("level.deep.title", "Level 3: Deep")
         }
     }
 
     public var subtitle: String {
         switch self {
         case .safe:
-            return "User caches, logs, Trash: zero functional impact"
+            return L10n.t("level.safe.subtitle", "User caches, logs, Trash: zero functional impact")
         case .developer:
-            return "DerivedData, simulators, package caches: may require rebuilds"
+            return L10n.t("level.developer.subtitle", "DerivedData, simulators, package caches: may require rebuilds")
         case .deep:
-            return "Installers, Xcode archives, old system logs: manual selection"
+            return L10n.t("level.deep.subtitle", "Installers, Xcode archives, old system logs: manual selection")
         }
     }
 

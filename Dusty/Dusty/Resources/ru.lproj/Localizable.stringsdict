@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>confirm.itemCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@ · %2$@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента</string>
+			<key>many</key>
+			<string>%d элементов</string>
+			<key>one</key>
+			<string>%d элемент</string>
+			<key>other</key>
+			<string>%d элемента</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Около %d дней</string>
+			<key>many</key>
+			<string>Около %d дней</string>
+			<key>one</key>
+			<string>Около %d дня</string>
+			<key>other</key>
+			<string>Около %d дня</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.months</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@months@</string>
+		<key>months</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Около %d месяцев</string>
+			<key>many</key>
+			<string>Около %d месяцев</string>
+			<key>one</key>
+			<string>Около %d месяца</string>
+			<key>other</key>
+			<string>Около %d месяца</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.weeks</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@weeks@</string>
+		<key>weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Около %d недель</string>
+			<key>many</key>
+			<string>Около %d недель</string>
+			<key>one</key>
+			<string>Около %d недели</string>
+			<key>other</key>
+			<string>Около %d недели</string>
+		</dict>
+	</dict>
+	<key>intent.cleanSafe.done</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@, %2$@ освобождено.</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Очищено %d элемента</string>
+			<key>many</key>
+			<string>Очищено %d элементов</string>
+			<key>one</key>
+			<string>Очищен %d элемент</string>
+			<key>other</key>
+			<string>Очищено %d элемента</string>
+		</dict>
+	</dict>
+	<key>level.blocking</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@apps@</string>
+		<key>apps</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%2$@ открыты, поэтому их кэши пропущены. Закройте их, чтобы включить.</string>
+			<key>many</key>
+			<string>%2$@ открыты, поэтому их кэши пропущены. Закройте их, чтобы включить.</string>
+			<key>one</key>
+			<string>%2$@ открыт, поэтому его кэш пропущен. Закройте его, чтобы включить.</string>
+			<key>other</key>
+			<string>%2$@ открыты, поэтому их кэши пропущены. Закройте их, чтобы включить.</string>
+		</dict>
+	</dict>
+	<key>panel.footer.lifetime</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ %2$#@cleans@</string>
+		<key>cleans</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>освобождено за всё время · %d очистки</string>
+			<key>many</key>
+			<string>освобождено за всё время · %d очисток</string>
+			<key>one</key>
+			<string>освобождено за всё время · %d очистка</string>
+			<key>other</key>
+			<string>освобождено за всё время · %d очистки</string>
+		</dict>
+	</dict>
+	<key>result.skipped.hide</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d пропущено, нажмите, чтобы скрыть</string>
+			<key>many</key>
+			<string>%d пропущено, нажмите, чтобы скрыть</string>
+			<key>one</key>
+			<string>%d пропущен, нажмите, чтобы скрыть</string>
+			<key>other</key>
+			<string>%d пропущено, нажмите, чтобы скрыть</string>
+		</dict>
+	</dict>
+	<key>result.skipped.show</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d пропущено, нажмите, чтобы показать</string>
+			<key>many</key>
+			<string>%d пропущено, нажмите, чтобы показать</string>
+			<key>one</key>
+			<string>%d пропущен, нажмите, чтобы показать</string>
+			<key>other</key>
+			<string>%d пропущено, нажмите, чтобы показать</string>
+		</dict>
+	</dict>
+	<key>settings.autoScanInterval</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@hours@</string>
+		<key>hours</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Каждые %d часа</string>
+			<key>many</key>
+			<string>Каждые %d часов</string>
+			<key>one</key>
+			<string>Каждый %d час</string>
+			<key>other</key>
+			<string>Каждые %d часа</string>
+		</dict>
+	</dict>
+	<key>settings.logAge</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Возраст системных журналов: %d дня</string>
+			<key>many</key>
+			<string>Возраст системных журналов: %d дней</string>
+			<key>one</key>
+			<string>Возраст системных журналов: %d день</string>
+			<key>other</key>
+			<string>Возраст системных журналов: %d дня</string>
+		</dict>
+	</dict>
+	<key>target.a11y.hideItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Скрыть %d элемента, %2$@</string>
+			<key>many</key>
+			<string>Скрыть %d элементов, %2$@</string>
+			<key>one</key>
+			<string>Скрыть %d элемент, %2$@</string>
+			<key>other</key>
+			<string>Скрыть %d элемента, %2$@</string>
+		</dict>
+	</dict>
+	<key>target.a11y.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Показать %d элемента, %2$@</string>
+			<key>many</key>
+			<string>Показать %d элементов, %2$@</string>
+			<key>one</key>
+			<string>Показать %d элемент, %2$@</string>
+			<key>other</key>
+			<string>Показать %d элемента, %2$@</string>
+		</dict>
+	</dict>
+	<key>target.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента · проверьте или снимите отметку</string>
+			<key>many</key>
+			<string>%d элементов · проверьте или снимите отметку</string>
+			<key>one</key>
+			<string>%d элемент · проверьте или снимите отметку</string>
+			<key>other</key>
+			<string>%d элемента · проверьте или снимите отметку</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -53,9 +53,9 @@ public struct DiskSpaceMonitor: @unchecked Sendable {
     public static func formatFreeSpaceCompact(_ bytes: Int64) -> String {
         let gb = Double(bytes) / 1_073_741_824.0
         if gb >= 1 {
-            return String(format: "%.0f GB free", gb)
+            return L10n.f("format.gbFree", "%.0f GB free", gb)
         }
         let mb = Double(bytes) / 1_048_576.0
-        return String(format: "%.0f MB free", mb)
+        return L10n.f("format.mbFree", "%.0f MB free", mb)
     }
 }

@@ -17,7 +17,7 @@ struct ReclaimSummaryView: View {
                     Image(systemName: "sparkles")
                         .font(.caption2)
                         .foregroundStyle(DustyTheme.gold)
-                    Text("RECLAIMABLE")
+                    Text(L10n.t("reclaim.title", "RECLAIMABLE"))
                         .font(.caption.weight(.bold))
                         .tracking(1.8)
                         .foregroundStyle(.secondary)
@@ -30,7 +30,7 @@ struct ReclaimSummaryView: View {
                     .foregroundStyle(.primary)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Reclaimable space")
+            .accessibilityLabel(L10n.t("reclaim.a11y.label", "Reclaimable space"))
             .accessibilityValue(DiskSpaceMonitor.formatBytes(totalBytes))
 
             HStack(spacing: 8) {
@@ -58,8 +58,8 @@ struct ReclaimSummaryView: View {
                             .font(.body.weight(.bold))
                     }
                     Text(safeBytes > 0
-                         ? "Clean Safe · \(DiskSpaceMonitor.formatBytes(safeBytes))"
-                         : "Nothing safe to clean")
+                         ? L10n.f("reclaim.cleanSafe", "Clean Safe · %@", DiskSpaceMonitor.formatBytes(safeBytes))
+                         : L10n.t("reclaim.nothingToClean", "Nothing safe to clean"))
                         .monospacedDigit()
                 }
             }
