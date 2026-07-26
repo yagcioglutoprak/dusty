@@ -56,4 +56,6 @@ scripts/capture_demo.sh
 *.dmg
 Dusty/*.zip
 Dusty/stage/
+Dusty/stapled/
+Dusty/build/
 Dusty/appcast.xml
