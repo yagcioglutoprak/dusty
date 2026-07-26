@@ -1,0 +1,82 @@
+/* Cleanup levels */
+"level.safe.title" = "Уровень 1: Безопасный";
+"level.developer.title" = "Уровень 2: Разработка";
+"level.deep.title" = "Уровень 3: Глубокий";
+"level.safe.subtitle" = "Кэши пользователя, журналы, корзина: без последствий";
+"level.developer.subtitle" = "DerivedData, симуляторы, кэши пакетов: возможна пересборка";
+"level.deep.subtitle" = "Установщики, архивы Xcode, старые журналы: выбор вручную";
+
+/* Level 1 targets */
+"target.user-caches" = "Пользовательские кэши";
+"target.user-logs" = "Журналы приложений";
+"target.empty-trash" = "Очистить корзину";
+"target.safari-cache" = "Кэш Safari";
+"target.chrome-cache" = "Кэш Chrome";
+"target.brave-cache" = "Кэш Brave";
+"target.arc-cache" = "Кэш Arc";
+"target.firefox-cache" = "Кэш Firefox";
+"target.edge-cache" = "Кэш Edge";
+"target.discord-cache" = "Кэш Discord";
+"target.spotify-cache" = "Кэш Spotify";
+"target.vscode-cache" = "Кэш VS Code";
+"target.slack-cache" = "Кэш Slack";
+"target.cursor-cache" = "Кэш Cursor";
+"target.signal-cache" = "Кэш Signal";
+"target.obsidian-cache" = "Кэш Obsidian";
+"target.notion-cache" = "Кэш Notion";
+"target.teams-cache" = "Кэш Microsoft Teams";
+"target.zoom-updates" = "Установщики обновлений Zoom";
+"target.telegram-media-cache" = "Кэш медиафайлов Telegram";
+
+/* Level 2 targets */
+"target.xcode-derived-data" = "DerivedData Xcode";
+"target.xcode-device-support" = "Старые DeviceSupport iOS";
+"target.core-simulator-caches" = "Кэши CoreSimulator";
+"target.simulator-unavailable" = "Недоступные симуляторы";
+"target.npm-cache" = "Кэш npm";
+"target.yarn-cache" = "Кэш Yarn";
+"target.pnpm-cache" = "Хранилище pnpm";
+"target.pip-cache" = "Кэш pip";
+"target.gradle-cache" = "Кэш Gradle";
+"target.cocoapods-cache" = "Кэш CocoaPods";
+"target.swiftpm-cache" = "Кэш SwiftPM";
+"target.cargo-cache" = "Кэш реестра Cargo";
+"target.go-cache" = "Кэши сборки и модулей Go";
+"target.homebrew-cache" = "Загрузки Homebrew";
+"target.composer-cache" = "Кэш Composer";
+"target.uv-cache" = "Кэш uv";
+"target.bun-cache" = "Кэш установки Bun";
+"target.dart-pub-cache" = "Кэш pub для Dart и Flutter";
+"target.deno-cache" = "Кэш Deno";
+"target.cypress-cache" = "Кэш бинарников Cypress";
+"target.xdg-cache" = "Кэши инструментов разработки (~/.cache)";
+"target.maven-repository" = "Локальный репозиторий Maven";
+"target.jetbrains-cache" = "Кэши сред разработки JetBrains";
+"target.unity-cache" = "Кэш ассетов Unity";
+"target.docker-prune" = "Системная очистка Docker";
+
+/* Level 3 targets */
+"target.downloads-installers" = "Старые установщики (.dmg / .pkg)";
+"target.xcode-archives" = "Архивы Xcode";
+"target.old-simulators" = "Неиспользуемые симуляторы";
+"target.diagnostic-logs" = "Журналы диагностики и системы";
+"target.ollama-models" = "Модели Ollama";
+"target.stale-project-artifacts" = "Артефакты заброшенных проектов";
+"target.time-machine-snapshots" = "Локальные снимки Time Machine";
+
+/* Scan output */
+"docker.prune.item" = "Все неиспользуемые образы, кэш сборки и остановленные контейнеры";
+"error.dockerNotInstalled" = "Docker не установлен";
+
+/* Advisories */
+"advisory.orphan.title" = "%@: остались данные";
+"advisory.orphan.detail" = "Похоже, %1$@ больше не установлен, но %2$@ его данных всё ещё занимают диск.";
+"advisory.tool.jetbrains" = "IDE JetBrains";
+"advisory.stale.detail" = "В этот кэш ничего не писали с %1$@. Эти %2$@ восстановятся, только если что-то их запросит.";
+
+/* Compact free-space label for the menu bar */
+"format.gbFree" = "%.0f ГБ свободно";
+"format.mbFree" = "%.0f МБ свободно";
+
+/* Simulator scan */
+"simctl.unavailable.none" = "Недоступные симуляторы (не найдено)";

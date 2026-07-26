@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>advisory.stale.title</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@: %2$#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>не трогали %d день</string>
+			<key>few</key>
+			<string>не трогали %d дня</string>
+			<key>many</key>
+			<string>не трогали %d дней</string>
+			<key>other</key>
+			<string>не трогали %d дня</string>
+		</dict>
+	</dict>
+	<key>simctl.unavailable.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@devices@</string>
+		<key>devices</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Недоступные симуляторы (%d устройство)</string>
+			<key>few</key>
+			<string>Недоступные симуляторы (%d устройства)</string>
+			<key>many</key>
+			<string>Недоступные симуляторы (%d устройств)</string>
+			<key>other</key>
+			<string>Недоступные симуляторы (%d устройства)</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
