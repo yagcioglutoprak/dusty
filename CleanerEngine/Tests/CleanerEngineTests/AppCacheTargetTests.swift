@@ -139,7 +139,7 @@ final class AppCacheTargetTests: XCTestCase {
     func testXDGCacheChildValidatesAndHomeRootDoesNot() throws {
         let t = target("xdg-cache")
         let v = validator(for: t)
-        let child = tempHome.appendingPathComponent(".cache/huggingface").path
+        let child = tempHome.appendingPathComponent(".cache/pre-commit").path
         XCTAssertNil(v.validateDeletionPath(child, for: t).error, "Children of ~/.cache must validate")
         XCTAssertNotNil(v.validateDeletionPath(tempHome.path, for: t).error, "Home itself must never validate")
         XCTAssertNotNil(v.validateDeletionPath(tempHome.appendingPathComponent("Documents").path, for: t).error,
