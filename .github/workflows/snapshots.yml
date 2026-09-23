@@ -2,8 +2,9 @@ name: Panel snapshots
 
 # Renders every state of the panel (welcome, home, scanning, a level, the
 # confirmation sheet, the undo receipt, settings) in light and dark from
-# fixture data, and uploads the PNGs. A reviewer can see what a UI change looks
-# like without building it. The render path only exists in Debug builds.
+# fixture data, plus the README demo GIF, and uploads them. A reviewer can see
+# what a UI change looks like without building it. The render path only exists
+# in Debug builds.
 
 on:
   workflow_dispatch:
@@ -53,8 +54,19 @@ jobs:
             --render-snapshots "$PWD/snapshots"
           ls -la snapshots
 
+      - name: Demo GIF
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: |
+          brew install gifski
+          gifski --fps 20 --width 520 --quality 90 -o snapshots/demo.gif snapshots/demo-frames/*.png
+          ls -la snapshots/demo.gif
+
       - uses: actions/upload-artifact@v4
         with:
           name: panel-snapshots
-          path: snapshots/*.png
+          path: |
+            snapshots/*.png
+            snapshots/*.gif
           if-no-files-found: error
