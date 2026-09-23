@@ -67,8 +67,19 @@ CleanupTarget(
 )
 ```
 
-No other code changes are required. The scanner, the UI section, and the safety
-checks all pick it up from the registry.
+The scanner, the UI section, and the safety checks all pick it up from the
+registry. The one other thing a target needs is a name in every language the
+panel speaks: add a `"target.<id>" = "...";` line to `Localizable.strings` in
+each folder under `CleanerEngine/Sources/CleanerEngine/Resources/`. If you do
+not speak one of those languages, copy the English name and say so in the pull
+request. `python3 scripts/check-localization.py` checks this, and CI runs it.
+
+## Translating the panel
+
+Dusty speaks English, French, Spanish, and Russian, and every other language is
+open. A translation needs no Swift: it is two string tables plus a few lines to
+register the language. The steps, and one issue per wanted language, are in
+[Help translate Dusty into your language](https://github.com/yagcioglutoprak/dusty/issues/33).
 
 ## The one rule that is not negotiable
 
@@ -80,6 +91,7 @@ validator has not approved. If you touch `SafetyValidator`, add a test for it.
 ## Before you open a PR
 
 - `swift test` passes
+- `python3 scripts/check-localization.py` passes
 - the app builds
 - no new path can be deleted without going through `SafetyValidator`
 - no em dashes in code, comments, or docs (project style)

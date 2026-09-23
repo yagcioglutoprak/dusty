@@ -14,6 +14,8 @@ A free, open-source alternative to CleanMyMac that lives in your menu bar.
 [![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty?color=6366f1)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/yagcioglutoprak/dusty?label=Stars&color=38bdf8)](https://github.com/yagcioglutoprak/dusty/stargazers)
 
+**English** · [简体中文](docs/i18n/README.zh-CN.md) · [日本語](docs/i18n/README.ja.md) · [Español](docs/i18n/README.es.md) · [Français](docs/i18n/README.fr.md) · [Русский](docs/i18n/README.ru.md)
+
 [**Download**](https://github.com/yagcioglutoprak/dusty/releases/latest) ·
 [Install](#install) ·
 [What it cleans](#what-it-cleans) ·
@@ -279,8 +281,11 @@ window, logs what it did, and refuses anything outside the allowlist.
 
 ## Contributing
 
-Pull requests are welcome, especially new cleanup targets. See
-[CONTRIBUTING.md](CONTRIBUTING.md), and share scan results or a missing cache in
+Pull requests are welcome, especially new cleanup targets and
+[translations](https://github.com/yagcioglutoprak/dusty/issues/33). See
+[CONTRIBUTING.md](CONTRIBUTING.md), pick up a
+[good first issue](https://github.com/yagcioglutoprak/dusty/labels/good%20first%20issue),
+and share scan results or a missing cache in
 [Discussions](https://github.com/yagcioglutoprak/dusty/discussions/5).
 
 **Add a cleanup target.** Targets are data, not code. One entry in
