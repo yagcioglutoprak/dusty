@@ -8,6 +8,22 @@ public enum CleanupTargetRegistry {
         all.filter { $0.level == level }
     }
 
+    /// Subtrees inside a target's root that the target itself must never delete, by
+    /// target ID. `SafetyValidator` refuses them, so the scan never lists them and a
+    /// stale selection (CLI, auto clean) cannot reach them either. Keyed by ID rather
+    /// than stored on `CleanupTarget`, so the rule holds for any copy of the target.
+    public static let excludedSubpaths: [String: [String]] = [
+        // Model stores that live in ~/.cache: deliberate multi-gigabyte downloads,
+        // not regenerable junk (same rule as ollama-models). huggingface also holds
+        // the login token. Only the opt-in ai-model-caches target clears models.
+        "xdg-cache": [
+            "~/.cache/huggingface",
+            "~/.cache/lm-studio",
+            "~/.cache/torch",
+            "~/.cache/whisper",
+        ],
+    ]
+
     // MARK: - Level 1: Safe
 
     public static let level1: [CleanupTarget] = [
@@ -481,9 +497,10 @@ public enum CleanupTargetRegistry {
             regenerates: true
         ),
         CleanupTarget(
-            // The XDG cache directory CLI tools use on macOS (Hugging Face, Puppeteer,
-            // pre-commit, gh, and friends). Cache-only by spec: tools must tolerate it
-            // being cleared, the same contract as ~/Library/Caches.
+            // The XDG cache directory CLI tools use on macOS (Puppeteer, pre-commit,
+            // gh, and friends). Cache-only by spec: tools must tolerate it being
+            // cleared, the same contract as ~/Library/Caches. The AI model stores
+            // some tools keep here are carved out, see `excludedSubpaths`.
             id: "xdg-cache",
             displayName: "Dev Tool Caches (~/.cache)",
             level: .developer,
@@ -587,6 +604,25 @@ public enum CleanupTargetRegistry {
             level: .deep,
             pathTemplates: ["~/.ollama/models"],
             category: "AI Models",
+            requiresExplicitOptIn: true
+        ),
+        CleanupTarget(
+            // The model stores other AI tools keep, which the ~/.cache sweep skips.
+            // Same rule as Ollama: strictly opt-in. Listed item by item so you drop
+            // only what you are done with. Only the model folders are reachable,
+            // never the tokens, settings or chats next to them.
+            id: "ai-model-caches",
+            displayName: "AI Model Caches",
+            level: .deep,
+            pathTemplates: [
+                "~/.cache/huggingface/hub",
+                "~/.cache/torch/hub",
+                "~/.cache/whisper",
+                "~/.cache/lm-studio/models",
+                "~/.lmstudio/models"
+            ],
+            category: "AI Models",
+            deletesContentsNotDirectory: true,
             requiresExplicitOptIn: true
         ),
         CleanupTarget(

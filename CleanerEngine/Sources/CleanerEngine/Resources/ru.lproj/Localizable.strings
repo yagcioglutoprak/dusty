@@ -61,6 +61,7 @@
 "target.old-simulators" = "Неиспользуемые симуляторы";
 "target.diagnostic-logs" = "Журналы диагностики и системы";
 "target.ollama-models" = "Модели Ollama";
+"target.ai-model-caches" = "Кэши ИИ-моделей";
 "target.stale-project-artifacts" = "Артефакты заброшенных проектов";
 "target.time-machine-snapshots" = "Локальные снимки Time Machine";
 

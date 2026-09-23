@@ -127,6 +127,10 @@ public struct SafetyValidator: @unchecked Sendable {
             return .failure(.prohibitedPath(standardized))
         }
 
+        if matchesExcludedSubpath(standardized, for: target) {
+            return .failure(.prohibitedPath(standardized))
+        }
+
         guard isPath(standardized, underAnyOf: allowlistedRoots, for: target) else {
             return .failure(.pathNotInAllowlist(standardized))
         }
@@ -284,6 +288,29 @@ public struct SafetyValidator: @unchecked Sendable {
         }
 
         return false
+    }
+
+    /// True when `path` is, or is inside, a subtree the target's root contains but the
+    /// target may not delete (`CleanupTargetRegistry.excludedSubpaths`). Case-insensitive
+    /// because the default APFS volume is: `~/.cache/HuggingFace` is the same folder.
+    /// Checked on the symlink-resolved path too, so a link elsewhere under the root
+    /// cannot lead into an excluded subtree.
+    private func matchesExcludedSubpath(_ path: String, for target: CleanupTarget) -> Bool {
+        guard let excluded = CleanupTargetRegistry.excludedSubpaths[target.id] else { return false }
+        let resolved = realPath(path)
+        for template in excluded {
+            let root = expandPath(template)
+            if Self.path(path, isInside: root) || Self.path(resolved, isInside: realPath(root)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private static func path(_ path: String, isInside root: String) -> Bool {
+        let path = path.lowercased()
+        let root = root.lowercased()
+        return path == root || path.hasPrefix(root + "/")
     }
 
     private func isPath(_ path: String, underAnyOf roots: [String], for target: CleanupTarget) -> Bool {

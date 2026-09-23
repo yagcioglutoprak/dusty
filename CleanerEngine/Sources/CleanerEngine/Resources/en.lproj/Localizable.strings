@@ -61,6 +61,7 @@
 "target.old-simulators" = "Unused Simulators";
 "target.diagnostic-logs" = "Diagnostic & System Logs";
 "target.ollama-models" = "Ollama Models";
+"target.ai-model-caches" = "AI Model Caches";
 "target.stale-project-artifacts" = "Stale Project Artifacts";
 "target.time-machine-snapshots" = "Time Machine Local Snapshots";
 
