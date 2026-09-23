@@ -10,9 +10,9 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty)](LICENSE)
 
-<img src="docs/screenshots/demo.gif?v=3" width="480" alt="Dusty's first-run welcome, then a scan revealing reclaimable disk space across Safe, Developer, and Deep levels">
+<img src="docs/screenshots/demo.gif?v=4" width="480" alt="Dusty's first-run welcome, a scan filling up, the reclaimable space by level, a Safe clean with its undo countdown, then the Developer level item by item">
 
-<sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size.</sub>
+<sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size, level by level.</sub>
 <br>
 <sub>If Dusty saves you space, a GitHub star helps more Mac users find a safer cleaner.</sub>
 <br>
@@ -89,11 +89,20 @@ target before you commit to anything. It is quick, too: a full three-level scan
 of a working dev machine (M3, ~18 GB of junk across 866 paths) takes about 5
 seconds.
 
-Every target folds open into its individual items, each with a checkbox, so you
-can keep one specific cache out of a clean without skipping the whole target.
+<p align="center">
+<img src="docs/screenshots/overview.png" alt="Dusty's panel: the home screen with a storage bar and a one-tap Safe clean, the Developer level item by item, the confirmation sheet, and Settings">
+</p>
 
-Every clean can be undone for a few seconds afterwards, at every level. Items
-pass through the Trash first, so a misclick costs you nothing. The panel keeps a
+Every level opens into its own screen: targets largest first, each folding
+open into its individual items with a checkbox, so you can keep one specific
+cache out of a clean without skipping the whole target. A filter narrows long
+lists, and a bar at the bottom always says what a clean would take. Before
+anything is deleted, a confirmation sheet shows the free space before and
+after and every path it will touch.
+
+Every clean can be undone for a few seconds afterwards, at every level: the
+receipt carries an Undo button (or ⌘Z) whose ring empties as the window closes.
+Items pass through the Trash first, so a misclick costs you nothing. The panel keeps a
 running total of what Dusty has reclaimed on your Mac since you installed it.
 
 The Deep level also looks where cleaners never do: inside your projects. A
@@ -107,8 +116,12 @@ and the clean, its artifacts are refused at delete time.
 
 After a scan, the panel points out what a person would spot: 12 GB of
 DerivedData with no Xcode installed anymore, a cache nothing has written to
-since spring, a disk on course to fill up in three weeks. Insights only point;
-they never select or delete anything.
+since spring, a disk on course to fill up in three weeks. Click an insight and
+the panel opens the level it is about with that target highlighted. Insights
+only point; they never select or delete anything.
+
+The panel is keyboard friendly too: ⌘R rescans, ⌘, opens Settings, Esc goes
+back, ⌘Z undoes the last clean, and ⌘Q quits.
 
 Prefer it hands-off? Automatic cleaning is opt-in (off by default) and comes in
 two flavors: on a schedule (daily, weekly, or every two weeks), or the moment
@@ -190,7 +203,8 @@ Without it, those few paths are skipped, the rest works fine.
 ## Settings
 
 - Panel language: English, French, Spanish, Russian, or follow the system
-- Menu bar refresh interval (default 30s), and free space as GB or a percentage
+- What the menu bar shows beside the icon: free space, a percentage, or
+  nothing at all, and how often it refreshes (default 30s)
 - Show or hide the "N GB to clean" suffix in the menu bar
 - Background auto-scan and how often it runs (default every 4h), or turn it off
 - Scheduled auto-clean of the Safe level (opt-in, off by default)

@@ -1,11 +1,8 @@
 /* Shared */
 "common.settings" = "Настройки";
 "common.cancel" = "Отмена";
-"common.done" = "Готово";
 "common.open" = "Открыть";
 "common.undo" = "Вернуть";
-"common.all" = "Все";
-"common.none" = "Ничего";
 "common.dryRun" = "Симуляция";
 "common.revealInFinder" = "Показать в Finder";
 
@@ -14,18 +11,13 @@
 "menubar.toClean" = "%1$@ · %2$@ к очистке";
 
 /* Panel header and scan */
-"panel.badge.lowDisk" = "МАЛО МЕСТА";
 "panel.scan.scanning" = "Сканирование…";
 "panel.scan.rescan" = "Сканировать снова";
 "panel.scan.start" = "Сканировать диск";
 "panel.scan.starting" = "Запуск…";
-"panel.scan.progress" = "%1$d/%2$d · %3$@";
 "panel.scan.lastScan" = "Последнее сканирование: %@";
-"panel.error.dismiss" = "Скрыть ошибку";
 
 /* Panel footer */
-"panel.footer.deletionLog" = "Журнал удалений";
-"panel.footer.quit" = "Выйти";
 "panel.footer.madeBy" = "автор";
 "panel.footer.openSite" = "Открыть toprak.sh";
 
@@ -35,17 +27,11 @@
 "panel.allClean.bodyChecked" = "Освобождать нечего (проверено %@). Dusty продолжает следить в фоне.";
 
 /* Free space header */
-"header.free" = "СВОБОДНО";
-"header.used" = "ЗАНЯТО";
-"header.total" = "ВСЕГО";
 "header.a11y.label" = "Место на диске";
 "header.a11y.value" = "%1$@ свободно из %2$@, занято %3$d процентов";
 
 /* Reclaimable summary */
-"reclaim.title" = "МОЖНО ОСВОБОДИТЬ";
-"reclaim.a11y.label" = "Место, которое можно освободить";
 "reclaim.cleanSafe" = "Безопасная очистка · %@";
-"reclaim.nothingToClean" = "Безопасно чистить нечего";
 
 /* Insights */
 "insights.title" = "Наблюдения";
@@ -54,36 +40,21 @@
 
 /* Cleanup level sections */
 "level.clean" = "Очистить";
-"level.notScanned" = "Ещё не сканировалось. Запустите сканирование, чтобы увидеть элементы.";
-"level.a11y.label" = "Уровень очистки: %@";
-"level.a11y.expanded" = "развёрнуто";
-"level.a11y.collapsed" = "свёрнуто";
-"level.a11y.hint" = "Показывает все пути, найденные на этом уровне";
+"level.notScanned" = "Запустите сканирование, чтобы увидеть, что есть на этом уровне.";
 "level.a11y.cleanLabel" = "Очистить элементы уровня %@";
-"level.a11y.selected" = "выбрано %@";
-"level.a11y.nothingSelected" = "ничего не выбрано";
 
 /* Target rows */
 "target.skippedWhileOpen" = "Пропускается, пока %@ открыт";
-"target.hideItems" = "Скрыть элементы";
-"path.untouched" = "%1$@ · не трогали %2$@";
 
 /* Confirmation */
-"confirm.title" = "Подтвердите очистку";
 "confirm.title.dryRun" = "Предпросмотр очистки";
 "confirm.skippingApps" = "Кэш %@ пропускается, приложение открыто";
 "confirm.dryRunNote" = "Симуляция: ничего не будет удалено";
 "confirm.undoNote" = "Несколько секунд можно вернуть обратно";
 "confirm.trashNote" = "Элементы останутся в корзине, пока вы её не очистите";
-"confirm.action.delete" = "Удалить";
 "confirm.action.dryRun" = "Запустить симуляцию";
 
 /* Result banner */
-"result.title.trashed" = "Перемещено в корзину";
-"result.title.undoable" = "Очищено, можно вернуть";
-"result.title.reclaimed" = "Очистка завершена";
-"result.moved" = "перемещено";
-"result.cleaned" = "очищено";
 "result.body.trashed" = "Очистите корзину, чтобы освободить это место.";
 "result.body.undoable" = "Вернуть можно ещё несколько секунд.";
 "result.skippedLine" = "%1$@: %2$@";
@@ -108,30 +79,23 @@
 "welcome.row2.text" = "Dusty может удалять лишь из фиксированного реестра кэшей и мусора. До «Документов», «Фото» и «Почты» он не дотянется по устройству программы.";
 "welcome.row3.title" = "Возврат и подтверждение";
 "welcome.row3.text" = "Очистка проходит через корзину с окном возврата, а каждое удаление записывается в журнал, который можно открыть.";
-"welcome.scan" = "Первое безопасное сканирование";
+"welcome.scan" = "Сканировать мой Mac";
 "welcome.scan.hint" = "Ищет место, которое можно освободить. Ничего не удаляется.";
 "welcome.skip" = "Сначала осмотрюсь";
 
 /* Settings */
 "settings.section.general" = "Основные";
 "settings.launchAtLogin" = "Запускать при входе";
-"settings.menuBarPercentage" = "Показывать свободное место в процентах";
 "settings.menuBarReclaimable" = "Показывать освобождаемое место в строке меню";
 
-"settings.section.language" = "Язык";
 "settings.language" = "Язык панели";
 "settings.language.system" = "Как в системе";
 "settings.language.restartNote" = "Для смены языка Dusty нужно перезапустить.";
 "settings.language.restart" = "Перезапустить Dusty";
 
-"settings.section.refresh" = "Обновление";
-"settings.refreshInterval" = "Интервал в строке меню: %d с";
-
-"settings.section.autoScan" = "Автосканирование";
 "settings.autoScanEnabled" = "Сканировать в фоне";
 "settings.autoScanCaption" = "Незаметно держит цифру в строке меню свежей. Само по себе ничего не удаляет.";
 
-"settings.section.autoClean" = "Автоочистка";
 "settings.autoCleanEnabled" = "Чистить безопасные элементы по расписанию";
 "settings.autoCleanFrequency" = "Частота";
 "settings.frequency.daily" = "Каждый день";
@@ -189,3 +153,90 @@
 "intent.reclaimable.shortTitle" = "Освобождаемое место";
 "intent.reclaimable.description" = "Сканирует все три уровня очистки и возвращает, сколько места мог бы освободить Dusty. Только чтение: ничего не удаляет.";
 "intent.reclaimable.result" = "%1$@ можно освободить (из них %2$@ безопасно чистить автоматически).";
+
+/* Navigation and menus */
+"nav.back" = "Назад";
+"menu.more" = "Ещё";
+"menu.deletionLog" = "Открыть журнал удалений";
+"menu.checkUpdates" = "Проверить обновления…";
+"menu.quit" = "Завершить Dusty";
+"common.dismiss" = "Закрыть";
+"common.copyPath" = "Скопировать путь";
+"a11y.selected" = "выбрано";
+"a11y.notSelected" = "не выбрано";
+"a11y.partlySelected" = "выбрано частично";
+
+/* Home */
+"home.dryRunHelp" = "Симуляция включена: очистка только показывает, что было бы удалено.";
+"home.levels" = "Уровни очистки";
+"home.level.nothing" = "Нечего очищать";
+"home.level.hint" = "Показывает все элементы, найденные на этом уровне";
+"health.healthy" = "В норме";
+"health.gettingFull" = "Заполняется";
+"health.low" = "Мало места";
+"hero.availableOf" = "свободно из %@";
+"hero.legend.used" = "Занято";
+"hero.legend.cleanable" = "Можно очистить";
+"hero.legend.free" = "Свободно";
+"hero.scan.count" = "%1$d из %2$d";
+"hero.notScanned.title" = "Узнайте, сколько можно освободить";
+"hero.notScanned.body" = "Сканирование измеряет кэши и мусор, путь за путём. Оно никогда ничего не удаляет.";
+"hero.canBeCleaned" = "можно очистить";
+"hero.cleaning" = "Очистка…";
+"hero.afterClean" = "После очистки будет свободно %@";
+"hero.review" = "Открыть уровень «%@»";
+"hero.rescanHelp" = "Сканировать снова (⌘R)";
+
+/* Cleanup levels */
+"level.name.safe" = "Безопасный";
+"level.name.developer" = "Разработка";
+"level.name.deep" = "Глубокий";
+"level.blurb.safe" = "Кэши, логи и Корзина. Восстанавливается само.";
+"level.blurb.developer" = "Данные сборки, симуляторы, кэши пакетов.";
+"level.blurb.deep" = "Установщики, архивы, снимки. Выбор вручную.";
+"level.selectAll" = "Выбрать все";
+"level.selectNone" = "Снять выбор";
+"level.notScanned.title" = "Ещё не сканировалось";
+"level.empty.title" = "Здесь нечего очищать";
+"level.filter" = "Фильтр по имени или пути";
+"level.clearFilter" = "Сбросить фильтр";
+"level.noMatches" = "Ничего не найдено по запросу «%@».";
+"level.bar.selected" = "Выбрано %@";
+"level.bar.nothing" = "Ничего не выбрано";
+"level.bar.skipping" = "%@ пропускается, пока открыт";
+"level.bar.pick" = "Отметьте, что нужно удалить";
+"level.bar.preview" = "Просмотр";
+"target.nothing" = "Ничего не найдено";
+"target.showMore" = "Показать ещё %d";
+"path.untouchedSince" = "не трогали %@";
+
+/* Confirmation and receipt */
+"confirm.titleBytes" = "Очистить %@?";
+"confirm.freeSpace" = "Свободно";
+"confirm.logNote" = "Каждый путь записывается в журнал удалений";
+"confirm.hideItems" = "Скрыть элементы";
+"confirm.action.deleteBytes" = "Удалить %@";
+"toast.cleaned" = "Очищено %@";
+"toast.trashed" = "В Корзину перемещено %@";
+"toast.dryRun" = "Симуляция: было бы очищено %@";
+"toast.dryRunBody" = "Ничего не удалено.";
+"toast.freeSpace" = "Свободно %1$@ → %2$@";
+"toast.undoHelp" = "Вернуть всё на место (⌘Z)";
+"insights.a11y.hint" = "Открывает уровень с этим элементом";
+
+/* Settings, redesigned */
+"settings.section.menuBar" = "Строка меню";
+"settings.section.automation" = "Автоматизация";
+"settings.menuBarStyle" = "Показывать рядом со значком";
+"menubarStyle.freeSpace" = "Свободно";
+"menubarStyle.percentage" = "Проценты";
+"menubarStyle.iconOnly" = "Только значок";
+"settings.refresh.title" = "Обновлять свободное место каждые";
+"settings.value.seconds" = "%d с";
+"settings.autoScanFrequency" = "Как часто";
+"settings.threshold" = "Порог";
+"settings.dryRunCaption" = "Очистка показывает, что было бы удалено, и ничего не удаляет.";
+"settings.moveToTrashCaption" = "Очистите Корзину сами, чтобы освободить место.";
+"settings.logAge.title" = "Предлагать системные логи старше";
+"settings.about.tagline" = "Бесплатно и с открытым кодом.";
+"settings.about.source" = "Исходный код";

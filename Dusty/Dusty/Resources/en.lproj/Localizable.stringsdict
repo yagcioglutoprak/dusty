@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>confirm.itemCount</key>
+	<key>confirm.fromLevel</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$#@items@ · %2$@</string>
+		<string>%1$#@items@</string>
 		<key>items</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -13,9 +13,57 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d item</string>
+			<string>%d item from %2$@</string>
 			<key>other</key>
-			<string>%d items</string>
+			<string>%d items from %2$@</string>
+		</dict>
+	</dict>
+	<key>confirm.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Show %d item</string>
+			<key>other</key>
+			<string>Show all %d items</string>
+		</dict>
+	</dict>
+	<key>home.level.noneSelected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item · pick what to remove</string>
+			<key>other</key>
+			<string>%d items · pick what to remove</string>
+		</dict>
+	</dict>
+	<key>home.level.selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item · %2$@ selected</string>
+			<key>other</key>
+			<string>%d items · %2$@ selected</string>
 		</dict>
 	</dict>
 	<key>insights.horizon.days</key>
@@ -82,6 +130,38 @@
 			<string>Cleaned %d items</string>
 		</dict>
 	</dict>
+	<key>level.alsoChecked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@places@</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Also checked %d more place, nothing to clean there.</string>
+			<key>other</key>
+			<string>Also checked %d more places, nothing to clean there.</string>
+		</dict>
+	</dict>
+	<key>level.bar.items</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item, recoverable for a few seconds</string>
+			<key>other</key>
+			<string>%d items, recoverable for a few seconds</string>
+		</dict>
+	</dict>
 	<key>level.blocking</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -96,6 +176,38 @@
 			<string>%2$@ is open, so its cache is skipped. Quit it to include it.</string>
 			<key>other</key>
 			<string>%2$@ are open, so their caches are skipped. Quit them to include them.</string>
+		</dict>
+	</dict>
+	<key>level.empty.body</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@places@</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dusty checked %d place at this level and found nothing worth removing.</string>
+			<key>other</key>
+			<string>Dusty checked %d places at this level and found nothing worth removing.</string>
+		</dict>
+	</dict>
+	<key>level.subtitle</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ found · %2$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item</string>
+			<key>other</key>
+			<string>%d items</string>
 		</dict>
 	</dict>
 	<key>panel.footer.lifetime</key>
@@ -162,7 +274,7 @@
 			<string>Every %d hours</string>
 		</dict>
 	</dict>
-	<key>settings.logAge</key>
+	<key>settings.value.days</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@days@</string>
@@ -173,9 +285,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>System log age: %d day</string>
+			<string>%d day</string>
 			<key>other</key>
-			<string>System log age: %d days</string>
+			<string>%d days</string>
 		</dict>
 	</dict>
 	<key>target.a11y.hideItems</key>
@@ -210,7 +322,7 @@
 			<string>Show the %d items of %2$@</string>
 		</dict>
 	</dict>
-	<key>target.showItems</key>
+	<key>target.items</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@items@</string>
@@ -221,9 +333,57 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d item · review or untick</string>
+			<string>%d item</string>
 			<key>other</key>
-			<string>%d items · review or untick</string>
+			<string>%d items</string>
+		</dict>
+	</dict>
+	<key>target.noneSelected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item · none selected</string>
+			<key>other</key>
+			<string>%d items · none selected</string>
+		</dict>
+	</dict>
+	<key>target.partial</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$d of %2$#@items@ · %3$@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item</string>
+			<key>other</key>
+			<string>%d items</string>
+		</dict>
+	</dict>
+	<key>target.pickByHand</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d item · pick by hand</string>
+			<key>other</key>
+			<string>%d items · pick by hand</string>
 		</dict>
 	</dict>
 </dict>

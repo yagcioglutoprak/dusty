@@ -2,431 +2,177 @@ import SwiftUI
 import AppKit
 import CleanerEngine
 
+/// The whole panel: one screen at a time (home, a cleanup level, settings)
+/// with the receipt toast and the confirmation sheet layered on top.
+///
+/// Everything is drawn inside the panel, never as a system sheet or popover. A
+/// `MenuBarExtra(.window)` panel is a non-activating `NSPanel` that closes the
+/// instant a modal sheet pulls focus away, which would dismiss the whole UI
+/// mid-action. Keeping every interaction in-panel avoids the focus loss entirely.
 struct MainPanelView: View {
     @ObservedObject var viewModel: DustyViewModel
     @ObservedObject var settings: AppSettings
     @ObservedObject var updater: Updater
-    @ObservedObject private var stats = CleanStatsStore.shared
-    @State private var showFDABanner = true
-    @State private var appeared = false
+
+    /// The level awaiting confirmation, once its scan result exists.
+    private var sheetLevel: CleanupLevel? {
+        guard let level = viewModel.pendingConfirmationLevel,
+              viewModel.levelResult(for: level) != nil else { return nil }
+        return level
+    }
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                header
-                Divider().opacity(0.5)
-                scrollContent
-                Divider().opacity(0.5)
-                footer
-            }
-            .opacity(appeared ? 1 : 0)
-            .offset(y: appeared ? 0 : 10)
+        ZStack(alignment: .bottom) {
+            PanelBackdrop()
 
-            overlay
+            screen
+                .disabled(sheetLevel != nil)
+
+            if settings.hasSeenWelcome, sheetLevel == nil, let result = viewModel.lastDeletionResult {
+                ResultToast(
+                    result: result,
+                    style: viewModel.bannerStyle,
+                    undoDeadline: viewModel.undoDeadline,
+                    undoWindow: DustyViewModel.undoWindow,
+                    onUndo: { viewModel.undoLastDeletion() },
+                    onDismiss: { viewModel.dismissResult() }
+                )
+                .padding(.horizontal, 12)
+                .padding(.bottom, toastBottomInset)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(1)
+            }
+
+            if let level = sheetLevel {
+                Color.black.opacity(0.34)
+                    .contentShape(Rectangle())
+                    .onTapGesture { viewModel.cancelConfirmation() }
+                    .transition(.opacity)
+                    .zIndex(2)
+                confirmation(for: level)
+                    .transition(.move(edge: .bottom))
+                    .zIndex(3)
+            }
         }
         .frame(width: DustyTheme.panelWidth, height: DustyTheme.panelHeight)
-        .background(panelBackground)
-        .animation(.easeInOut(duration: 0.18), value: viewModel.showSettings)
-        .animation(.easeInOut(duration: 0.18), value: viewModel.pendingConfirmationLevel)
-        .animation(.easeInOut(duration: 0.18), value: settings.hasSeenWelcome)
+        .clipped()
+        .background(quitShortcut)
+        .animation(DustyTheme.navSpring, value: viewModel.route)
+        .animation(DustyTheme.navSpring, value: settings.hasSeenWelcome)
+        .animation(DustyTheme.revealSpring, value: sheetLevel)
+        .animation(DustyTheme.revealSpring, value: viewModel.lastDeletionResult != nil)
         .task {
-            // First launch holds the silent auto-scan: the welcome card explains the
-            // model first and its button starts the scan, so the first scan is chosen.
+            // First launch holds the silent auto-scan: the welcome screen explains
+            // the model first and its button starts the scan, so the first scan is chosen.
             if settings.hasSeenWelcome {
                 viewModel.scanIfNeeded(settings: settings)
             }
         }
         .onAppear {
             viewModel.startAutoRefresh(interval: settings.refreshIntervalSeconds)
-            viewModel.refreshFreeSpace()
-            withAnimation(.easeOut(duration: 0.3)) { appeared = true }
         }
         .onChange(of: settings.refreshIntervalSeconds) { newValue in
             viewModel.startAutoRefresh(interval: newValue)
         }
     }
 
-    /// Atmosphere, not a flat fill: a warm dust-gold glow pools behind the disk
-    /// ring up top, with a faint shadow gathering at the base for depth. Reads
-    /// well in both light and dark appearances.
-    private var panelBackground: some View {
-        ZStack {
-            DustyTheme.panelBackground
-            RadialGradient(
-                colors: [DustyTheme.gold.opacity(0.07), .clear],
-                center: UnitPoint(x: 0.5, y: 0.12),
-                startRadius: 4,
-                endRadius: 290
-            )
-            LinearGradient(
-                colors: [.clear, Color.black.opacity(0.05)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-        }
-        .ignoresSafeArea()
-    }
+    // MARK: - Screens
 
-    /// Confirmation and settings are drawn inside the panel, never as sheets. A
-    /// `MenuBarExtra(.window)` panel is a non-activating `NSPanel` that closes the
-    /// instant a modal sheet pulls focus away, which would dismiss the whole UI
-    /// mid-action: the cause of "clicking Delete does nothing" and "buttons close
-    /// the app". Keeping every interaction in-panel avoids the focus loss entirely.
-    @ViewBuilder private var overlay: some View {
+    @ViewBuilder private var screen: some View {
         if !settings.hasSeenWelcome {
-            OverlayScrim {}
-            WelcomeCard(
+            WelcomeView(
                 onScan: {
                     settings.hasSeenWelcome = true
                     viewModel.startScan(settings: settings)
                 },
                 onSkip: { settings.hasSeenWelcome = true }
             )
-            .transition(.scale(scale: 0.96).combined(with: .opacity))
-        } else if viewModel.showSettings {
-            OverlayScrim { viewModel.showSettings = false }
-            SettingsView(settings: settings, updater: updater, onRefreshIntervalChanged: { interval in
-                viewModel.startAutoRefresh(interval: interval)
-            }, onDone: { viewModel.showSettings = false })
-            .transition(.scale(scale: 0.96).combined(with: .opacity))
-        } else if let level = viewModel.pendingConfirmationLevel,
-                  viewModel.levelResult(for: level) != nil {
-            OverlayScrim { viewModel.cancelConfirmation() }
-            ConfirmationCard(
-                level: level,
-                paths: viewModel.cleanablePaths(for: level),
-                bytes: viewModel.cleanableBytes(for: level),
-                dryRun: settings.dryRunDefault,
-                moveToTrash: settings.moveToTrashDefault && level != .safe,
-                skippedApps: viewModel.blockingApps(for: level),
-                onConfirm: {
-                    Task { await viewModel.confirmClean(level: level, settings: settings) }
-                },
-                onCancel: { viewModel.cancelConfirmation() }
-            )
-            .transition(.scale(scale: 0.96).combined(with: .opacity))
-        }
-    }
-
-    private var header: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 9) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .fill(DustyTheme.brandGradient)
-                        .frame(width: 26, height: 26)
-                        .shadow(color: DustyTheme.goldDeep.opacity(0.35), radius: 4, y: 1)
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(DustyTheme.onGold)
-                }
-                .accessibilityHidden(true)
-                Text("Dusty")
-                    .font(.title3.weight(.bold))
-                Spacer()
-                if viewModel.isDiskLow {
-                    Text(L10n.t("panel.badge.lowDisk", "LOW DISK"))
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(DustyTheme.danger)
-                        .tracking(0.5)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Capsule().fill(DustyTheme.danger.opacity(0.14)))
-                }
-                Button {
-                    viewModel.showSettings = true
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(DustyIconButtonStyle())
-                .help(L10n.t("common.settings", "Settings"))
-                .accessibilityLabel(L10n.t("common.settings", "Settings"))
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-
-            FreeSpaceHeaderView(
-                freeBytes: viewModel.freeSpaceBytes,
-                totalBytes: viewModel.totalSpaceBytes,
-                ratio: viewModel.freeSpaceRatio
-            )
-            .padding(.bottom, 4)
-        }
-    }
-
-    private var scrollContent: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                scanSection
-                    .padding(.horizontal, 16)
-
-                if viewModel.hasScannedOnce && !viewModel.isScanning {
-                    if viewModel.hasReclaimableSpace {
-                        ReclaimSummaryView(
-                            totalBytes: viewModel.totalReclaimableBytes,
-                            bytesByLevel: CleanupLevel.allCases.map { ($0, viewModel.reclaimableBytes(for: $0)) },
-                            safeBytes: viewModel.cleanableBytes(for: .safe),
-                            isCleaningSafe: viewModel.isCleaning && viewModel.cleaningLevel == .safe,
-                            canCleanSafe: viewModel.canClean(level: .safe),
-                            onCleanSafe: { viewModel.cleanSafe() }
-                        )
-                        .padding(.horizontal, 16)
-                        .transition(.scale(scale: 0.96).combined(with: .opacity))
-                    } else {
-                        AllCleanCard(lastScanAt: viewModel.scanResult?.scannedAt)
-                            .padding(.horizontal, 16)
-                            .transition(.scale(scale: 0.96).combined(with: .opacity))
-                    }
-                }
-
-                if viewModel.hasScannedOnce && !viewModel.isScanning {
-                    InsightsCard(forecast: viewModel.diskForecast, advisories: viewModel.advisories)
-                        .padding(.horizontal, 16)
-                        .transition(.scale(scale: 0.96).combined(with: .opacity))
-                }
-
-                if showFDABanner && needsFDABanner {
-                    FullDiskAccessBanner {
-                        viewModel.openFullDiskAccessSettings()
-                    }
-                    .padding(.horizontal, 16)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                }
-
-                if let result = viewModel.lastDeletionResult {
-                    DeletionResultBanner(result: result, style: viewModel.bannerStyle,
-                                         onUndo: { viewModel.undoLastDeletion() })
-                        .padding(.horizontal, 16)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-
-                if let error = viewModel.errorMessage {
-                    errorBanner(error)
-                        .padding(.horizontal, 16)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-
-                ForEach(CleanupLevel.allCases, id: \.self) { level in
-                    LevelSectionView(
-                        level: level,
-                        levelResult: viewModel.levelResult(for: level),
-                        selectedBytes: viewModel.selectedLevelBytes(level),
-                        isExpanded: viewModel.expandedLevels.contains(level),
-                        isScanning: viewModel.isScanning,
-                        isCleaning: viewModel.isCleaning && viewModel.cleaningLevel == level,
-                        canClean: viewModel.canClean(level: level),
-                        blockingApps: viewModel.blockingApps(for: level),
-                        onToggleExpand: { toggleLevel(level) },
-                        onClean: { viewModel.requestClean(level: level) },
-                        onTogglePath: { targetID, pathID in
-                            viewModel.togglePathSelection(level: level, targetID: targetID, pathID: pathID)
-                        },
-                        onSelectAll: { targetID, selected in
-                            viewModel.setAllSelected(level: level, targetID: targetID, selected: selected)
-                        }
-                    )
-                    .padding(.horizontal, 16)
-                }
-            }
-            .padding(.vertical, 16)
-            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: viewModel.isScanning)
-            .animation(.easeInOut(duration: 0.25), value: viewModel.advisories)
-            .animation(.easeInOut(duration: 0.25), value: viewModel.lastDeletionResult != nil)
-            .animation(.easeInOut(duration: 0.25), value: viewModel.errorMessage)
-            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: viewModel.expandedLevels)
-        }
-    }
-
-    private var scanSection: some View {
-        VStack(spacing: 10) {
-            Button {
-                viewModel.startScan(settings: settings)
-            } label: {
-                HStack(spacing: 8) {
-                    if viewModel.isScanning {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(DustyTheme.gold)
-                    }
-                    Text(viewModel.isScanning
-                         ? L10n.t("panel.scan.scanning", "Scanning…")
-                         : viewModel.hasScannedOnce
-                           ? L10n.t("panel.scan.rescan", "Rescan")
-                           : L10n.t("panel.scan.start", "Scan disk"))
-                }
-            }
-            .buttonStyle(DustyGhostButtonStyle())
-            .disabled(viewModel.isScanning || viewModel.isCleaning)
-
-            if let progress = viewModel.scanProgress, viewModel.isScanning {
-                VStack(spacing: 6) {
-                    ProgressView(value: progress.fraction)
-                        .progressViewStyle(.linear)
-                        .tint(DustyTheme.gold)
-                    HStack {
-                        Text(L10n.f("panel.scan.progress", "%1$d/%2$d · %3$@",
-                                    progress.completed, progress.total, progress.currentTargetName))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                        Spacer()
-                        Button(L10n.t("common.cancel", "Cancel")) { viewModel.cancelScan() }
-                            .buttonStyle(.link)
-                            .font(.caption.weight(.medium))
-                    }
-                }
-            } else if let scannedAt = viewModel.scanResult?.scannedAt {
-                // Relative on purpose: a bare clock time reads as today even when the
-                // scan is days old, and this panel can sit unopened for weeks.
-                Text(L10n.f("panel.scan.lastScan", "Last scan: %@", RelativeTime.label(for: scannedAt)))
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-    }
-
-    private var needsFDABanner: Bool {
-        CleanupLevel.allCases.contains { viewModel.hasPermissionIssues(for: $0) }
-    }
-
-    private func errorBanner(_ message: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .font(.body)
-                .foregroundStyle(DustyTheme.danger)
-            Text(message)
-                .font(.subheadline)
-            Spacer()
-            Button {
-                viewModel.errorMessage = nil
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(DustyIconButtonStyle())
-            .accessibilityLabel(L10n.t("panel.error.dismiss", "Dismiss error"))
-        }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(DustyTheme.danger.opacity(0.10)))
-        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).stroke(DustyTheme.danger.opacity(0.22), lineWidth: 1))
-    }
-
-    private func toggleLevel(_ level: CleanupLevel) {
-        if viewModel.expandedLevels.contains(level) {
-            viewModel.expandedLevels.remove(level)
+            .transition(.opacity.combined(with: .scale(scale: 0.98)))
         } else {
-            viewModel.expandedLevels.insert(level)
+            switch viewModel.route {
+            case .home:
+                HomeView(viewModel: viewModel, settings: settings, updater: updater)
+                    .transition(.move(edge: .leading).combined(with: .opacity))
+            case .level(let level):
+                LevelDetailView(level: level, viewModel: viewModel, settings: settings)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            case .settings:
+                SettingsView(settings: settings, updater: updater, viewModel: viewModel)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
     }
 
-    private var footer: some View {
-        VStack(spacing: 8) {
-            if stats.cleanCount > 0 {
-                // The number people screenshot: what Dusty has earned on this Mac.
-                HStack(spacing: 5) {
-                    Image(systemName: "sparkles")
-                        .font(.caption2)
-                        .foregroundStyle(DustyTheme.gold)
-                    Text(L10n.f("panel.footer.lifetime", "%1$@ reclaimed all-time · %2$d cleans",
-                                DiskSpaceMonitor.formatBytes(stats.lifetimeBytes), stats.cleanCount))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-            }
-            HStack {
-                Button(L10n.t("panel.footer.deletionLog", "Deletion log")) {
-                    viewModel.openDeletionLog()
-                }
-                .buttonStyle(.link)
-                .font(.footnote.weight(.medium))
-
-                Spacer()
-
-                if settings.dryRunDefault {
-                    Label(L10n.t("common.dryRun", "Dry Run"), systemImage: "eye")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-
-                Button(L10n.t("panel.footer.quit", "Quit")) {
-                    NSApplication.shared.terminate(nil)
-                }
-                .buttonStyle(.link)
-                .font(.footnote.weight(.medium))
-                .keyboardShortcut("q")
-            }
-
-            HStack(spacing: 4) {
-                Text(L10n.t("panel.footer.madeBy", "made by"))
-                    .foregroundStyle(.tertiary)
-                Link("toprak.sh", destination: URL(string: "https://toprak.sh")!)
-                    .foregroundStyle(.secondary)
-                    .help(L10n.t("panel.footer.openSite", "Open toprak.sh"))
-            }
-            .font(.caption)
+    private func confirmation(for level: CleanupLevel) -> some View {
+        let paths = viewModel.cleanablePaths(for: level)
+        let bytes = paths.reduce(Int64(0)) { $0 + $1.estimatedBytes }
+        let groups = (viewModel.levelResult(for: level)?.targetResults ?? []).compactMap { target -> ConfirmationGroup? in
+            let picked = paths.filter { $0.targetID == target.id }
+            guard !picked.isEmpty else { return nil }
+            return ConfirmationGroup(
+                id: target.id,
+                name: target.target.localizedName,
+                paths: picked.sorted { $0.estimatedBytes > $1.estimatedBytes }
+            )
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 12)
-        .padding(.bottom, 13)
+        .sorted { $0.bytes > $1.bytes }
+        let keepsInTrash = settings.moveToTrashDefault && level != .safe
+
+        return ConfirmationSheet(
+            level: level,
+            groups: groups,
+            bytes: bytes,
+            itemCount: paths.count,
+            dryRun: settings.dryRunDefault,
+            moveToTrash: keepsInTrash,
+            skippedApps: viewModel.blockingApps(for: level),
+            freeBefore: viewModel.freeSpaceBytes,
+            freeAfter: keepsInTrash ? nil : viewModel.projectedFreeBytes(afterReclaiming: bytes),
+            onConfirm: {
+                Task { await viewModel.confirmClean(level: level, settings: settings) }
+            },
+            onCancel: { viewModel.cancelConfirmation() }
+        )
     }
-}
 
-/// Empty state for a scan that found nothing: the good news deserves a moment,
-/// not a blank list. Quietly notes that the background scanner stays on watch.
-private struct AllCleanCard: View {
-    let lastScanAt: Date?
+    /// On a level screen the receipt floats above the sticky Clean bar instead
+    /// of over it, so the next clean is never blocked by the last one's receipt.
+    private var toastBottomInset: CGFloat {
+        if case .level(let level) = viewModel.route, viewModel.levelResult(for: level) != nil {
+            return 66
+        }
+        return 12
+    }
 
-    var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(DustyTheme.success.opacity(0.14))
-                    .frame(width: 44, height: 44)
-                Circle()
-                    .strokeBorder(DustyTheme.success.opacity(0.25), lineWidth: 1)
-                    .frame(width: 44, height: 44)
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.title2)
-                    .foregroundStyle(DustyTheme.success)
-                    .symbolRenderingMode(.hierarchical)
-            }
+    /// ⌘Q from any screen, the way every menu bar app behaves.
+    private var quitShortcut: some View {
+        Button("") { NSApplication.shared.terminate(nil) }
+            .keyboardShortcut("q", modifiers: .command)
+            .opacity(0)
+            .allowsHitTesting(false)
             .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(L10n.t("panel.allClean.title", "All clean"))
-                    .font(.body.weight(.semibold))
-                Text(lastScanAt.map {
-                        L10n.f("panel.allClean.bodyChecked",
-                               "Nothing reclaimable (checked %@). Dusty keeps watching in the background.",
-                               RelativeTime.label(for: $0))
-                     } ?? L10n.t("panel.allClean.body",
-                                 "Nothing reclaimable right now. Dusty keeps watching in the background."))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(15)
-        .dustyCard()
-        .accessibilityElement(children: .combine)
     }
 }
 
-/// Dimmed, tap-to-dismiss backdrop behind an in-panel overlay. Sized by its
-/// container so it covers the full panel and intercepts taps on the content below.
-private struct OverlayScrim: View {
-    let onTap: () -> Void
-
+/// The panel surface: the neutral canvas with a faint wash of the brand
+/// gradient pooled in the top corners.
+private struct PanelBackdrop: View {
     var body: some View {
-        Color.black.opacity(0.38)
-            .contentShape(Rectangle())
-            .onTapGesture(perform: onTap)
-            .transition(.opacity)
+        ZStack {
+            DustyTheme.canvas
+            RadialGradient(
+                colors: [DustyTheme.sky.opacity(0.10), .clear],
+                center: UnitPoint(x: 0.1, y: 0),
+                startRadius: 0,
+                endRadius: 300
+            )
+            RadialGradient(
+                colors: [DustyTheme.indigo.opacity(0.09), .clear],
+                center: UnitPoint(x: 0.95, y: 0.02),
+                startRadius: 0,
+                endRadius: 260
+            )
+        }
+        .ignoresSafeArea()
     }
 }

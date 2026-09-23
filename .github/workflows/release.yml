@@ -162,10 +162,21 @@ jobs:
         run: |
           ASSETS=( "$RUNNER_TEMP/Dusty-$VERSION.dmg" "$RUNNER_TEMP/Dusty-$VERSION.zip" )
           [ -f "$RUNNER_TEMP/appcast.xml" ] && ASSETS+=( "$RUNNER_TEMP/appcast.xml" )
+          # Hand-written notes win when the tag has them: the first line of
+          # .github/release-notes/<tag>.md is "# Title", the rest is the body.
+          NOTES_FILE=".github/release-notes/$TAG.md"
+          if [ -f "$NOTES_FILE" ]; then
+            TITLE="$(head -n 1 "$NOTES_FILE" | sed 's/^# *//')"
+            tail -n +2 "$NOTES_FILE" > "$RUNNER_TEMP/notes.md"
+            NOTES=( --notes-file "$RUNNER_TEMP/notes.md" )
+          else
+            TITLE="Dusty $TAG"
+            NOTES=( --generate-notes )
+          fi
           gh release create "$TAG" \
             "${ASSETS[@]}" \
-            --title "Dusty $TAG" \
-            --generate-notes
+            --title "$TITLE" \
+            "${NOTES[@]}"
 
       - name: Update Homebrew tap
         if: steps.check.outputs.ok == 'true'
