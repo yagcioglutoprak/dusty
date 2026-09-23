@@ -32,6 +32,7 @@ struct HomeView: View {
                 .animation(DustyTheme.revealSpring, value: viewModel.advisories)
                 .animation(DustyTheme.revealSpring, value: viewModel.errorMessage)
             }
+            .scrollIndicators(.never)
             footer
         }
     }

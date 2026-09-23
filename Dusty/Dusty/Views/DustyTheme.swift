@@ -176,6 +176,16 @@ extension CleanupLevel {
         case .deep: return DustyTheme.deep
         }
     }
+
+    /// A deeper cut of the tint for filled buttons, dark enough under a white
+    /// label in both appearances (the dark-mode tints are too light for that).
+    var solid: Color {
+        switch self {
+        case .safe: return DustyTheme.hex(0x0B8A6A)
+        case .developer: return DustyTheme.hex(0x6B3EF0)
+        case .deep: return DustyTheme.hex(0xC9530A)
+        }
+    }
 }
 
 // MARK: - Surfaces

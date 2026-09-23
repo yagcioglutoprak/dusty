@@ -33,6 +33,7 @@ struct ConfirmationSheet: View {
     @State private var showsItems = false
 
     private var tint: Color { dryRun ? DustyTheme.accent : level.tint }
+    private var buttonTint: Color { dryRun ? DustyTheme.azure : level.solid }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -217,7 +218,7 @@ struct ConfirmationSheet: View {
                      : L10n.f("confirm.action.deleteBytes", "Delete %@", Bytes.format(bytes)))
                     .monospacedDigit()
             }
-            .buttonStyle(DustyPrimaryButtonStyle(tint: tint))
+            .buttonStyle(DustyPrimaryButtonStyle(tint: buttonTint))
             .keyboardShortcut(.defaultAction)
         }
         .padding(.horizontal, 20)

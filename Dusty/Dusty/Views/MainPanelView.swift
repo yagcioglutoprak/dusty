@@ -38,7 +38,7 @@ struct MainPanelView: View {
                     onDismiss: { viewModel.dismissResult() }
                 )
                 .padding(.horizontal, 12)
-                .padding(.bottom, 12)
+                .padding(.bottom, toastBottomInset)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
             }
@@ -133,6 +133,15 @@ struct MainPanelView: View {
             },
             onCancel: { viewModel.cancelConfirmation() }
         )
+    }
+
+    /// On a level screen the receipt floats above the sticky Clean bar instead
+    /// of over it, so the next clean is never blocked by the last one's receipt.
+    private var toastBottomInset: CGFloat {
+        if case .level(let level) = viewModel.route, viewModel.levelResult(for: level) != nil {
+            return 66
+        }
+        return 12
     }
 
     /// ⌘Q from any screen, the way every menu bar app behaves.

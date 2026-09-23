@@ -34,6 +34,22 @@ build without XcodeGen installed. If you change `project.yml`, regenerate it:
 cd Dusty && xcodegen generate
 ```
 
+## Changing the panel
+
+Every screen of the panel can be rendered from fixture data, without scanning
+or touching your disk. A Debug build takes a flag:
+
+```bash
+cd Dusty
+xcodebuild -scheme Dusty -configuration Debug -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+build/Build/Products/Debug/Dusty.app/Contents/MacOS/Dusty --render-snapshots /tmp/dusty-snapshots
+```
+
+That writes each state (welcome, home, scanning, a level, the confirmation,
+the undo receipt, settings) in light and dark. CI does the same on every
+branch that touches `Dusty/` and attaches the PNGs to the run as
+`panel-snapshots`, so reviewers can see a UI change without building it.
+
 ## Adding a cleanup target
 
 This is the most common contribution and it is meant to be a one-liner. Add an

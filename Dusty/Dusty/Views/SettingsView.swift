@@ -34,6 +34,7 @@ struct SettingsView: View {
                 .padding(.horizontal, DustyTheme.gutter)
                 .padding(.vertical, 16)
             }
+            .scrollIndicators(.never)
         }
     }
 
@@ -470,6 +471,7 @@ private struct SettingSwitch: View {
             .toggleStyle(.switch)
             .controlSize(.small)
             .labelsHidden()
+            .tint(DustyTheme.azure)
     }
 }
 

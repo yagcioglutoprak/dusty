@@ -196,7 +196,7 @@ struct LevelDetailView: View {
                 expanded.insert(id)
                 highlighted = id
                 try? await Task.sleep(nanoseconds: 350_000_000)
-                withAnimation(DustyTheme.revealSpring) { proxy.scrollTo(id, anchor: .top) }
+                withAnimation(DustyTheme.revealSpring) { proxy.scrollTo(id, anchor: .center) }
                 try? await Task.sleep(nanoseconds: 1_800_000_000)
                 withAnimation(.easeOut(duration: 0.4)) { highlighted = nil }
             }
@@ -248,7 +248,7 @@ struct LevelDetailView: View {
                         }
                     }
                 }
-                .buttonStyle(DustyPrimaryButtonStyle(tint: level.tint, compact: true))
+                .buttonStyle(DustyPrimaryButtonStyle(tint: level.solid, compact: true))
                 .disabled(bytes == 0 || viewModel.isCleaning)
                 .accessibilityLabel(L10n.f("level.a11y.cleanLabel", "Clean %@ items", level.name))
             }
@@ -432,14 +432,13 @@ private struct PathRow: View {
     private var isFile: Bool { path.path.hasPrefix("/") }
 
     private var location: String? {
-        var parts: [String] = []
-        if isFile {
-            parts.append((path.path as NSString).abbreviatingWithTildeInPath)
-        }
-        if let modified = path.lastModified, Date().timeIntervalSince(modified) > Self.ageHintAfterDays {
-            parts.append(L10n.f("path.untouchedSince", "untouched %@", RelativeTime.label(for: modified)))
-        }
-        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+        isFile ? (path.path as NSString).abbreviatingWithTildeInPath : nil
+    }
+
+    private var age: String? {
+        guard let modified = path.lastModified,
+              Date().timeIntervalSince(modified) > Self.ageHintAfterDays else { return nil }
+        return L10n.f("path.untouchedSince", "untouched %@", RelativeTime.label(for: modified))
     }
 
     var body: some View {
@@ -452,12 +451,21 @@ private struct PathRow: View {
                         .font(.subheadline)
                         .foregroundStyle(path.isSelected ? Color.primary : Color.secondary)
                         .lineLimit(2)
-                    if let location {
-                        Text(location)
-                            .font(.caption)
-                            .foregroundStyle(DustyTheme.faint)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
+                    if location != nil || age != nil {
+                        HStack(spacing: 4) {
+                            if let location {
+                                Text(location)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            if let age {
+                                Text(location == nil ? age : "· \(age)")
+                                    .lineLimit(1)
+                                    .fixedSize()
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundStyle(DustyTheme.faint)
                     }
                 }
                 Spacer(minLength: 8)

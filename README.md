@@ -190,7 +190,8 @@ Without it, those few paths are skipped, the rest works fine.
 ## Settings
 
 - Panel language: English, French, Spanish, Russian, or follow the system
-- Menu bar refresh interval (default 30s), and free space as GB or a percentage
+- What the menu bar shows beside the icon: free space, a percentage, or
+  nothing at all, and how often it refreshes (default 30s)
 - Show or hide the "N GB to clean" suffix in the menu bar
 - Background auto-scan and how often it runs (default every 4h), or turn it off
 - Scheduled auto-clean of the Safe level (opt-in, off by default)
