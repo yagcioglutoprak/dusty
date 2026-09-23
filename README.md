@@ -10,7 +10,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty)](LICENSE)
 
-<img src="docs/screenshots/overview.png" alt="Dusty's panel: the home screen with a storage bar and a one-tap Safe clean, the Developer level item by item, the confirmation sheet, and Settings">
+<img src="docs/screenshots/demo.gif?v=4" width="480" alt="Dusty's first-run welcome, a scan filling up, the reclaimable space by level, a Safe clean with its undo countdown, then the Developer level item by item">
 
 <sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size, level by level.</sub>
 <br>
@@ -88,6 +88,10 @@ Every scan is concurrent, shows live progress, and reports the exact bytes per
 target before you commit to anything. It is quick, too: a full three-level scan
 of a working dev machine (M3, ~18 GB of junk across 866 paths) takes about 5
 seconds.
+
+<p align="center">
+<img src="docs/screenshots/overview.png" alt="Dusty's panel: the home screen with a storage bar and a one-tap Safe clean, the Developer level item by item, the confirmation sheet, and Settings">
+</p>
 
 Every level opens into its own screen: targets largest first, each folding
 open into its individual items with a checkbox, so you can keep one specific

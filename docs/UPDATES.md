@@ -10,7 +10,7 @@ opts into automatic daily checks and silent install; both can be turned off in
 | --- | --- |
 | Sparkle framework | SPM dependency in `Dusty/project.yml` |
 | Updater wrapper | `Dusty/Dusty/Utilities/Updater.swift` |
-| Settings UI | "Updates" section in `SettingsView` (`Views/ConfirmationSheet.swift`) |
+| Settings UI | "Updates" section in `SettingsView` (`Views/SettingsView.swift`) |
 | Feed URL + public key | `SUFeedURL`, `SUPublicEDKey` in `Dusty/Dusty/Info.plist` |
 | Appcast generator | `scripts/make-appcast.sh` |
 | Release wiring | `.github/workflows/release.yml` |
