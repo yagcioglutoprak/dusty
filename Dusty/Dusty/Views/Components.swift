@@ -395,5 +395,16 @@ struct Hairline: View {
 // MARK: - Formatting
 
 enum Bytes {
-    static func format(_ bytes: Int64) -> String { DiskSpaceMonitor.formatBytes(bytes) }
+    static func format(_ bytes: Int64) -> String {
+        bytes > 0 ? DiskSpaceMonitor.formatBytes(bytes) : zero
+    }
+
+    /// "0 MB" rather than the formatter's spelled-out "Zero KB".
+    private static let zero: String = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        formatter.allowedUnits = [.useMB]
+        formatter.allowsNonnumericFormatting = false
+        return formatter.string(fromByteCount: 0)
+    }()
 }

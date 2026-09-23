@@ -60,7 +60,10 @@ jobs:
           HOMEBREW_NO_INSTALL_CLEANUP: "1"
         run: |
           brew install gifski
-          gifski --fps 20 --width 520 --quality 90 -o snapshots/demo.gif snapshots/demo-frames/*.png
+          # Full motion quality: lower settings keep "close enough" pixels between
+          # frames, which leaves ghosts of the previous screen after a crossfade.
+          gifski --fps 20 --width 480 --quality 100 --motion-quality 100 --extra \
+            -o snapshots/demo.gif snapshots/demo-frames/*.png
           ls -la snapshots/demo.gif
 
       - uses: actions/upload-artifact@v4

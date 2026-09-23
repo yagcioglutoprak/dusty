@@ -228,11 +228,16 @@ private struct LevelRow: View {
     }
 
     @ViewBuilder private var trailing: some View {
-        if let result {
+        if let result, result.totalBytes > 0 {
             Text(Bytes.format(result.totalBytes))
                 .font(.subheadline.weight(.semibold).monospacedDigit())
-                .foregroundStyle(result.totalBytes > 0 ? Color.primary : DustyTheme.faint)
                 .contentTransition(.numericText())
+        } else if result != nil {
+            // Scanned and empty: a quiet tick says "done here" better than "0 MB".
+            Image(systemName: "checkmark")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(DustyTheme.success)
+                .accessibilityHidden(true)
         } else if isScanning {
             Spinner(size: 12)
         } else {
