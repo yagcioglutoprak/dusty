@@ -1,78 +1,80 @@
 <div align="center">
 
+<img src="Dusty/Dusty/Assets.xcassets/AppIcon.appiconset/icon_256.png" width="96" height="96" alt="">
+
 # Dusty
 
-**A free, open-source CleanMyMac alternative for macOS that frees up disk space, without deleting anything it shouldn't.**
+**Free up disk space on your Mac, and see every file before it goes.**
 
+A free, open-source alternative to CleanMyMac that lives in your menu bar.
+
+[![Release](https://img.shields.io/github/v/release/yagcioglutoprak/dusty?color=3b82f6&label=Release)](https://github.com/yagcioglutoprak/dusty/releases/latest)
 [![CI](https://github.com/yagcioglutoprak/dusty/actions/workflows/ci.yml/badge.svg)](https://github.com/yagcioglutoprak/dusty/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/yagcioglutoprak/dusty?color=2dba4e)](https://github.com/yagcioglutoprak/dusty/releases/latest)
-[![Stars](https://img.shields.io/github/stars/yagcioglutoprak/dusty?label=Stars&color=2dba4e)](https://github.com/yagcioglutoprak/dusty/stargazers)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple)](https://www.apple.com/macos/)
-[![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty)](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/yagcioglutoprak/dusty?color=6366f1)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/yagcioglutoprak/dusty?label=Stars&color=38bdf8)](https://github.com/yagcioglutoprak/dusty/stargazers)
+
+[**Download**](https://github.com/yagcioglutoprak/dusty/releases/latest) ·
+[Install](#install) ·
+[What it cleans](#what-it-cleans) ·
+[Why it is safe](#why-you-can-trust-it) ·
+[Command line](#command-line-and-shortcuts) ·
+[FAQ](#faq)
+
+<br>
 
 <img src="docs/screenshots/demo.gif?v=4" width="480" alt="Dusty's first-run welcome, a scan filling up, the reclaimable space by level, a Safe clean with its undo countdown, then the Developer level item by item">
 
-<sub>One scan, and the gigabytes hiding in caches and developer junk are laid out by size, level by level.</sub>
-<br>
 <sub>If Dusty saves you space, a GitHub star helps more Mac users find a safer cleaner.</sub>
-<br>
-<sub>Share your scan result or missing cache target in <a href="https://github.com/yagcioglutoprak/dusty/discussions/5">Discussions</a>.</sub>
 
 </div>
 
-Dusty lives in your menu bar and shows how much disk you have free. It can scan
-quietly in the background, so the moment space gets tight it already knows how
-much you can reclaim: caches, logs, Xcode DerivedData, simulators, package
-manager folders, app caches, and local Time Machine snapshots. It shows you
-every path and its size first, and it only ever deletes from a fixed allowlist.
-No "clean everything" button, no surprises.
+## At a glance
 
-It is free, open source, and a calmer alternative to paid cleaners like CleanMyMac.
-
-The panel speaks English, French, Spanish, and Russian. It follows your Mac's
-language, and you can override it in Settings.
+- **It shows its work.** Every path and its size are on screen before anything
+  is deleted. Scanning never deletes.
+- **It can only touch junk.** Deletes come from a fixed, readable allowlist of
+  caches and leftovers. Your documents, photos, and mail are out of reach by
+  design.
+- **Every clean can be undone.** Items pass through the Trash with an Undo
+  button for a few seconds, and every deletion is written to a log.
+- **It knows developer junk.** Xcode DerivedData, simulators, npm, Cargo, and
+  pip caches, and the `node_modules` of projects you forgot about.
+- **It is fast.** A full scan of a working dev machine (M3, about 18 GB across
+  866 paths) takes about 5 seconds.
+- **It stays out of the way.** Free space sits in your menu bar, a background
+  scan keeps the "to clean" figure current, and the app updates itself.
+- **It costs nothing.** Free, MIT licensed, no account, no telemetry. The panel
+  speaks English, French, Spanish, and Russian.
 
 ## Install
-
-The easy way, signed and notarized by Apple:
 
 ```bash
 brew install --cask yagcioglutoprak/tap/dusty
 ```
 
-Or download the latest `Dusty.dmg` from the
-[releases page](https://github.com/yagcioglutoprak/dusty/releases/latest), drag
-it to Applications, and open it.
+Or download `Dusty.dmg` from the
+[latest release](https://github.com/yagcioglutoprak/dusty/releases/latest),
+drag it to Applications, and open it. Both are signed and notarized by Apple.
 
-Dusty appears in your menu bar as a disk icon with your free space next to it.
-Prefer to build it yourself instead of downloading? See
-[Build from source](#build-from-source) at the bottom.
+Dusty shows up in your menu bar as a disk icon with your free space next to it.
+It needs macOS 13 Ventura or later, and it keeps itself up to date (you can turn
+that off in Settings).
 
-## Command line
+## How it works
 
-The same engine, allowlist, and safety rules, scriptable. The `dusty` CLI ships
-inside the app bundle and the Homebrew cask links it into your `PATH`:
+1. **Scan.** Click the disk icon and run a scan. Dusty measures every cleanup
+   target and sorts what it finds into three levels, largest first.
+2. **Review.** One tap cleans the Safe level. Or open any level and untick
+   whatever you want to keep, item by item. The bar at the bottom always shows
+   what a clean would take.
+3. **Clean, with a way back.** A confirmation lists every path and your free
+   space before and after. After the clean you get a few seconds to change your
+   mind: press Undo (or ⌘Z) and the cleaned items go back where they were.
 
-```bash
-dusty scan                      # measure all three levels, deletes nothing
-dusty scan --json               # the same, machine-readable
-dusty clean                     # print the full deletion plan for the Safe level
-dusty clean --yes               # actually delete it
-dusty clean --level developer --trash --yes   # park dev caches in the Trash
-dusty targets                   # print the entire allowlist
-```
-
-`clean` never touches anything without `--yes`, only ever deletes the items the
-app would auto-select (installers, Xcode archives, simulators, Docker, and AI
-models stay manual-pick only), and skips any target whose app is open. Installed
-from the DMG instead of brew? Link it once:
-
-```bash
-ln -s /Applications/Dusty.app/Contents/Helpers/dusty /usr/local/bin/dusty
-```
-
-There are also two Shortcuts actions, "Clean Safe Items" and "Get Reclaimable
-Space", so Dusty can sit in any macOS automation.
+<p align="center">
+<img src="docs/screenshots/overview.png" alt="Dusty's panel: the home screen with a storage bar and a one-tap Safe clean, the Developer level item by item, the confirmation sheet, and Settings">
+</p>
 
 ## What it cleans
 
@@ -80,57 +82,71 @@ Three levels, from "do this anytime" to "look before you leap."
 
 | Level | What it clears | Why it is safe |
 | --- | --- | --- |
-| **Safe** | User caches, app logs, Trash, browser caches (Safari, Chrome, Firefox, Edge, Brave, Arc), and app caches (Slack, Discord, Notion, Spotify, VS Code, Cursor, Signal, Obsidian, Microsoft Teams, Zoom update installers, Telegram media cache) | Regenerates on its own, zero functional impact |
-| **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM, Dart/Flutter pub), Cypress binary cache, dev tool caches in `~/.cache`, JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
-| **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs, opt-in Ollama models, stale project artifacts (the `node_modules`, Cargo `target` dir, or virtualenv of a project untouched for a month) | Per-file checklist, nothing goes without a tick |
+| 🟢 **Safe** | User caches, app logs, Trash, browser caches (Safari, Chrome, Firefox, Edge, Brave, Arc), and app caches (Slack, Discord, Notion, Spotify, VS Code, Cursor, Signal, Obsidian, Microsoft Teams, Zoom update installers, Telegram media cache) | Regenerates on its own, zero functional impact |
+| 🟣 **Developer** | Xcode DerivedData, old DeviceSupport, unavailable simulators, package manager caches (npm, yarn, pnpm, pip, uv, Bun, Deno, Cargo, Go, Homebrew, Composer, Gradle, CocoaPods, SwiftPM, Dart/Flutter pub), Cypress binary cache, dev tool caches in `~/.cache`, JetBrains and Unity caches, opt-in Maven local repository, optional `docker system prune` | Rebuilds or re-downloads next time you need it |
+| 🟠 **Deep** | Old `.dmg` / `.pkg` installers in Downloads, Xcode archives, unused simulators, local Time Machine snapshots, aged diagnostic logs, opt-in Ollama models, stale project artifacts | Nothing is selected until you tick it |
 
-Every scan is concurrent, shows live progress, and reports the exact bytes per
-target before you commit to anything. It is quick, too: a full three-level scan
-of a working dev machine (M3, ~18 GB of junk across 866 paths) takes about 5
-seconds.
+**Forgotten projects.** The Deep level also looks where cleaners never do:
+inside your projects. It finds the `node_modules`, Cargo `target` folder, or
+virtualenv of a project you have not touched in a month. The rules are strict
+on purpose. The tool's manifest has to sit right next to the artifact (a folder
+you happened to name `target` is never offered), activity is judged by your own
+files and git history, and if you touch a project between the scan and the
+clean, its artifacts are refused.
 
-<p align="center">
-<img src="docs/screenshots/overview.png" alt="Dusty's panel: the home screen with a storage bar and a one-tap Safe clean, the Developer level item by item, the confirmation sheet, and Settings">
-</p>
-
-Every level opens into its own screen: targets largest first, each folding
-open into its individual items with a checkbox, so you can keep one specific
-cache out of a clean without skipping the whole target. A filter narrows long
-lists, and a bar at the bottom always says what a clean would take. Before
-anything is deleted, a confirmation sheet shows the free space before and
-after and every path it will touch.
-
-Every clean can be undone for a few seconds afterwards, at every level: the
-receipt carries an Undo button (or ⌘Z) whose ring empties as the window closes.
-Items pass through the Trash first, so a misclick costs you nothing. The panel keeps a
-running total of what Dusty has reclaimed on your Mac since you installed it.
-
-The Deep level also looks where cleaners never do: inside your projects. A
-`node_modules` from an app you shipped last year, a Cargo `target` dir from an
-abandoned experiment, a virtualenv for a script that already did its job. The
-rules are strict on purpose. The tool's manifest has to sit right next to the
-artifact (a folder you happened to name `target` is never offered), activity is
-judged by your files and your git history rather than by the artifact itself,
-and everything is a per-item checkbox. If you touch a project between the scan
-and the clean, its artifacts are refused at delete time.
-
-After a scan, the panel points out what a person would spot: 12 GB of
+**Insights.** After a scan, Dusty points out what a person would spot: 12 GB of
 DerivedData with no Xcode installed anymore, a cache nothing has written to
-since spring, a disk on course to fill up in three weeks. Click an insight and
-the panel opens the level it is about with that target highlighted. Insights
-only point; they never select or delete anything.
+since spring, a disk on course to fill up in three weeks. Click one and the
+panel opens that item. Insights only point; they never select or delete
+anything.
 
-The panel is keyboard friendly too: ⌘R rescans, ⌘, opens Settings, Esc goes
-back, ⌘Z undoes the last clean, and ⌘Q quits.
+## Hands-off mode
 
-Prefer it hands-off? Automatic cleaning is opt-in (off by default) and comes in
-two flavors: on a schedule (daily, weekly, or every two weeks), or the moment
-free space drops below a threshold you pick, so the clean happens right when
-the disk needs it instead of whenever the calendar says. You choose the scope
-(Safe caches only, or Developer caches too), anything whose app is open is
-skipped, a notification reports the result, and everything still lands in the
-deletion log. It also stands down on Low Power Mode and never runs while
-dry-run is your default.
+- **Background scan** (on by default, every 4 hours) keeps the "N GB to clean"
+  figure in the menu bar current. It never deletes anything.
+- **Auto clean** (off by default) runs on a schedule (daily, weekly, or every
+  two weeks), or the moment free space drops below a threshold you pick. You
+  choose the scope: Safe caches only, or Developer caches too.
+
+Unattended cleans follow the same rules as the panel. Apps that are open are
+skipped, a notification reports what was freed, and every path lands in the
+deletion log. They also stand down on Low Power Mode and never run while dry
+run is your default.
+
+## Why you can trust it
+
+"Mac cleaner" usually means "app that deletes things you cannot see." Dusty is
+built the other way around. The deletion logic is a separate, fully tested
+Swift package (`CleanerEngine`) with no UI, and a single component,
+`SafetyValidator`, is the only thing that can authorize a delete. It enforces:
+
+- **Allowlist only.** A path is deletable only if it descends from an explicit
+  target in [`CleanupTargetRegistry`](CleanerEngine/Sources/CleanerEngine/CleanupTargetRegistry.swift).
+  There is no "delete everything except" logic anywhere in the codebase.
+- **Protected folders are off limits.** Documents, Desktop, Pictures, the Photos
+  library, Music, Movies, Mail, iCloud Drive, Keychains, and Application Support
+  are rejected even as prefixes. The only Application Support exceptions are the
+  specific cache subfolders named by registered targets, never an app's whole
+  folder.
+- **No symlink escapes.** Symlinks are never followed, including a symlinked
+  parent folder. The path is resolved and checked again against the allowlist.
+- **Boot volume only, no root.** Dusty never runs as root or uses `sudo`, and
+  nothing SIP-protected is touched. The only paths outside your home folder are
+  the Deep level's system diagnostic logs under `/Library/Logs`.
+- **Undo at every level.** Cleans park items in the Trash first. Restores are
+  checked the same way deletes are, so an item can only go back to a place its
+  target is allowed to touch.
+- **Dry run.** One switch makes every clean report what it would delete, and
+  delete nothing.
+- **A written record.** Every action (time, path, bytes) is appended to
+  `~/Library/Application Support/Dusty/deletion-log.jsonl`.
+
+If a permission error hits one file, that file is skipped and the rest carries
+on. The longer design writeup, with code, is
+[How Dusty is built to avoid deleting the wrong thing](https://toprak.sh/dusty/safety/).
+
+Found a way to make it delete something outside the allowlist? Please report it
+privately: see [SECURITY.md](.github/SECURITY.md).
 
 ## How it compares
 
@@ -146,96 +162,130 @@ The honest version, set against the paid cleaners (CleanMyMac and the like):
 | CLI and Shortcuts automation | Yes | Rare |
 | Account or telemetry | None | Often |
 
-## Why you can trust it
+## Command line and Shortcuts
 
-Most of the reason Dusty exists is that "Mac cleaner" usually means "app that
-deletes things you cannot see." Dusty is built the other way around. The deletion
-logic is a separate, fully tested Swift package (`CleanerEngine`) with no UI, and
-a single component, `SafetyValidator`, is the only thing that can authorize a
-delete. It enforces:
+The same engine, allowlist, and safety rules, scriptable. The `dusty` CLI ships
+inside the app, and the Homebrew cask puts it on your `PATH`:
 
-- **Allowlist only.** A path is deletable only if it descends from an explicit
-  target in [`CleanupTargetRegistry`](CleanerEngine/Sources/CleanerEngine/CleanupTargetRegistry.swift).
-  There is no "delete everything except" logic anywhere in the codebase.
-- **Protected folders are off limits.** Documents, Desktop, Pictures, Photos
-  library, Music, Movies, Mail, iCloud Drive, Keychains, and Application Support
-  are rejected even as prefixes. The only Application Support exceptions are the
-  specific cache subfolders named by registered targets (Chrome, Slack, Discord,
-  Spotify, VS Code, Cursor, Signal, Obsidian, Telegram caches, Zoom's update
-  folder), never an app's whole folder.
-- **No symlink escapes.** Symlinks are never followed, including a symlinked
-  parent directory: the path is resolved and re-checked against the allowlist, so
-  a delete cannot walk out of an allowed directory.
-- **Boot volume only.** Operations are confined to the volume your home folder
-  lives on, and Dusty never runs as root or uses `sudo`. The only paths outside
-  your home folder are the Deep level's system diagnostic logs under
-  `/Library/Logs`, which need Full Disk Access. Nothing SIP-protected is touched.
-- **Dry run.** Flip one toggle to scan and report without removing a thing.
-- **Undo at every level.** Cleans park items in the Trash and offer Undo for a
-  few seconds. Safe items then purge to reclaim the space; Developer and Deep
-  items do the same, or stay in the Trash if you prefer emptying it yourself.
-  Restores are validated the same way deletes are: an entry can only go back to
-  a path its cleanup target is allowed to touch.
-- **A written record.** Every action (timestamp, path, bytes) is appended to
-  `~/Library/Application Support/Dusty/deletion-log.jsonl`.
+```bash
+dusty scan                                    # measure all three levels, deletes nothing
+dusty scan --json                             # the same, machine-readable
+dusty clean                                   # print the deletion plan for the Safe level
+dusty clean --yes                             # actually delete it
+dusty clean --level developer --trash --yes   # park dev caches in the Trash
+dusty targets                                 # print the entire allowlist
+```
 
-If a permission error hits one file, that file is skipped and the run continues.
+`clean` touches nothing without `--yes`. It only deletes the items the app would
+select on its own (installers, Xcode archives, simulators, Docker, and AI models
+stay manual-pick only), and it skips any target whose app is open. Installed
+from the DMG instead of Homebrew? Link it once:
 
-For the longer design writeup with code, see
-[How Dusty is built to avoid deleting the wrong thing](https://toprak.sh/dusty/safety/).
+```bash
+ln -s /Applications/Dusty.app/Contents/Helpers/dusty /usr/local/bin/dusty
+```
 
-Found a way to make it delete something outside the allowlist? Please report it
-privately: see [SECURITY.md](.github/SECURITY.md).
+Two Shortcuts actions, **Clean Safe Items** and **Get Reclaimable Space**, put
+Dusty in any macOS automation.
 
-## Full Disk Access
+## Keyboard shortcuts
 
-Dusty is not sandboxed, because a sandboxed app cannot reach the caches and logs
-it is meant to clean. User level paths under `~/Library` work out of the box. For
-a couple of system diagnostic paths in the Deep level, macOS may ask for Full
-Disk Access:
-
-1. `System Settings` > `Privacy & Security` > `Full Disk Access`
-2. Add `Dusty`
-3. Reopen the app
-
-Without it, those few paths are skipped, the rest works fine.
+| Keys | In the panel |
+| --- | --- |
+| ⌘R | Rescan |
+| ⌘, | Settings |
+| Esc | Back |
+| ⌘Z | Undo the last clean |
+| ⌘Q | Quit |
 
 ## Settings
 
-- Panel language: English, French, Spanish, Russian, or follow the system
-- What the menu bar shows beside the icon: free space, a percentage, or
-  nothing at all, and how often it refreshes (default 30s)
-- Show or hide the "N GB to clean" suffix in the menu bar
-- Background auto-scan and how often it runs (default every 4h), or turn it off
-- Scheduled auto-clean of the Safe level (opt-in, off by default)
-- Dry run by default
-- Keep Developer and Deep items in the Trash instead of purging after Undo
-- Age threshold for Deep level logs (default 30 days)
-- Lifetime statistics and a recent-cleans history
+<details>
+<summary>Everything you can change</summary>
 
-## How it is put together
+- **General:** launch at login, and the panel language (English, French,
+  Spanish, Russian, or match the system)
+- **Menu bar:** show free space, a percentage, or just the icon; show or hide
+  the "N GB to clean" suffix; how often free space refreshes (default 30 s)
+- **Automation:** background scan and how often (default every 4 hours);
+  scheduled auto clean; auto clean when free space runs low, and the threshold;
+  whether unattended cleans include Developer caches
+- **Cleanup defaults:** dry run by default; keep Developer and Deep items in
+  the Trash instead of purging them after Undo; the age for system logs to be
+  offered (default 30 days)
+- **Statistics:** space reclaimed all-time, number of cleans, recent cleans
+- **Updates:** automatic checks, automatic install, and Check for Updates Now
 
-For a one-screen map of the app, engine, and safety boundary, see
-[docs/architecture.md](docs/architecture.md).
+</details>
 
-```
-CleanerEngine/    Swift package: scan, size, delete, safety. No SwiftUI. Unit tested.
-Dusty/            SwiftUI menu bar app (MenuBarExtra) that renders the engine.
-```
+## Full Disk Access
 
-Keeping the engine UI free means the rules that matter are testable in isolation
-and the app stays a thin layer on top. The engine compiles in Swift 6 language
-mode with strict concurrency checking, and CI treats warnings as errors, so a
-data race or a quiet regression fails the build. Run the tests with:
+Dusty is not sandboxed, because a sandboxed app cannot reach the caches it is
+meant to clean. Everything under `~/Library` works out of the box. Only a
+couple of system diagnostic paths in the Deep level need Full Disk Access:
 
-```bash
-cd CleanerEngine && swift test
-```
+1. Open **System Settings > Privacy & Security > Full Disk Access**
+2. Add **Dusty**
+3. Reopen the app
 
-## Add a cleanup target
+Without it, those few paths are skipped and everything else works.
 
-Targets are data, not code. One entry in `CleanupTargetRegistry.swift` and the
-scanner, the UI, and the safety checks all pick it up:
+## FAQ
+
+<details>
+<summary><b>Is it actually free?</b></summary>
+
+Yes. MIT licensed, no trial, no upsell, no account.
+</details>
+
+<details>
+<summary><b>Can it delete my projects or documents?</b></summary>
+
+No. Those folders are rejected by the validator before anything is touched, and
+only allowlisted cache and artifact paths are ever in scope. Even a forgotten
+project only ever offers its build artifacts, never your code.
+</details>
+
+<details>
+<summary><b>What if I clean something I needed?</b></summary>
+
+Press Undo (or ⌘Z) in the few seconds after a clean and the items go back where
+they were. The one exception is emptying the Trash, which is final, just like in
+Finder. The caches Dusty picks on its own regenerate or re-download when
+something needs them, and the deletion log records every path.
+</details>
+
+<details>
+<summary><b>How does it update?</b></summary>
+
+With [Sparkle](https://sparkle-project.org): it checks once a day and installs
+signed updates on its own. You can turn either off in **Settings > Updates**.
+Homebrew installs update the same way.
+</details>
+
+<details>
+<summary><b>Why not the Mac App Store?</b></summary>
+
+The App Store requires sandboxing, and a sandboxed app cannot reach the caches
+Dusty cleans. The trade off would defeat the point.
+</details>
+
+<details>
+<summary><b>How is this different from <code>rm -rf ~/Library/Caches</code>?</b></summary>
+
+It sizes everything first, skips what is in use, gives every clean an undo
+window, logs what it did, and refuses anything outside the allowlist.
+</details>
+
+## Contributing
+
+Pull requests are welcome, especially new cleanup targets. See
+[CONTRIBUTING.md](CONTRIBUTING.md), and share scan results or a missing cache in
+[Discussions](https://github.com/yagcioglutoprak/dusty/discussions/5).
+
+**Add a cleanup target.** Targets are data, not code. One entry in
+`CleanupTargetRegistry.swift` and the scanner, the panel, and the safety checks
+all pick it up:
 
 ```swift
 CleanupTarget(
@@ -249,19 +299,34 @@ CleanupTarget(
 )
 ```
 
-Pull requests for new targets are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+**How it is put together.**
 
-## Build from source
+```
+CleanerEngine/    Swift package: scan, size, delete, safety. No SwiftUI. Unit tested.
+Dusty/            SwiftUI menu bar app (MenuBarExtra) on top of the engine.
+```
 
-If you would rather build it yourself, this one line clones the repo, builds it
-locally, and installs it to `/Applications`. Because the build happens on your
-machine, macOS trusts it with no Gatekeeper prompts:
+Keeping the engine free of UI means the rules that matter are tested on their
+own. It compiles in Swift 6 language mode with strict concurrency, and CI treats
+warnings as errors. See [docs/architecture.md](docs/architecture.md) for the
+one-screen map.
+
+```bash
+cd CleanerEngine && swift test
+```
+
+<details>
+<summary><b>Build from source</b></summary>
+
+This one line clones the repo, builds it on your Mac, and installs it to
+`/Applications`. Because the build happens locally, macOS opens it with no
+Gatekeeper prompt:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yagcioglutoprak/dusty/main/scripts/install.sh | bash
 ```
 
-It needs Xcode 16 or later (not just the Command Line Tools). To do it by hand:
+It needs Xcode 16 or later (not just the Command Line Tools). By hand:
 
 ```bash
 git clone https://github.com/yagcioglutoprak/dusty.git
@@ -270,23 +335,9 @@ open Dusty.xcodeproj   # then run the Dusty scheme, or:
 xcodebuild -scheme Dusty -configuration Release build
 ```
 
-Maintainers: cutting a notarized release is documented in
-[docs/SIGNING.md](docs/SIGNING.md).
-
-## FAQ
-
-**Is it actually free?** Yes, MIT licensed. No trial, no upsell.
-
-**Will it delete my projects or documents?** It cannot. Those folders are
-rejected by the validator before anything is touched, and only allowlisted cache
-and artifact paths are ever in scope.
-
-**Why not the Mac App Store?** The App Store requires sandboxing, and a sandboxed
-app cannot reach the caches Dusty cleans. The trade off would defeat the point.
-
-**How is this different from `rm -rf ~/Library/Caches`?** It sizes everything
-first, skips paths that are in use, gives every clean an undo window, logs what
-it did, and refuses anything outside the allowlist.
+Maintainers: cutting a notarized release is in [docs/SIGNING.md](docs/SIGNING.md)
+and auto-updates in [docs/UPDATES.md](docs/UPDATES.md).
+</details>
 
 ## License
 

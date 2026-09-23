@@ -40,6 +40,13 @@ git tag v1.2.0
 git push origin v1.2.0
 ```
 
+Or, without a tag: open **Actions > Release > Run workflow**, pick the branch,
+and enter the version (`1.2.0`). The run builds that branch and creates the
+`v1.2.0` tag on it when it publishes. It refuses a version whose tag already
+exists. If `.github/release-notes/v1.2.0.md` exists, its first line (`# Title`)
+becomes the release title and the rest the notes; otherwise GitHub generates
+them.
+
 ## Release locally
 
 ```bash

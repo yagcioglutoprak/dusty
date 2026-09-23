@@ -3,6 +3,14 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  # A release can also be started from the Actions tab (or the API) without
+  # pushing a tag first: give the version, and the publish step creates the
+  # v-tag on the commit that was built.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, like 2.0.0 (the v2.0.0 tag is created on the selected branch)"
+        required: true
 
 permissions:
   contents: write
@@ -11,8 +19,23 @@ jobs:
   release:
     name: Build, notarize, publish
     runs-on: macos-15
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check a manually requested tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must look like 2.0.0, got '${TAG#v}'"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "::error::$TAG already exists. Push-triggered releases handle existing tags."
+            exit 1
+          fi
+          echo "Releasing $TAG from $GITHUB_SHA"
 
       # Releases are signed and notarized when the signing secrets are present.
       # When they are absent the job FAILS, so a tag never looks successful
@@ -53,8 +76,6 @@ jobs:
 
       - name: Derive version and build number
         if: steps.check.outputs.ok == 'true'
-        env:
-          TAG: ${{ github.ref_name }}
         run: |
           VERSION="${TAG#v}"
           IFS=. read -r MAJ MIN PAT <<< "$VERSION"
@@ -114,7 +135,6 @@ jobs:
           NOTARY_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
           NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
           NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
-          TAG: ${{ github.ref_name }}
         working-directory: Dusty
         run: |
           VERSION="${TAG#v}"
@@ -141,7 +161,6 @@ jobs:
         if: steps.check.outputs.ok == 'true'
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-          TAG: ${{ github.ref_name }}
         run: |
           if [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
             echo "SPARKLE_PRIVATE_KEY not set; skipping appcast (auto-update feed not published). See docs/UPDATES.md."
@@ -158,7 +177,6 @@ jobs:
         if: steps.check.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
         run: |
           ASSETS=( "$RUNNER_TEMP/Dusty-$VERSION.dmg" "$RUNNER_TEMP/Dusty-$VERSION.zip" )
           [ -f "$RUNNER_TEMP/appcast.xml" ] && ASSETS+=( "$RUNNER_TEMP/appcast.xml" )
@@ -173,8 +191,10 @@ jobs:
             TITLE="Dusty $TAG"
             NOTES=( --generate-notes )
           fi
+          # --target only matters when the tag does not exist yet (a manual run).
           gh release create "$TAG" \
             "${ASSETS[@]}" \
+            --target "$GITHUB_SHA" \
             --title "$TITLE" \
             "${NOTES[@]}"
 
