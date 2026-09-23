@@ -7,7 +7,7 @@ import CleanerEngine
 // requires a manual pick for (installers, archives, simulators, Docker, models)
 // are never touched from here.
 
-let cliVersion = "2.0.0"
+let cliVersion = "2.0.1"
 
 // MARK: - Output helpers
 
