@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>confirm.itemCount</key>
+	<key>confirm.fromLevel</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$#@items@ · %2$@</string>
+		<string>%1$#@items@</string>
 		<key>items</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -13,13 +13,73 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>few</key>
-			<string>%d элемента</string>
+			<string>%d элемента, уровень «%2$@»</string>
 			<key>many</key>
-			<string>%d элементов</string>
+			<string>%d элементов, уровень «%2$@»</string>
 			<key>one</key>
-			<string>%d элемент</string>
+			<string>%d элемент, уровень «%2$@»</string>
 			<key>other</key>
-			<string>%d элемента</string>
+			<string>%d элемента, уровень «%2$@»</string>
+		</dict>
+	</dict>
+	<key>confirm.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Показать все %d элемента</string>
+			<key>many</key>
+			<string>Показать все %d элементов</string>
+			<key>one</key>
+			<string>Показать %d элемент</string>
+			<key>other</key>
+			<string>Показать все %d элемента</string>
+		</dict>
+	</dict>
+	<key>home.level.noneSelected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента · выберите, что удалить</string>
+			<key>many</key>
+			<string>%d элементов · выберите, что удалить</string>
+			<key>one</key>
+			<string>%d элемент · выберите, что удалить</string>
+			<key>other</key>
+			<string>%d элемента · выберите, что удалить</string>
+		</dict>
+	</dict>
+	<key>home.level.selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента · выбрано %2$@</string>
+			<key>many</key>
+			<string>%d элементов · выбрано %2$@</string>
+			<key>one</key>
+			<string>%d элемент · выбрано %2$@</string>
+			<key>other</key>
+			<string>%d элемента · выбрано %2$@</string>
 		</dict>
 	</dict>
 	<key>insights.horizon.days</key>
@@ -102,6 +162,46 @@
 			<string>Очищено %d элемента</string>
 		</dict>
 	</dict>
+	<key>level.alsoChecked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@places@</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Проверено ещё %d места, там нечего очищать.</string>
+			<key>many</key>
+			<string>Проверено ещё %d мест, там нечего очищать.</string>
+			<key>one</key>
+			<string>Проверено ещё %d место, там нечего очищать.</string>
+			<key>other</key>
+			<string>Проверено ещё %d места, там нечего очищать.</string>
+		</dict>
+	</dict>
+	<key>level.bar.items</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента, можно вернуть несколько секунд</string>
+			<key>many</key>
+			<string>%d элементов, можно вернуть несколько секунд</string>
+			<key>one</key>
+			<string>%d элемент, можно вернуть несколько секунд</string>
+			<key>other</key>
+			<string>%d элемента, можно вернуть несколько секунд</string>
+		</dict>
+	</dict>
 	<key>level.blocking</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -120,6 +220,46 @@
 			<string>%2$@ открыт, поэтому его кэш пропущен. Закройте его, чтобы включить.</string>
 			<key>other</key>
 			<string>%2$@ открыты, поэтому их кэши пропущены. Закройте их, чтобы включить.</string>
+		</dict>
+	</dict>
+	<key>level.empty.body</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@places@</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Dusty проверил %d места на этом уровне и не нашёл ничего лишнего.</string>
+			<key>many</key>
+			<string>Dusty проверил %d мест на этом уровне и не нашёл ничего лишнего.</string>
+			<key>one</key>
+			<string>Dusty проверил %d место на этом уровне и не нашёл ничего лишнего.</string>
+			<key>other</key>
+			<string>Dusty проверил %d места на этом уровне и не нашёл ничего лишнего.</string>
+		</dict>
+	</dict>
+	<key>level.subtitle</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Найдено %1$@ · %2$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента</string>
+			<key>many</key>
+			<string>%d элементов</string>
+			<key>one</key>
+			<string>%d элемент</string>
+			<key>other</key>
+			<string>%d элемента</string>
 		</dict>
 	</dict>
 	<key>panel.footer.lifetime</key>
@@ -202,7 +342,7 @@
 			<string>Каждые %d часа</string>
 		</dict>
 	</dict>
-	<key>settings.logAge</key>
+	<key>settings.value.days</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@days@</string>
@@ -213,13 +353,13 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>few</key>
-			<string>Возраст системных журналов: %d дня</string>
+			<string>%d дня</string>
 			<key>many</key>
-			<string>Возраст системных журналов: %d дней</string>
+			<string>%d дней</string>
 			<key>one</key>
-			<string>Возраст системных журналов: %d день</string>
+			<string>%d день</string>
 			<key>other</key>
-			<string>Возраст системных журналов: %d дня</string>
+			<string>%d дня</string>
 		</dict>
 	</dict>
 	<key>target.a11y.hideItems</key>
@@ -262,7 +402,7 @@
 			<string>Показать %d элемента, %2$@</string>
 		</dict>
 	</dict>
-	<key>target.showItems</key>
+	<key>target.items</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@items@</string>
@@ -273,13 +413,73 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>few</key>
-			<string>%d элемента · проверьте или снимите отметку</string>
+			<string>%d элемента</string>
 			<key>many</key>
-			<string>%d элементов · проверьте или снимите отметку</string>
+			<string>%d элементов</string>
 			<key>one</key>
-			<string>%d элемент · проверьте или снимите отметку</string>
+			<string>%d элемент</string>
 			<key>other</key>
-			<string>%d элемента · проверьте или снимите отметку</string>
+			<string>%d элемента</string>
+		</dict>
+	</dict>
+	<key>target.noneSelected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента · ничего не выбрано</string>
+			<key>many</key>
+			<string>%d элементов · ничего не выбрано</string>
+			<key>one</key>
+			<string>%d элемент · ничего не выбрано</string>
+			<key>other</key>
+			<string>%d элемента · ничего не выбрано</string>
+		</dict>
+	</dict>
+	<key>target.partial</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$d из %2$#@items@ · %3$@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элементов</string>
+			<key>many</key>
+			<string>%d элементов</string>
+			<key>one</key>
+			<string>%d элемента</string>
+			<key>other</key>
+			<string>%d элемента</string>
+		</dict>
+	</dict>
+	<key>target.pickByHand</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d элемента · выбор вручную</string>
+			<key>many</key>
+			<string>%d элементов · выбор вручную</string>
+			<key>one</key>
+			<string>%d элемент · выбор вручную</string>
+			<key>other</key>
+			<string>%d элемента · выбор вручную</string>
 		</dict>
 	</dict>
 </dict>

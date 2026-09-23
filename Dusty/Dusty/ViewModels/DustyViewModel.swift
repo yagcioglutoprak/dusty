@@ -3,6 +3,13 @@ import AppKit
 import UserNotifications
 import CleanerEngine
 
+/// The screens of the panel. Home is the root; the others push over it.
+enum PanelRoute: Hashable {
+    case home
+    case level(CleanupLevel)
+    case settings
+}
+
 @MainActor
 final class DustyViewModel: ObservableObject {
     @Published var freeSpaceBytes: Int64 = 0
@@ -13,13 +20,19 @@ final class DustyViewModel: ObservableObject {
     @Published var cleaningLevel: CleanupLevel?
     @Published var lastDeletionResult: DeletionResult?
     @Published var errorMessage: String?
-    @Published var showSettings = false
     @Published var pendingConfirmationLevel: CleanupLevel?
-    @Published var expandedLevels: Set<CleanupLevel> = [.safe]
     @Published var scanProgress: ScanProgress?
     @Published var hasScannedOnce = false
     @Published var canUndo = false
     @Published var bannerStyle: ResultBannerStyle = .reclaimed
+    /// When the current undo window closes, for the countdown ring on the receipt.
+    @Published var undoDeadline: Date?
+
+    /// Which screen the panel shows. Navigation lives here, not in the views, so a
+    /// notification action or an insight can move the panel to the right place.
+    @Published var route: PanelRoute = .home
+    /// A target to scroll to and highlight on the level screen (set by an insight).
+    @Published var focusedTargetID: String?
 
     /// Reclaimable Safe-level space found by the silent background scan. Drives the
     /// menu bar "to clean" suffix. Separate from `scanResult` so a background scan never
@@ -64,7 +77,16 @@ final class DustyViewModel: ObservableObject {
     private var freeSpaceFloor: Int64?
     private var freeSpaceFloorExpiry: Date?
 
-    init() {
+    /// How long a clean stays undoable before its items are purged.
+    static let undoWindow: TimeInterval = 8
+
+    /// False for an inert model (rendered snapshots): no timers, no background
+    /// scans, no notification hooks, and nothing measures the real disk.
+    private let startsServices: Bool
+
+    init(startsServices: Bool = true) {
+        self.startsServices = startsServices
+        guard startsServices else { return }
         refreshFreeSpace()
         startAutoRefresh(interval: AppSettings.shared.refreshIntervalSeconds)
         LowDiskNotifier.configure(delegate: NotificationCoordinator.shared)
@@ -73,6 +95,7 @@ final class DustyViewModel: ObservableObject {
     }
 
     func startAutoRefresh(interval: TimeInterval) {
+        guard startsServices else { return }
         refreshTask?.cancel()
         refreshFreeSpace()
         refreshTask = Task {
@@ -85,6 +108,7 @@ final class DustyViewModel: ObservableObject {
     }
 
     func refreshFreeSpace() {
+        guard startsServices else { return }
         let real = diskMonitor.freeSpaceBytes()
         if let floor = freeSpaceFloor, let expiry = freeSpaceFloorExpiry, real < floor, Date() < expiry {
             // OS hasn't caught up to the reclaim yet: hold the projected value.
@@ -134,7 +158,7 @@ final class DustyViewModel: ObservableObject {
     /// Entry point for every background-scan trigger. Consults the pure policy, then runs a
     /// silent Safe-level scan that updates only the menu bar figure, never the panel selections.
     func requestBackgroundScan(trigger: AutoScanTrigger) {
-        guard AppSettings.shared.autoScanEnabled, !isBackgroundScanning else { return }
+        guard startsServices, AppSettings.shared.autoScanEnabled, !isBackgroundScanning else { return }
         let allowed = AutoScanPolicy.shouldScan(
             trigger: trigger,
             now: Date(),
@@ -245,7 +269,7 @@ final class DustyViewModel: ObservableObject {
     private static let scanStaleAfter: TimeInterval = 3600
 
     func scanIfNeeded(settings: AppSettings) {
-        guard !isScanning, !isCleaning else { return }
+        guard startsServices, !isScanning, !isCleaning else { return }
         guard let scannedAt = scanResult?.scannedAt else {
             startScan(settings: settings)
             return
@@ -259,6 +283,7 @@ final class DustyViewModel: ObservableObject {
     }
 
     func startScan(settings: AppSettings, sizingPolicy: SizeCachePolicy = .fresh) {
+        guard startsServices else { return }
         scanTask?.cancel()
         scanTask = Task { await scan(settings: settings, sizingPolicy: sizingPolicy) }
     }
@@ -395,6 +420,7 @@ final class DustyViewModel: ObservableObject {
             purgeAfterUndo = !keepInTrashAfterUndo
             canUndo = true
             bannerStyle = .undoable
+            undoDeadline = Date().addingTimeInterval(Self.undoWindow)
             scheduleUndoPurge()
         } else {
             canUndo = false
@@ -414,6 +440,7 @@ final class DustyViewModel: ObservableObject {
         let level = undoLevel
         undoEntries = []
         canUndo = false
+        undoDeadline = nil
         // The space comes back, so the lifetime stat must give it back too, but only
         // if this clean was actually credited (keep-in-Trash cleans never were).
         if lastCleanRecordedInStats, let undone = lastDeletionResult?.bytesFreed {
@@ -441,7 +468,7 @@ final class DustyViewModel: ObservableObject {
     private func scheduleUndoPurge() {
         undoTask?.cancel()
         undoTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            try? await Task.sleep(nanoseconds: UInt64(Self.undoWindow * 1_000_000_000))
             guard !Task.isCancelled else { return }
             self?.finalizeUndo()
         }
@@ -452,6 +479,7 @@ final class DustyViewModel: ObservableObject {
     /// the Trash preference on).
     private func finalizeUndo() {
         undoTask?.cancel()
+        undoDeadline = nil
         guard canUndo, !undoEntries.isEmpty else { canUndo = false; return }
         let entries = undoEntries
         undoEntries = []
@@ -482,6 +510,7 @@ final class DustyViewModel: ObservableObject {
 
     func handleCleanSafeFromNotification() {
         NSApp.activate(ignoringOtherApps: true)
+        route = .home
         Task {
             if scanResult == nil { await scan(settings: AppSettings.shared) }
             requestClean(level: .safe)
@@ -612,6 +641,79 @@ final class DustyViewModel: ObservableObject {
     /// Fraction of the volume below which the disk is treated as low.
     private static let lowDiskRatio = 0.15
     var isDiskLow: Bool { freeSpaceRatio < Self.lowDiskRatio }
+
+    // MARK: - Navigation
+
+    func open(_ destination: PanelRoute) {
+        if case .level = destination {} else { focusedTargetID = nil }
+        route = destination
+    }
+
+    func goHome() {
+        focusedTargetID = nil
+        route = .home
+    }
+
+    /// Follow an insight to the target it is about: open its level and highlight it.
+    func focus(on advisory: Advisory) {
+        guard let level = scanResult?.levelResults.first(where: { _, result in
+            result.targetResults.contains { $0.id == advisory.targetID }
+        })?.key else { return }
+        focusedTargetID = advisory.targetID
+        route = .level(level)
+    }
+
+    /// Where the home screen's secondary action should lead when there is nothing
+    /// Safe to clean: the level holding the most space.
+    var largestLevelWithItems: CleanupLevel? {
+        CleanupLevel.allCases
+            .filter { reclaimableBytes(for: $0) > 0 }
+            .max { reclaimableBytes(for: $0) < reclaimableBytes(for: $1) }
+    }
+
+    // MARK: - Level-wide selection
+
+    func setAllSelected(level: CleanupLevel, selected: Bool) {
+        mutateScanResult(level: level) { levelResult in
+            for ti in levelResult.targetResults.indices {
+                for pi in levelResult.targetResults[ti].resolvedPaths.indices {
+                    levelResult.targetResults[ti].resolvedPaths[pi].isSelected = selected
+                }
+            }
+        }
+    }
+
+    func itemCount(for level: CleanupLevel) -> Int {
+        scanResult?.levelResults[level]?.targetResults.reduce(0) { $0 + $1.resolvedPaths.count } ?? 0
+    }
+
+    func selectedCount(for level: CleanupLevel) -> Int {
+        scanResult?.levelResults[level]?.selectedCount ?? 0
+    }
+
+    // MARK: - Receipt
+
+    /// Close the result receipt. An undoable receipt stays until its window closes,
+    /// so the Undo button cannot vanish out from under the pointer.
+    func dismissResult() {
+        guard !canUndo else { return }
+        lastDeletionResult = nil
+    }
+
+    // MARK: - Disk
+
+    /// Free space once `bytes` more is reclaimed, capped at the volume size.
+    func projectedFreeBytes(afterReclaiming bytes: Int64) -> Int64 {
+        let projected = freeSpaceBytes + max(0, bytes)
+        return totalSpaceBytes > 0 ? min(projected, totalSpaceBytes) : projected
+    }
+
+    /// The boot volume's name as Finder shows it ("Macintosh HD").
+    lazy var volumeName: String = {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let name = try? home.resourceValues(forKeys: [.volumeLocalizedNameKey]).volumeLocalizedName
+        return name ?? "Macintosh HD"
+    }()
 
     private func mutateScanResult(level: CleanupLevel, _ mutate: (inout LevelScanResult) -> Void) {
         guard var scan = scanResult, var levelResult = scan.levelResults[level] else { return }

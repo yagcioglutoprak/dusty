@@ -1,11 +1,8 @@
 /* Shared */
 "common.settings" = "Ajustes";
 "common.cancel" = "Cancelar";
-"common.done" = "Listo";
 "common.open" = "Abrir";
 "common.undo" = "Deshacer";
-"common.all" = "Todo";
-"common.none" = "Nada";
 "common.dryRun" = "Simulación";
 "common.revealInFinder" = "Mostrar en el Finder";
 
@@ -14,18 +11,13 @@
 "menubar.toClean" = "%1$@ · %2$@ por limpiar";
 
 /* Panel header and scan */
-"panel.badge.lowDisk" = "DISCO LLENO";
 "panel.scan.scanning" = "Analizando…";
 "panel.scan.rescan" = "Volver a analizar";
 "panel.scan.start" = "Analizar el disco";
 "panel.scan.starting" = "Empezando…";
-"panel.scan.progress" = "%1$d/%2$d · %3$@";
 "panel.scan.lastScan" = "Último análisis: %@";
-"panel.error.dismiss" = "Descartar el error";
 
 /* Panel footer */
-"panel.footer.deletionLog" = "Registro de borrados";
-"panel.footer.quit" = "Salir";
 "panel.footer.madeBy" = "creado por";
 "panel.footer.openSite" = "Abrir toprak.sh";
 
@@ -35,17 +27,11 @@
 "panel.allClean.bodyChecked" = "No hay nada que recuperar (comprobado %@). Dusty sigue vigilando en segundo plano.";
 
 /* Free space header */
-"header.free" = "LIBRE";
-"header.used" = "USADO";
-"header.total" = "TOTAL";
 "header.a11y.label" = "Espacio en disco";
 "header.a11y.value" = "%1$@ libres de %2$@, %3$d por ciento usado";
 
 /* Reclaimable summary */
-"reclaim.title" = "RECUPERABLE";
-"reclaim.a11y.label" = "Espacio recuperable";
 "reclaim.cleanSafe" = "Limpieza segura · %@";
-"reclaim.nothingToClean" = "Nada que limpiar de forma segura";
 
 /* Insights */
 "insights.title" = "Observaciones";
@@ -54,36 +40,21 @@
 
 /* Cleanup level sections */
 "level.clean" = "Limpiar";
-"level.notScanned" = "Aún sin analizar. Lanza un análisis para ver los elementos.";
-"level.a11y.label" = "Nivel de limpieza %@";
-"level.a11y.expanded" = "desplegado";
-"level.a11y.collapsed" = "plegado";
-"level.a11y.hint" = "Muestra todas las rutas encontradas en este nivel";
+"level.notScanned" = "Haz un análisis para ver qué contiene este nivel.";
 "level.a11y.cleanLabel" = "Limpiar los elementos de %@";
-"level.a11y.selected" = "%@ seleccionados";
-"level.a11y.nothingSelected" = "nada seleccionado";
 
 /* Target rows */
 "target.skippedWhileOpen" = "Se omite mientras %@ esté abierto";
-"target.hideItems" = "Ocultar los elementos";
-"path.untouched" = "%1$@ · sin tocar %2$@";
 
 /* Confirmation */
-"confirm.title" = "Confirmar la limpieza";
 "confirm.title.dryRun" = "Vista previa de la limpieza";
 "confirm.skippingApps" = "Se omite la caché de %@, la app está abierta";
 "confirm.dryRunNote" = "Simulación: no se borrará nada";
 "confirm.undoNote" = "Recuperable durante unos segundos con Deshacer";
 "confirm.trashNote" = "Los elementos se quedan en la papelera hasta que la vacíes";
-"confirm.action.delete" = "Borrar";
 "confirm.action.dryRun" = "Ejecutar la simulación";
 
 /* Result banner */
-"result.title.trashed" = "Movido a la papelera";
-"result.title.undoable" = "Limpiado, recuperable";
-"result.title.reclaimed" = "Limpieza completada";
-"result.moved" = "movidos";
-"result.cleaned" = "limpiados";
 "result.body.trashed" = "Vacía la papelera para recuperar este espacio.";
 "result.body.undoable" = "Puedes deshacer durante unos segundos.";
 "result.skippedLine" = "%1$@: %2$@";
@@ -108,30 +79,23 @@
 "welcome.row2.text" = "Dusty solo puede borrar desde un registro fijo de cachés y archivos basura. Documentos, Fotos y Mail quedan fuera de su alcance por diseño.";
 "welcome.row3.title" = "Deshacer, y un recibo";
 "welcome.row3.text" = "Las limpiezas pasan por la papelera con una ventana para deshacer, y cada borrado se escribe en un registro que puedes abrir.";
-"welcome.scan" = "Lanzar mi primer análisis seguro";
+"welcome.scan" = "Analizar mi Mac";
 "welcome.scan.hint" = "Busca espacio recuperable. No se borra nada.";
 "welcome.skip" = "Prefiero echar un vistazo antes";
 
 /* Settings */
 "settings.section.general" = "General";
 "settings.launchAtLogin" = "Abrir al iniciar sesión";
-"settings.menuBarPercentage" = "Mostrar el espacio libre como porcentaje";
 "settings.menuBarReclaimable" = "Mostrar el espacio recuperable en la barra de menús";
 
-"settings.section.language" = "Idioma";
 "settings.language" = "Idioma del panel";
 "settings.language.system" = "Seguir al sistema";
 "settings.language.restartNote" = "Dusty tiene que reiniciarse para cambiar de idioma.";
 "settings.language.restart" = "Reiniciar Dusty";
 
-"settings.section.refresh" = "Actualización";
-"settings.refreshInterval" = "Intervalo de la barra de menús: %d s";
-
-"settings.section.autoScan" = "Análisis automático";
 "settings.autoScanEnabled" = "Analizar en segundo plano";
 "settings.autoScanCaption" = "Mantiene al día la cifra de la barra de menús sin hacer ruido. Nunca borra nada por su cuenta.";
 
-"settings.section.autoClean" = "Limpieza automática";
 "settings.autoCleanEnabled" = "Limpiar los elementos seguros según un calendario";
 "settings.autoCleanFrequency" = "Frecuencia";
 "settings.frequency.daily" = "Cada día";
@@ -189,3 +153,90 @@
 "intent.reclaimable.shortTitle" = "Espacio recuperable";
 "intent.reclaimable.description" = "Analiza los tres niveles de limpieza y devuelve cuánto espacio podría recuperar Dusty. Solo lectura: no borra nada.";
 "intent.reclaimable.result" = "%1$@ recuperables (%2$@ de ellos seguros para limpiar automáticamente).";
+
+/* Navigation and menus */
+"nav.back" = "Atrás";
+"menu.more" = "Más";
+"menu.deletionLog" = "Abrir el registro de eliminaciones";
+"menu.checkUpdates" = "Buscar actualizaciones…";
+"menu.quit" = "Salir de Dusty";
+"common.dismiss" = "Cerrar";
+"common.copyPath" = "Copiar ruta";
+"a11y.selected" = "seleccionado";
+"a11y.notSelected" = "no seleccionado";
+"a11y.partlySelected" = "seleccionado en parte";
+
+/* Home */
+"home.dryRunHelp" = "La simulación está activada: las limpiezas solo indican lo que eliminarían.";
+"home.levels" = "Niveles de limpieza";
+"home.level.nothing" = "Nada que limpiar";
+"home.level.hint" = "Muestra todos los elementos encontrados en este nivel";
+"health.healthy" = "Buen estado";
+"health.gettingFull" = "Llenándose";
+"health.low" = "Poco espacio";
+"hero.availableOf" = "disponibles de %@";
+"hero.legend.used" = "Usado";
+"hero.legend.cleanable" = "Recuperable";
+"hero.legend.free" = "Libre";
+"hero.scan.count" = "%1$d de %2$d";
+"hero.notScanned.title" = "Descubre cuánto puedes recuperar";
+"hero.notScanned.body" = "Un análisis mide cachés y archivos sobrantes, ruta por ruta. Nunca elimina nada.";
+"hero.canBeCleaned" = "recuperables";
+"hero.cleaning" = "Limpiando…";
+"hero.afterClean" = "Después tendrás %@ libres";
+"hero.review" = "Revisar el nivel %@";
+"hero.rescanHelp" = "Volver a analizar (⌘R)";
+
+/* Cleanup levels */
+"level.name.safe" = "Seguro";
+"level.name.developer" = "Desarrollo";
+"level.name.deep" = "Profundo";
+"level.blurb.safe" = "Cachés, registros y Papelera. Se regenera solo.";
+"level.blurb.developer" = "Datos de compilación, simuladores, cachés de paquetes.";
+"level.blurb.deep" = "Instaladores, archivos, instantáneas. Se eligen a mano.";
+"level.selectAll" = "Seleccionar todo";
+"level.selectNone" = "No seleccionar nada";
+"level.notScanned.title" = "Aún sin analizar";
+"level.empty.title" = "Nada que limpiar aquí";
+"level.filter" = "Filtrar por nombre o ruta";
+"level.clearFilter" = "Borrar filtro";
+"level.noMatches" = "Nada coincide con «%@».";
+"level.bar.selected" = "%@ seleccionados";
+"level.bar.nothing" = "Nada seleccionado";
+"level.bar.skipping" = "Se omite %@ mientras esté abierto";
+"level.bar.pick" = "Marca los elementos que quieras eliminar";
+"level.bar.preview" = "Vista previa";
+"target.nothing" = "No se encontró nada";
+"target.showMore" = "Mostrar %d más";
+"path.untouchedSince" = "sin tocar %@";
+
+/* Confirmation and receipt */
+"confirm.titleBytes" = "¿Limpiar %@?";
+"confirm.freeSpace" = "Espacio libre";
+"confirm.logNote" = "Cada ruta queda anotada en el registro de eliminaciones";
+"confirm.hideItems" = "Ocultar elementos";
+"confirm.action.deleteBytes" = "Eliminar %@";
+"toast.cleaned" = "%@ limpiados";
+"toast.trashed" = "%@ movidos a la Papelera";
+"toast.dryRun" = "Simulación: se limpiarían %@";
+"toast.dryRunBody" = "No se eliminó nada.";
+"toast.freeSpace" = "Espacio libre %1$@ → %2$@";
+"toast.undoHelp" = "Devolverlo todo a su sitio (⌘Z)";
+"insights.a11y.hint" = "Abre el nivel que contiene este elemento";
+
+/* Settings, redesigned */
+"settings.section.menuBar" = "Barra de menús";
+"settings.section.automation" = "Automatización";
+"settings.menuBarStyle" = "Mostrar junto al icono";
+"menubarStyle.freeSpace" = "Espacio libre";
+"menubarStyle.percentage" = "Porcentaje";
+"menubarStyle.iconOnly" = "Solo icono";
+"settings.refresh.title" = "Actualizar el espacio libre cada";
+"settings.value.seconds" = "%d s";
+"settings.autoScanFrequency" = "Frecuencia";
+"settings.threshold" = "Umbral";
+"settings.dryRunCaption" = "Las limpiezas indican lo que eliminarían, sin eliminar nada.";
+"settings.moveToTrashCaption" = "Vacía la Papelera tú mismo para recuperar el espacio.";
+"settings.logAge.title" = "Ofrecer registros del sistema de más de";
+"settings.about.tagline" = "Gratis y de código abierto.";
+"settings.about.source" = "Ver el código fuente";

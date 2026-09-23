@@ -66,6 +66,16 @@ final class CleanStatsStore: ObservableObject {
         persist()
     }
 
+    #if DEBUG
+    /// Snapshot runs show plausible lifetime figures without writing them anywhere.
+    func showForSnapshot(lifetimeBytes: Int64, cleanCount: Int, firstCleanAt: Date, recent: [CleanRecord]) {
+        self.lifetimeBytes = lifetimeBytes
+        self.cleanCount = cleanCount
+        self.firstCleanAt = firstCleanAt
+        self.recent = recent
+    }
+    #endif
+
     private func persist() {
         defaults.set(NSNumber(value: lifetimeBytes), forKey: "stats.lifetimeBytes")
         defaults.set(cleanCount, forKey: "stats.cleanCount")

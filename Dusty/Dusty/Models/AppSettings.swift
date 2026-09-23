@@ -3,6 +3,37 @@ import SwiftUI
 import ServiceManagement
 import CleanerEngine
 
+/// What the menu bar item shows beside its icon.
+enum MenuBarStyle: String, CaseIterable, Identifiable {
+    /// "182 GB free"
+    case freeSpace
+    /// "37% free"
+    case percentage
+    /// Just the disk icon.
+    case iconOnly
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .freeSpace: return L10n.t("menubarStyle.freeSpace", "Free space")
+        case .percentage: return L10n.t("menubarStyle.percentage", "Percentage")
+        case .iconOnly: return L10n.t("menubarStyle.iconOnly", "Icon only")
+        }
+    }
+
+    static let defaultsKey = "menuBarStyle"
+
+    /// The saved style. Installs from before the picker existed stored a single
+    /// "show as percentage" flag; that choice carries over.
+    static func stored(in defaults: UserDefaults = .standard) -> MenuBarStyle {
+        if let raw = defaults.string(forKey: defaultsKey), let style = MenuBarStyle(rawValue: raw) {
+            return style
+        }
+        return defaults.bool(forKey: "menuBarShowsPercentage") ? .percentage : .freeSpace
+    }
+}
+
 /// Thin wrapper over SMAppService for the "open at login" feature.
 enum LoginItem {
     static var isEnabled: Bool { SMAppService.mainApp.status == .enabled }
@@ -61,11 +92,11 @@ final class AppSettings: ObservableObject {
         set { UserDefaults.standard.set(newValue, forKey: "lastReactiveAutoCleanAt") }
     }
 
-    /// Menu bar free space as "37% free" instead of "182 GB free". `@Published` rather
-    /// than `@AppStorage` because the menu bar label has to re-render the moment the
-    /// toggle flips (`@AppStorage` inside an ObservableObject does not publish).
-    @Published var menuBarShowsPercentage: Bool = UserDefaults.standard.bool(forKey: "menuBarShowsPercentage") {
-        didSet { UserDefaults.standard.set(menuBarShowsPercentage, forKey: "menuBarShowsPercentage") }
+    /// What the menu bar item shows next to its icon. `@Published` rather than
+    /// `@AppStorage` because the menu bar label has to re-render the moment the
+    /// picker changes (`@AppStorage` inside an ObservableObject does not publish).
+    @Published var menuBarStyle: MenuBarStyle = MenuBarStyle.stored() {
+        didSet { UserDefaults.standard.set(menuBarStyle.rawValue, forKey: MenuBarStyle.defaultsKey) }
     }
 
     /// The "N GB to clean" suffix in the menu bar. On by default; same `@Published`

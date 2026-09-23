@@ -1,11 +1,8 @@
 /* Shared */
 "common.settings" = "Settings";
 "common.cancel" = "Cancel";
-"common.done" = "Done";
 "common.open" = "Open";
 "common.undo" = "Undo";
-"common.all" = "All";
-"common.none" = "None";
 "common.dryRun" = "Dry Run";
 "common.revealInFinder" = "Reveal in Finder";
 
@@ -14,18 +11,13 @@
 "menubar.toClean" = "%1$@ · %2$@ to clean";
 
 /* Panel header and scan */
-"panel.badge.lowDisk" = "LOW DISK";
 "panel.scan.scanning" = "Scanning…";
 "panel.scan.rescan" = "Rescan";
 "panel.scan.start" = "Scan disk";
 "panel.scan.starting" = "Starting…";
-"panel.scan.progress" = "%1$d/%2$d · %3$@";
 "panel.scan.lastScan" = "Last scan: %@";
-"panel.error.dismiss" = "Dismiss error";
 
 /* Panel footer */
-"panel.footer.deletionLog" = "Deletion log";
-"panel.footer.quit" = "Quit";
 "panel.footer.madeBy" = "made by";
 "panel.footer.openSite" = "Open toprak.sh";
 
@@ -35,17 +27,11 @@
 "panel.allClean.bodyChecked" = "Nothing reclaimable (checked %@). Dusty keeps watching in the background.";
 
 /* Free space header */
-"header.free" = "FREE";
-"header.used" = "USED";
-"header.total" = "TOTAL";
 "header.a11y.label" = "Disk space";
 "header.a11y.value" = "%1$@ free of %2$@, %3$d percent used";
 
 /* Reclaimable summary */
-"reclaim.title" = "RECLAIMABLE";
-"reclaim.a11y.label" = "Reclaimable space";
 "reclaim.cleanSafe" = "Clean Safe · %@";
-"reclaim.nothingToClean" = "Nothing safe to clean";
 
 /* Insights */
 "insights.title" = "Insights";
@@ -54,36 +40,21 @@
 
 /* Cleanup level sections */
 "level.clean" = "Clean";
-"level.notScanned" = "Not scanned yet. Run a scan to see items.";
-"level.a11y.label" = "%@ cleanup level";
-"level.a11y.expanded" = "expanded";
-"level.a11y.collapsed" = "collapsed";
-"level.a11y.hint" = "Shows every path found for this level";
+"level.notScanned" = "Run a scan to see what this level holds.";
 "level.a11y.cleanLabel" = "Clean %@ items";
-"level.a11y.selected" = "%@ selected";
-"level.a11y.nothingSelected" = "nothing selected";
 
 /* Target rows */
 "target.skippedWhileOpen" = "Skipped while %@ is open";
-"target.hideItems" = "Hide items";
-"path.untouched" = "%1$@ · untouched %2$@";
 
 /* Confirmation */
-"confirm.title" = "Confirm Cleanup";
 "confirm.title.dryRun" = "Preview Cleanup";
 "confirm.skippingApps" = "Skipping %@ cache, app is open";
 "confirm.dryRunNote" = "Dry run: nothing will be deleted";
 "confirm.undoNote" = "Recoverable for a few seconds via Undo";
 "confirm.trashNote" = "Items stay in the Trash until you empty it";
-"confirm.action.delete" = "Delete";
 "confirm.action.dryRun" = "Run Dry Run";
 
 /* Result banner */
-"result.title.trashed" = "Moved to Trash";
-"result.title.undoable" = "Cleaned, recoverable";
-"result.title.reclaimed" = "Cleanup complete";
-"result.moved" = "moved";
-"result.cleaned" = "cleaned";
 "result.body.trashed" = "Empty Trash to reclaim this space.";
 "result.body.undoable" = "Undo is available for a few seconds.";
 "result.skippedLine" = "%1$@: %2$@";
@@ -108,30 +79,23 @@
 "welcome.row2.text" = "Dusty can only delete from a fixed registry of cache and junk paths. Documents, Photos, and Mail are unreachable by design.";
 "welcome.row3.title" = "Undo, plus a receipt";
 "welcome.row3.text" = "Cleans pass through the Trash with an Undo window, and every deletion is written to a log you can open.";
-"welcome.scan" = "Run my first Safe scan";
+"welcome.scan" = "Scan my Mac";
 "welcome.scan.hint" = "Scans for reclaimable space. Nothing is deleted.";
 "welcome.skip" = "I'll look around first";
 
 /* Settings */
 "settings.section.general" = "General";
 "settings.launchAtLogin" = "Launch at login";
-"settings.menuBarPercentage" = "Show free space as a percentage";
 "settings.menuBarReclaimable" = "Show reclaimable space in the menu bar";
 
-"settings.section.language" = "Language";
 "settings.language" = "Panel language";
 "settings.language.system" = "Match system";
 "settings.language.restartNote" = "Dusty has to restart to change language.";
 "settings.language.restart" = "Restart Dusty";
 
-"settings.section.refresh" = "Refresh";
-"settings.refreshInterval" = "Menu bar interval: %ds";
-
-"settings.section.autoScan" = "Auto scan";
 "settings.autoScanEnabled" = "Scan in the background";
 "settings.autoScanCaption" = "Quietly keeps the menu bar figure current. Never deletes anything on its own.";
 
-"settings.section.autoClean" = "Auto clean";
 "settings.autoCleanEnabled" = "Clean Safe items on a schedule";
 "settings.autoCleanFrequency" = "Frequency";
 "settings.frequency.daily" = "Every day";
@@ -189,3 +153,90 @@
 "intent.reclaimable.shortTitle" = "Reclaimable Space";
 "intent.reclaimable.description" = "Scans all three cleanup levels and returns how much space Dusty could reclaim. Read-only: deletes nothing.";
 "intent.reclaimable.result" = "%1$@ reclaimable (%2$@ of it safe to clean automatically).";
+
+/* Navigation and menus */
+"nav.back" = "Back";
+"menu.more" = "More";
+"menu.deletionLog" = "Open Deletion Log";
+"menu.checkUpdates" = "Check for Updates…";
+"menu.quit" = "Quit Dusty";
+"common.dismiss" = "Dismiss";
+"common.copyPath" = "Copy Path";
+"a11y.selected" = "selected";
+"a11y.notSelected" = "not selected";
+"a11y.partlySelected" = "partly selected";
+
+/* Home */
+"home.dryRunHelp" = "Dry run is on: cleans only report what they would delete.";
+"home.levels" = "Cleanup levels";
+"home.level.nothing" = "Nothing to clean";
+"home.level.hint" = "Shows every item found at this level";
+"health.healthy" = "Healthy";
+"health.gettingFull" = "Getting full";
+"health.low" = "Low on space";
+"hero.availableOf" = "available of %@";
+"hero.legend.used" = "Used";
+"hero.legend.cleanable" = "Cleanable";
+"hero.legend.free" = "Free";
+"hero.scan.count" = "%1$d of %2$d";
+"hero.notScanned.title" = "See what you can reclaim";
+"hero.notScanned.body" = "A scan measures caches and junk, path by path. It never deletes anything.";
+"hero.canBeCleaned" = "can be cleaned";
+"hero.cleaning" = "Cleaning…";
+"hero.afterClean" = "You’ll have %@ free afterwards";
+"hero.review" = "Review %@ items";
+"hero.rescanHelp" = "Rescan (⌘R)";
+
+/* Cleanup levels */
+"level.name.safe" = "Safe";
+"level.name.developer" = "Developer";
+"level.name.deep" = "Deep";
+"level.blurb.safe" = "Caches, logs, and Trash. Regenerates on its own.";
+"level.blurb.developer" = "Build data, simulators, package caches.";
+"level.blurb.deep" = "Installers, archives, snapshots. Pick by hand.";
+"level.selectAll" = "Select All";
+"level.selectNone" = "Select None";
+"level.notScanned.title" = "Not scanned yet";
+"level.empty.title" = "Nothing to clean here";
+"level.filter" = "Filter by name or path";
+"level.clearFilter" = "Clear filter";
+"level.noMatches" = "Nothing matches “%@”.";
+"level.bar.selected" = "%@ selected";
+"level.bar.nothing" = "Nothing selected";
+"level.bar.skipping" = "Skipping %@ while open";
+"level.bar.pick" = "Tick the items you want gone";
+"level.bar.preview" = "Preview";
+"target.nothing" = "Nothing found";
+"target.showMore" = "Show %d more";
+"path.untouchedSince" = "untouched %@";
+
+/* Confirmation and receipt */
+"confirm.titleBytes" = "Clean %@?";
+"confirm.freeSpace" = "Free space";
+"confirm.logNote" = "Every path is written to the deletion log";
+"confirm.hideItems" = "Hide items";
+"confirm.action.deleteBytes" = "Delete %@";
+"toast.cleaned" = "%@ cleaned";
+"toast.trashed" = "%@ moved to Trash";
+"toast.dryRun" = "Dry run: %@ would be cleaned";
+"toast.dryRunBody" = "Nothing was deleted.";
+"toast.freeSpace" = "Free space %1$@ → %2$@";
+"toast.undoHelp" = "Put everything back (⌘Z)";
+"insights.a11y.hint" = "Opens the level that holds this item";
+
+/* Settings, redesigned */
+"settings.section.menuBar" = "Menu bar";
+"settings.section.automation" = "Automation";
+"settings.menuBarStyle" = "Show beside the icon";
+"menubarStyle.freeSpace" = "Free space";
+"menubarStyle.percentage" = "Percentage";
+"menubarStyle.iconOnly" = "Icon only";
+"settings.refresh.title" = "Update free space every";
+"settings.value.seconds" = "%d s";
+"settings.autoScanFrequency" = "How often";
+"settings.threshold" = "Threshold";
+"settings.dryRunCaption" = "Cleans report what they would delete, and delete nothing.";
+"settings.moveToTrashCaption" = "Empty the Trash yourself to reclaim the space.";
+"settings.logAge.title" = "Offer system logs older than";
+"settings.about.tagline" = "Free and open source.";
+"settings.about.source" = "View the source";

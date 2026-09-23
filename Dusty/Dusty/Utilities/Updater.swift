@@ -19,10 +19,12 @@ final class Updater: ObservableObject {
 
     private static let defaultsAppliedKey = "DustyUpdaterDefaultsApplied"
 
-    init() {
-        // `startingUpdater: true` begins the scheduled background checks right away.
+    /// `startingUpdater: false` builds an idle updater (snapshot runs): no
+    /// scheduled checks, no network, no prompts.
+    init(startingUpdater: Bool = true) {
+        // Starting the updater begins the scheduled background checks right away.
         controller = SPUStandardUpdaterController(
-            startingUpdater: true,
+            startingUpdater: startingUpdater,
             updaterDelegate: nil,
             userDriverDelegate: nil
         )

@@ -1,0 +1,60 @@
+name: Panel snapshots
+
+# Renders every state of the panel (welcome, home, scanning, a level, the
+# confirmation sheet, the undo receipt, settings) in light and dark from
+# fixture data, and uploads the PNGs. A reviewer can see what a UI change looks
+# like without building it. The render path only exists in Debug builds.
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'Dusty/**'
+      - '.github/workflows/snapshots.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Dusty/**'
+      - '.github/workflows/snapshots.yml'
+
+concurrency:
+  group: snapshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshots:
+    name: Render panel snapshots
+    # Branches in this repo already rendered on push; the PR run is for forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (Debug, no signing)
+        working-directory: Dusty
+        run: |
+          xcodebuild \
+            -project Dusty.xcodeproj \
+            -scheme Dusty \
+            -configuration Debug \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Render
+        run: |
+          mkdir -p snapshots
+          # perl's alarm is a portable timeout: a stuck render fails the step
+          # instead of holding the runner until the job limit.
+          perl -e 'alarm shift; exec @ARGV' 240 \
+            Dusty/build/Build/Products/Debug/Dusty.app/Contents/MacOS/Dusty \
+            --render-snapshots "$PWD/snapshots"
+          ls -la snapshots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: panel-snapshots
+          path: snapshots/*.png
+          if-no-files-found: error

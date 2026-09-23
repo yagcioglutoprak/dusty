@@ -1,284 +1,349 @@
 import SwiftUI
 import AppKit
+import CleanerEngine
 
 /// Dusty's design system.
 ///
-/// The identity is "dust caught in golden-hour light": a warm amber brand ramp
-/// over warm-ink (dark) or warm-paper (light) surfaces. Every color is a wide
-/// gamut Display P3 token tuned separately for each appearance, so contrast
-/// holds in both modes instead of one mode borrowing the other's values.
-/// Semantic colors (success, info, warn, danger) carry meaning; gold carries
-/// the brand voice.
+/// The identity comes from the app icon: a sky-to-indigo gradient with a
+/// sparkle, set on calm neutral surfaces. Color carries meaning, not
+/// decoration: the brand gradient marks the one primary action on screen, the
+/// three cleanup levels each own a hue (mint, violet, amber) that follows them
+/// from the storage bar to the level screen to the confirm button, and the
+/// semantic colors (success, warn, danger) only ever report state.
+///
+/// Every token is tuned separately for light and dark, so contrast holds in both
+/// appearances instead of one borrowing the other's values.
 enum DustyTheme {
 
-    // MARK: - Dimensions
+    // MARK: - Layout
 
-    static let panelWidth: CGFloat = 468
-    static let panelHeight: CGFloat = 676
-    static let cornerRadius: CGFloat = 16
-    static let cardCornerRadius: CGFloat = 14
-    static let controlCornerRadius: CGFloat = 12
+    static let panelWidth: CGFloat = 420
+    static let panelHeight: CGFloat = 640
+    /// Horizontal page margin shared by every screen.
+    static let gutter: CGFloat = 16
+    static let cardRadius: CGFloat = 14
+    static let controlRadius: CGFloat = 10
+    static let sheetRadius: CGFloat = 20
 
     // MARK: - Motion
 
     /// Shared rhythm for micro-interactions, so every control moves the same way.
-    static let pressSpring = Animation.spring(response: 0.28, dampingFraction: 0.75)
-    static let revealSpring = Animation.spring(response: 0.4, dampingFraction: 0.85)
+    static let pressSpring = Animation.spring(response: 0.26, dampingFraction: 0.72)
+    static let revealSpring = Animation.spring(response: 0.38, dampingFraction: 0.86)
+    /// Screen pushes and pops inside the panel.
+    static let navSpring = Animation.spring(response: 0.42, dampingFraction: 0.9)
 
     // MARK: - Adaptive color
 
-    /// A color that resolves per appearance, with both variants in Display P3.
-    private static func adaptive(light: (Double, Double, Double),
-                                 dark: (Double, Double, Double),
-                                 alpha: Double = 1) -> Color {
+    /// A color that resolves per appearance, from 0xRRGGBB values in sRGB.
+    static func adaptive(light: UInt32, dark: UInt32, lightAlpha: Double = 1, darkAlpha: Double = 1) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
             let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            let (r, g, b) = isDark ? dark : light
-            return NSColor(displayP3Red: r, green: g, blue: b, alpha: alpha)
+            return NSColor(hex: isDark ? dark : light, alpha: isDark ? darkAlpha : lightAlpha)
         })
     }
 
-    private static func p3(_ r: Double, _ g: Double, _ b: Double) -> Color {
-        Color(.displayP3, red: r, green: g, blue: b)
+    static func hex(_ value: UInt32, alpha: Double = 1) -> Color {
+        Color(nsColor: NSColor(hex: value, alpha: alpha))
     }
 
-    // MARK: - Brand ramp (dust gold)
+    // MARK: - Brand
 
-    /// The high end of the ramp: dust lit from behind.
-    static let goldLight = p3(1.00, 0.85, 0.45)
-    /// The signature accent.
-    static let gold = p3(0.99, 0.72, 0.24)
-    /// Deeper ember, for gradient ends, pressed states, and glows.
-    static let goldDeep = p3(0.91, 0.51, 0.13)
-    /// Near-black ink that reads as "premium" on top of gold fills.
-    static let onGold = p3(0.21, 0.13, 0.03)
+    /// The icon's gradient, stop for stop: sky, azure, indigo.
+    static let sky = hex(0x38C5F5)
+    static let azure = hex(0x3B82F6)
+    static let indigo = hex(0x6366F1)
 
-    static let accent = gold
+    /// Interactive accent for links, focus rings, and selected states.
+    static let accent = adaptive(light: 0x2563EB, dark: 0x6AA6FF)
 
     static var brandGradient: LinearGradient {
-        LinearGradient(
-            colors: [goldLight, gold, goldDeep],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        LinearGradient(colors: [sky, azure, indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
     // MARK: - Surfaces
 
-    /// Panel base: warm paper in light mode, warm ink in dark mode. A custom
-    /// surface (not the system window color) so the warmth of the brand carries
-    /// through the whole panel instead of sitting on neutral gray.
-    static let panelBackground = adaptive(light: (0.962, 0.954, 0.940),
-                                          dark: (0.094, 0.088, 0.082))
+    /// Panel base. Opaque on purpose: a menu bar panel sits over anything, and a
+    /// custom surface keeps the palette the same over a white web page or a dark
+    /// terminal.
+    static let canvas = adaptive(light: 0xF3F4F7, dark: 0x111215)
+    /// Raised card, one step above the canvas.
+    static let card = adaptive(light: 0xFFFFFF, dark: 0x1B1C21)
+    /// Sheets and popovers, one step above cards.
+    static let elevated = adaptive(light: 0xFFFFFF, dark: 0x23242A)
+    /// Wells, tracks, and the resting fill of quiet controls.
+    static let inset = adaptive(light: 0x000000, dark: 0xFFFFFF, lightAlpha: 0.05, darkAlpha: 0.07)
+    static let insetHover = adaptive(light: 0x000000, dark: 0xFFFFFF, lightAlpha: 0.08, darkAlpha: 0.11)
+    /// Hairline borders and dividers.
+    static let hairline = adaptive(light: 0x000000, dark: 0xFFFFFF, lightAlpha: 0.08, darkAlpha: 0.08)
+    /// Tertiary text that still passes contrast on cards.
+    static let faint = adaptive(light: 0x6B7280, dark: 0x8B8F99)
+    /// Soft card shadow: present in light mode, gone in dark where elevation is
+    /// carried by the lighter surface instead.
+    static let shadow = adaptive(light: 0x0F172A, dark: 0x000000, lightAlpha: 0.07, darkAlpha: 0)
 
-    /// Raised card surface, one step above the panel.
-    static let cardBackground = adaptive(light: (1.0, 0.998, 0.992),
-                                         dark: (0.150, 0.142, 0.132))
+    // MARK: - Semantic
 
-    /// Hairline borders and dividers, visible in both appearances.
-    static let hairline = adaptive(light: (0, 0, 0), dark: (1, 1, 1),
-                                   alpha: 0.09)
+    static let success = adaptive(light: 0x0E9F6E, dark: 0x34D399)
+    static let warn = adaptive(light: 0xD97706, dark: 0xFBBF24)
+    static let danger = adaptive(light: 0xDC2626, dark: 0xF87171)
 
-    /// A whisper of light along a card's top edge; sells the elevation in dark mode.
-    static let cardTopLight = adaptive(light: (1, 1, 1), dark: (1, 1, 1),
-                                       alpha: 0.10)
+    // MARK: - Cleanup levels
 
-    /// Subtle fill for ghost controls.
-    static let quietFill = Color.primary.opacity(0.055)
-    static let quietFillHover = Color.primary.opacity(0.09)
+    static let safe = adaptive(light: 0x10A37F, dark: 0x3DD6A3)
+    static let developer = adaptive(light: 0x7C4DFF, dark: 0xA78BFA)
+    static let deep = adaptive(light: 0xEA6A0C, dark: 0xFB9A4B)
 
-    // MARK: - Semantic palette
+    /// The segment of the storage bar that is used but not reclaimable.
+    static let usedSpace = adaptive(light: 0x9CA3AF, dark: 0x4B5060)
 
-    static let success = adaptive(light: (0.08, 0.58, 0.36), dark: (0.36, 0.84, 0.58))
-    static let info = adaptive(light: (0.13, 0.42, 0.90), dark: (0.45, 0.67, 1.00))
-    static let warn = adaptive(light: (0.82, 0.38, 0.08), dark: (1.00, 0.58, 0.32))
-    static let danger = adaptive(light: (0.79, 0.18, 0.16), dark: (1.00, 0.45, 0.41))
+    // MARK: - Disk health
 
-    // MARK: - Disk health (semantic gauge)
+    enum DiskHealth {
+        case healthy, gettingFull, low
 
-    static func diskColor(ratio: Double) -> Color {
-        switch ratio {
-        case ..<0.08: return danger
-        case ..<0.15: return warn
-        case ..<0.25: return gold
-        default:       return success
+        init(freeRatio: Double) {
+            switch freeRatio {
+            case ..<0.15: self = .low
+            case ..<0.25: self = .gettingFull
+            default: self = .healthy
+            }
+        }
+
+        var tint: Color {
+            switch self {
+            case .healthy: return DustyTheme.success
+            case .gettingFull: return DustyTheme.warn
+            case .low: return DustyTheme.danger
+            }
+        }
+
+        var label: String {
+            switch self {
+            case .healthy: return L10n.t("health.healthy", "Healthy")
+            case .gettingFull: return L10n.t("health.gettingFull", "Getting full")
+            case .low: return L10n.t("health.low", "Low on space")
+            }
         }
     }
-
-    static func diskGradient(ratio: Double) -> AngularGradient {
-        let color = diskColor(ratio: ratio)
-        return AngularGradient(
-            gradient: Gradient(colors: [color.opacity(0.55), color, color.opacity(0.9), color.opacity(0.55)]),
-            center: .center
-        )
-    }
-
-    static func levelColor(_ level: Int) -> Color {
-        switch level {
-        case 1: return success
-        case 2: return info
-        default: return warn
-        }
-    }
-
-    // MARK: - Depth
-
-    /// Soft ambient elevation for cards.
-    static let cardShadow = adaptive(light: (0, 0, 0), dark: (0, 0, 0), alpha: 0.14)
-    /// Heavier shadow under in-panel overlays.
-    static let overlayShadow = Color.black.opacity(0.32)
 }
 
-// MARK: - Card surface
+extension NSColor {
+    convenience init(hex: UInt32, alpha: Double = 1) {
+        self.init(
+            srgbRed: CGFloat((hex >> 16) & 0xFF) / 255,
+            green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255,
+            alpha: CGFloat(alpha)
+        )
+    }
+}
+
+// MARK: - Level identity
+
+extension CleanupLevel {
+    /// Short name for navigation and buttons. The engine's `title` ("Level 1:
+    /// Safe") stays the long form for places that need the number.
+    var name: String {
+        switch self {
+        case .safe: return L10n.t("level.name.safe", "Safe")
+        case .developer: return L10n.t("level.name.developer", "Developer")
+        case .deep: return L10n.t("level.name.deep", "Deep")
+        }
+    }
+
+    /// One line on what the level holds, sized for a list row.
+    var blurb: String {
+        switch self {
+        case .safe: return L10n.t("level.blurb.safe", "Caches, logs, and Trash. Regenerates on its own.")
+        case .developer: return L10n.t("level.blurb.developer", "Build data, simulators, package caches.")
+        case .deep: return L10n.t("level.blurb.deep", "Installers, archives, snapshots. Pick by hand.")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .safe: return "leaf.fill"
+        case .developer: return "hammer.fill"
+        case .deep: return "archivebox.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .safe: return DustyTheme.safe
+        case .developer: return DustyTheme.developer
+        case .deep: return DustyTheme.deep
+        }
+    }
+}
+
+// MARK: - Surfaces
 
 extension View {
-    /// Standard Dusty card: filled, gently elevated, with a hairline border that
-    /// catches light along the top edge.
-    func dustyCard(cornerRadius: CGFloat = DustyTheme.cardCornerRadius,
-                   fill: AnyShapeStyle = AnyShapeStyle(DustyTheme.cardBackground)) -> some View {
+    /// Standard Dusty card: filled, hairline-bordered, softly lifted in light mode.
+    func dustyCard(radius: CGFloat = DustyTheme.cardRadius, fill: Color = DustyTheme.card) -> some View {
         background(
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
                 .fill(fill)
-                .shadow(color: DustyTheme.cardShadow, radius: 9, y: 3)
+                .shadow(color: DustyTheme.shadow, radius: 10, y: 3)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [DustyTheme.cardTopLight, DustyTheme.hairline],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .strokeBorder(DustyTheme.hairline, lineWidth: 1)
+        )
+    }
+
+    /// A tinted callout surface (warnings, errors, receipts).
+    func dustyCallout(tint: Color, radius: CGFloat = 12) -> some View {
+        background(
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(tint.opacity(0.11))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .strokeBorder(tint.opacity(0.24), lineWidth: 1)
         )
     }
 }
 
 // MARK: - Buttons
 
-/// The one gold action on screen: brand gradient, ink text, a glow that leans
-/// in on hover, and a soft press. Used for the primary CTA only.
+/// The one gradient action on screen: brand gradient, white label, a lift on
+/// hover, and a soft press. `tint` swaps the gradient for a level color when
+/// the action belongs to one level.
 struct DustyPrimaryButtonStyle: ButtonStyle {
+    var tint: Color? = nil
+    var compact = false
+
     func makeBody(configuration: Configuration) -> some View {
-        StyledBody(configuration: configuration)
+        StyledBody(configuration: configuration, tint: tint, compact: compact)
     }
 
     private struct StyledBody: View {
         let configuration: Configuration
+        let tint: Color?
+        let compact: Bool
         @State private var hovering = false
         @Environment(\.isEnabled) private var isEnabled
         @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+        private var fill: AnyShapeStyle {
+            if let tint { return AnyShapeStyle(tint) }
+            return AnyShapeStyle(DustyTheme.brandGradient)
+        }
+
         var body: some View {
             configuration.label
-                .font(.body.weight(.bold))
-                .foregroundStyle(DustyTheme.onGold)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .font(compact ? .subheadline.weight(.semibold) : .body.weight(.semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .frame(maxWidth: compact ? nil : .infinity)
+                .padding(.horizontal, compact ? 14 : 16)
+                .frame(height: compact ? 30 : 38)
                 .background(
-                    RoundedRectangle(cornerRadius: DustyTheme.controlCornerRadius, style: .continuous)
-                        .fill(DustyTheme.brandGradient)
-                        .brightness(hovering && isEnabled ? 0.06 : 0)
-                        .shadow(color: DustyTheme.goldDeep.opacity(isEnabled ? (hovering ? 0.45 : 0.30) : 0),
-                                radius: hovering ? 10 : 7, y: 3)
+                    RoundedRectangle(cornerRadius: DustyTheme.controlRadius, style: .continuous)
+                        .fill(fill)
+                        .brightness(hovering && isEnabled ? 0.05 : 0)
+                        .shadow(color: (tint ?? DustyTheme.azure).opacity(isEnabled ? (hovering ? 0.38 : 0.24) : 0),
+                                radius: hovering ? 9 : 6, y: 3)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: DustyTheme.controlCornerRadius, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
-                        .blendMode(.plusLighter)
+                    RoundedRectangle(cornerRadius: DustyTheme.controlRadius, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
                 )
-                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.975 : 1)
-                .opacity(isEnabled ? 1 : 0.45)
+                .saturation(isEnabled ? 1 : 0.2)
+                .opacity(isEnabled ? 1 : 0.5)
+                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
                 .animation(DustyTheme.pressSpring, value: configuration.isPressed)
                 .animation(.easeOut(duration: 0.15), value: hovering)
                 .onHover { hovering = $0 }
+                .contentShape(RoundedRectangle(cornerRadius: DustyTheme.controlRadius, style: .continuous))
         }
     }
 }
 
-/// Compact tinted button. `prominent` fills with the tint (white label) for the
-/// committed action; otherwise a quiet tinted wash with the tint as the label.
-struct DustyTintedButtonStyle: ButtonStyle {
-    var tint: Color
-    var prominent = false
-    /// Label color when prominent; white suits most tints, ink suits gold.
-    var prominentLabel: Color = .white
+/// Quiet button: an inset fill that wakes on hover. For secondary actions next
+/// to a primary one (Cancel, Rescan, Review).
+struct DustySecondaryButtonStyle: ButtonStyle {
+    var fullWidth = false
+    var tint: Color? = nil
 
     func makeBody(configuration: Configuration) -> some View {
-        StyledBody(configuration: configuration, tint: tint, prominent: prominent, prominentLabel: prominentLabel)
-    }
-
-    private struct StyledBody: View {
-        let configuration: Configuration
-        let tint: Color
-        let prominent: Bool
-        let prominentLabel: Color
-        @State private var hovering = false
-        @Environment(\.isEnabled) private var isEnabled
-        @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-        var body: some View {
-            configuration.label
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(prominent ? prominentLabel : tint)
-                .padding(.horizontal, 13)
-                .padding(.vertical, 7)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(prominent ? tint.opacity(1) : tint.opacity(hovering && isEnabled ? 0.20 : 0.14))
-                        .brightness(prominent && hovering && isEnabled ? 0.07 : 0)
-                        .shadow(color: prominent && isEnabled ? tint.opacity(0.35) : .clear, radius: 5, y: 2)
-                )
-                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
-                .opacity(isEnabled ? 1 : 0.45)
-                .animation(DustyTheme.pressSpring, value: configuration.isPressed)
-                .animation(.easeOut(duration: 0.15), value: hovering)
-                .onHover { hovering = $0 }
-        }
-    }
-}
-
-/// Quiet full-width utility button (scan, cancel): a soft fill that wakes on hover.
-struct DustyGhostButtonStyle: ButtonStyle {
-    var fullWidth = true
-
-    func makeBody(configuration: Configuration) -> some View {
-        StyledBody(configuration: configuration, fullWidth: fullWidth)
+        StyledBody(configuration: configuration, fullWidth: fullWidth, tint: tint)
     }
 
     private struct StyledBody: View {
         let configuration: Configuration
         let fullWidth: Bool
+        let tint: Color?
+        @State private var hovering = false
+        @Environment(\.isEnabled) private var isEnabled
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+        private var background: Color {
+            let lit = hovering && isEnabled
+            if let tint { return tint.opacity(lit ? 0.2 : 0.13) }
+            return lit ? DustyTheme.insetHover : DustyTheme.inset
+        }
+
+        var body: some View {
+            configuration.label
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(tint ?? Color.primary)
+                .lineLimit(1)
+                .frame(maxWidth: fullWidth ? .infinity : nil)
+                .padding(.horizontal, 14)
+                .frame(height: fullWidth ? 38 : 30)
+                .background(
+                    RoundedRectangle(cornerRadius: DustyTheme.controlRadius, style: .continuous)
+                        .fill(background)
+                )
+                .opacity(isEnabled ? 1 : 0.45)
+                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
+                .animation(DustyTheme.pressSpring, value: configuration.isPressed)
+                .animation(.easeOut(duration: 0.15), value: hovering)
+                .onHover { hovering = $0 }
+                .contentShape(RoundedRectangle(cornerRadius: DustyTheme.controlRadius, style: .continuous))
+        }
+    }
+}
+
+/// Bare icon button (gear, back, close) with a hover halo.
+struct DustyIconButtonStyle: ButtonStyle {
+    var size: CGFloat = 28
+
+    func makeBody(configuration: Configuration) -> some View {
+        StyledBody(configuration: configuration, size: size)
+    }
+
+    private struct StyledBody: View {
+        let configuration: Configuration
+        let size: CGFloat
         @State private var hovering = false
         @Environment(\.isEnabled) private var isEnabled
         @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
         var body: some View {
             configuration.label
-                .font(.body.weight(.semibold))
-                .frame(maxWidth: fullWidth ? .infinity : nil)
-                .padding(.vertical, fullWidth ? 12 : 7)
-                .padding(.horizontal, fullWidth ? 0 : 13)
+                .foregroundStyle(hovering && isEnabled ? Color.primary : Color.secondary)
+                .frame(width: size, height: size)
                 .background(
-                    RoundedRectangle(cornerRadius: DustyTheme.controlCornerRadius, style: .continuous)
-                        .fill(hovering && isEnabled ? DustyTheme.quietFillHover : DustyTheme.quietFill)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(hovering && isEnabled ? DustyTheme.insetHover : .clear)
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: DustyTheme.controlCornerRadius, style: .continuous)
-                        .strokeBorder(DustyTheme.hairline, lineWidth: 1)
-                )
-                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
-                .opacity(isEnabled ? 1 : 0.5)
+                .contentShape(Rectangle())
+                .opacity(isEnabled ? 1 : 0.4)
+                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.9 : 1)
                 .animation(DustyTheme.pressSpring, value: configuration.isPressed)
-                .animation(.easeOut(duration: 0.15), value: hovering)
+                .animation(.easeOut(duration: 0.12), value: hovering)
                 .onHover { hovering = $0 }
         }
     }
 }
 
-/// Bare icon button (header gear, dismiss x) with a hover halo.
-struct DustyIconButtonStyle: ButtonStyle {
+/// A whole list row as one button: a hover wash across the row, no chrome.
+struct DustyRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         StyledBody(configuration: configuration)
     }
@@ -286,16 +351,41 @@ struct DustyIconButtonStyle: ButtonStyle {
     private struct StyledBody: View {
         let configuration: Configuration
         @State private var hovering = false
-        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+        @Environment(\.isEnabled) private var isEnabled
 
         var body: some View {
             configuration.label
-                .padding(6)
-                .background(Circle().fill(hovering ? DustyTheme.quietFillHover : .clear))
-                .contentShape(Circle())
-                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.92 : 1)
-                .animation(DustyTheme.pressSpring, value: configuration.isPressed)
-                .animation(.easeOut(duration: 0.15), value: hovering)
+                .contentShape(Rectangle())
+                .background(
+                    Rectangle().fill(configuration.isPressed ? DustyTheme.insetHover
+                                     : (hovering && isEnabled ? DustyTheme.inset : .clear))
+                )
+                .animation(.easeOut(duration: 0.12), value: hovering)
+                .onHover { hovering = $0 }
+        }
+    }
+}
+
+/// Text-only link button in the accent color.
+struct DustyLinkButtonStyle: ButtonStyle {
+    var tint: Color = DustyTheme.accent
+
+    func makeBody(configuration: Configuration) -> some View {
+        StyledBody(configuration: configuration, tint: tint)
+    }
+
+    private struct StyledBody: View {
+        let configuration: Configuration
+        let tint: Color
+        @State private var hovering = false
+        @Environment(\.isEnabled) private var isEnabled
+
+        var body: some View {
+            configuration.label
+                .foregroundStyle(tint)
+                .opacity(isEnabled ? (configuration.isPressed ? 0.6 : 1) : 0.4)
+                .underline(hovering && isEnabled, color: tint.opacity(0.5))
+                .contentShape(Rectangle())
                 .onHover { hovering = $0 }
         }
     }
