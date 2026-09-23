@@ -236,9 +236,10 @@ private struct LevelRow: View {
         } else if isScanning {
             Spinner(size: 12)
         } else {
-            Text(verbatim: "—")
-                .font(.subheadline)
+            Image(systemName: "minus")
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(DustyTheme.faint)
+                .accessibilityHidden(true)
         }
     }
 }
