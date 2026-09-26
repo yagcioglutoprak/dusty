@@ -146,6 +146,55 @@ struct MemoryCard: View {
     }
 }
 
+/// Memory in use as a small pill for the home screen's top bar, so memory is
+/// one click away without scrolling. Tinted once pressure rises, and dotted
+/// when idle apps are sitting on memory.
+struct MemoryPill: View {
+    @ObservedObject var memory: MemoryModel
+    let onOpen: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        if let snapshot = memory.snapshot {
+            let tint: Color = snapshot.pressure == .normal ? .secondary : snapshot.pressure.tint
+            let percent = MemoryText.percent(snapshot.usedFraction)
+            Button(action: onOpen) {
+                HStack(spacing: 4) {
+                    Image(systemName: "memorychip")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(percent)
+                        .font(.caption.weight(.semibold))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                }
+                .foregroundStyle(hovering ? Color.primary : tint)
+                .padding(.horizontal, 8)
+                .frame(height: 24)
+                .background(
+                    Capsule().fill(snapshot.pressure == .normal
+                                   ? (hovering ? DustyTheme.insetHover : DustyTheme.inset)
+                                   : snapshot.pressure.tint.opacity(hovering ? 0.2 : 0.13))
+                )
+                .overlay(alignment: .topTrailing) {
+                    if memory.suggestedBytes > 0 {
+                        Circle()
+                            .fill(DustyTheme.memory)
+                            .frame(width: 7, height: 7)
+                            .offset(x: 1, y: -1)
+                    }
+                }
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .onHover { hovering = $0 }
+            .animation(.easeOut(duration: 0.12), value: hovering)
+            .help(L10n.f("memory.pill.help", "Memory: %@ in use", percent))
+            .accessibilityLabel(L10n.t("memory.title", "Memory"))
+            .accessibilityValue(L10n.f("memory.pill.help", "Memory: %@ in use", percent))
+        }
+    }
+}
+
 /// A small ring with the share of memory in use.
 private struct UsageRing: View {
     let fraction: Double
@@ -582,9 +631,15 @@ private struct MemorySparkline: View {
     var body: some View {
         GeometryReader { geometry in
             let size = geometry.size
+            // Memory in use rarely leaves the upper half, so the axis starts a
+            // little under the lowest reading (on a tenth) and ends at 100%:
+            // a climb reads as a climb, and a full Mac still touches the top.
+            let lowest = points.map(\.usedFraction).min() ?? 0
+            let bottom = max(0, ((lowest - 0.15) * 10).rounded(.down) / 10)
             let plotted = points.map { point -> CGPoint in
                 let x = (1 - CGFloat(now.timeIntervalSince(point.date) / span)) * size.width
-                let y = (1 - CGFloat(min(1, max(0, point.usedFraction)))) * (size.height - 2) + 1
+                let share = (min(1, max(bottom, point.usedFraction)) - bottom) / max(0.1, 1 - bottom)
+                let y = (1 - CGFloat(share)) * (size.height - 2) + 1
                 return CGPoint(x: min(size.width, max(0, x)), y: y)
             }
             ZStack {
@@ -645,7 +700,10 @@ private struct AppMemoryRow: View {
         } else {
             base = (L10n.t("memory.row.background", "In the background"), DustyTheme.faint)
         }
-        guard app.processCount > 1 else { return base }
+        // A growth line is long enough on its own; the Relaunch button sits beside it.
+        guard app.processCount > 1, growth == nil || app.isFrontmost || app.isPlayingAudio || app.isUsingMicrophone else {
+            return base
+        }
         return (text: L10n.f("memory.row.withProcesses", "%1$@ · %2$@", base.text,
                              L10n.f("memory.row.processes", "%d processes", app.processCount)),
                 tint: base.tint)

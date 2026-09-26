@@ -386,5 +386,101 @@
 			<string>%d elementos · a elegir a mano</string>
 		</dict>
 	</dict>
+	<key>memory.apps.showAll</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Mostrar %d app</string>
+			<key>other</key>
+			<string>Mostrar las %d apps</string>
+		</dict>
+	</dict>
+	<key>memory.bar.apps</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d app, puede pedir guardar antes</string>
+			<key>other</key>
+			<string>%d apps, cada una puede pedir guardar antes</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.title</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>¿Cerrar %d app?</string>
+			<key>other</key>
+			<string>¿Cerrar %d apps?</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.action</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Cerrar %d app</string>
+			<key>other</key>
+			<string>Cerrar %d apps</string>
+		</dict>
+	</dict>
+	<key>memory.row.processes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d proceso</string>
+			<key>other</key>
+			<string>%d procesos</string>
+		</dict>
+	</dict>
+	<key>memory.names.more</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d más</string>
+			<key>other</key>
+			<string>%d más</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

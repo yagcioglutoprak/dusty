@@ -14,7 +14,7 @@ import CleanerEngine
 @MainActor
 enum SnapshotRenderer {
     enum Shot: String, CaseIterable {
-        case welcome, home, scanning, level, confirm, cleaned, settings, memory, memoryConfirm, memoryFreed
+        case welcome, home, scanning, level, confirm, cleaned, settings, memory, memoryConfirm, memoryFreed, memoryCards
     }
 
     static let panelSize = CGSize(width: DustyTheme.panelWidth, height: DustyTheme.panelHeight)
@@ -34,8 +34,10 @@ enum SnapshotRenderer {
                 settings.hasSeenWelcome = scene != .welcome
                 let model = SnapshotFixtures.model(for: scene)
                 let memory = SnapshotFixtures.memory(for: scene)
-                let stage = Stage(MainPanelView(viewModel: model, settings: settings, updater: updater, memory: memory),
-                                  appearance: appearanceName)
+                let stage = scene == .memoryCards
+                    ? Stage(MemoryCardSheet(), appearance: appearanceName)
+                    : Stage(MainPanelView(viewModel: model, settings: settings, updater: updater, memory: memory),
+                            appearance: appearanceName)
                 // The level screen highlights the target an insight pointed at, then
                 // fades the highlight; wait it out so the shot shows the resting state.
                 try? await Task.sleep(nanoseconds: scene == .level ? 3_000_000_000 : 1_200_000_000)
@@ -256,6 +258,31 @@ enum SnapshotRenderer {
     }
 }
 
+/// The home screen's memory pieces in every state, stacked on one canvas: the
+/// top-bar pill and the card with idle apps to free, calm, under pressure, and
+/// still reading. The home shot itself only shows the card's header.
+private struct MemoryCardSheet: View {
+    var body: some View {
+        ZStack(alignment: .top) {
+            DustyTheme.canvas
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(spacing: 10) {
+                    MemoryPill(memory: SnapshotFixtures.memory(for: .home), onOpen: {})
+                    MemoryPill(memory: SnapshotFixtures.memory(for: .home, pressure: .normal, suggestions: false), onOpen: {})
+                    MemoryPill(memory: SnapshotFixtures.memory(for: .home, pressure: .critical, suggestions: false), onOpen: {})
+                }
+                MemoryCard(memory: SnapshotFixtures.memory(for: .home), onOpen: {})
+                MemoryCard(memory: SnapshotFixtures.memory(for: .home, pressure: .normal, suggestions: false), onOpen: {})
+                MemoryCard(memory: SnapshotFixtures.memory(for: .home, pressure: .critical, suggestions: false), onOpen: {})
+                MemoryCard(memory: MemoryModel(startsServices: false), onOpen: {})
+            }
+            .padding(.horizontal, DustyTheme.gutter)
+            .padding(.vertical, 18)
+        }
+        .frame(width: DustyTheme.panelWidth, height: DustyTheme.panelHeight)
+    }
+}
+
 /// An offscreen window hosting one panel, so AppKit-backed controls (switches,
 /// pickers) draw for real, and a way to capture it at 2x.
 @MainActor
@@ -384,7 +411,7 @@ private enum SnapshotFixtures {
         case .scanning:
             model.isScanning = true
             model.scanProgress = ScanProgress(completed: 23, total: 61, currentTargetName: "Xcode DerivedData")
-        case .home, .level, .confirm, .cleaned, .settings, .memory, .memoryConfirm, .memoryFreed:
+        case .home, .level, .confirm, .cleaned, .settings, .memory, .memoryConfirm, .memoryFreed, .memoryCards:
             model.scanResult = scan()
             model.hasScannedOnce = true
             model.advisories = advisories
@@ -411,7 +438,11 @@ private enum SnapshotFixtures {
 
     /// A 16 GB Mac under some pressure: Xcode in front, a Chrome that has been
     /// growing all afternoon, and three apps nobody has touched in hours.
-    static func memory(for scene: SnapshotRenderer.Shot) -> MemoryModel {
+    static func memory(
+        for scene: SnapshotRenderer.Shot,
+        pressure: MemoryPressure = .warning,
+        suggestions: Bool = true
+    ) -> MemoryModel {
         let memory = MemoryModel(startsServices: false)
         guard scene != .welcome else { return memory }
         let now = Date()
@@ -421,9 +452,9 @@ private enum SnapshotFixtures {
             wiredBytes: 2 * gb + 620 * mb,
             compressedBytes: 2 * gb + 150 * mb,
             cachedFilesBytes: 2 * gb + 900 * mb,
-            swapUsedBytes: 1 * gb + 380 * mb,
+            swapUsedBytes: pressure == .normal ? 0 : 1 * gb + 380 * mb,
             swapTotalBytes: 3 * gb,
-            pressure: .warning,
+            pressure: pressure,
             sampledAt: now
         )
         let hour: TimeInterval = 3600
@@ -447,8 +478,9 @@ private enum SnapshotFixtures {
             memoryApp("Preview", "/System/Applications/Preview.app", "com.apple.Preview", 150 * mb, processes: 1,
                       lastUsed: nil, now: now),
         ]
-        let suggested: Set<String> = ["/System/Applications/Photos.app", "/System/Applications/Maps.app",
-                                      "/System/Applications/Notes.app"]
+        let suggested: Set<String> = suggestions
+            ? ["/System/Applications/Photos.app", "/System/Applications/Maps.app", "/System/Applications/Notes.app"]
+            : []
         let background = [
             AppMemoryUsage(id: "/opt/homebrew/bin/node", name: "node", bundlePath: nil, leaderPID: 4410,
                            pids: [4410, 4411, 4415], footprintBytes: 1 * gb + 120 * mb),

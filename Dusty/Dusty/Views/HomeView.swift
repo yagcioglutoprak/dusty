@@ -51,6 +51,7 @@ struct HomeView: View {
                     .help(L10n.t("home.dryRunHelp", "Dry run is on: cleans only report what they would delete."))
             }
             Spacer()
+            MemoryPill(memory: memory, onOpen: { viewModel.open(.memory) })
             Button {
                 viewModel.open(.settings)
             } label: {
