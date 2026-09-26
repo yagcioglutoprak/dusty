@@ -399,6 +399,11 @@ enum Bytes {
         bytes > 0 ? DiskSpaceMonitor.formatBytes(bytes) : zero
     }
 
+    /// RAM in binary units, so a 16 GB Mac reads 16 GB rather than 17.18.
+    static func memory(_ bytes: Int64) -> String {
+        bytes > 0 ? MemorySnapshot.formatBytes(bytes) : zero
+    }
+
     /// "0 MB" rather than the formatter's spelled-out "Zero KB".
     private static let zero: String = {
         let formatter = ByteCountFormatter()

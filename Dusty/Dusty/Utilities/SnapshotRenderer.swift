@@ -14,7 +14,7 @@ import CleanerEngine
 @MainActor
 enum SnapshotRenderer {
     enum Shot: String, CaseIterable {
-        case welcome, home, scanning, level, confirm, cleaned, settings
+        case welcome, home, scanning, level, confirm, cleaned, settings, memory, memoryConfirm, memoryFreed
     }
 
     static let panelSize = CGSize(width: DustyTheme.panelWidth, height: DustyTheme.panelHeight)
@@ -33,7 +33,8 @@ enum SnapshotRenderer {
             for scene in Shot.allCases {
                 settings.hasSeenWelcome = scene != .welcome
                 let model = SnapshotFixtures.model(for: scene)
-                let stage = Stage(MainPanelView(viewModel: model, settings: settings, updater: updater),
+                let memory = SnapshotFixtures.memory(for: scene)
+                let stage = Stage(MainPanelView(viewModel: model, settings: settings, updater: updater, memory: memory),
                                   appearance: appearanceName)
                 // The level screen highlights the target an insight pointed at, then
                 // fades the highlight; wait it out so the shot shows the resting state.
@@ -78,9 +79,11 @@ enum SnapshotRenderer {
         let reel = Reel(directory: directory)
         let appearance = NSAppearance.Name.darkAqua
 
+        let memory = SnapshotFixtures.memory(for: .home)
         func stage(_ model: DustyViewModel, welcome: Bool = false) -> Stage {
             settings.hasSeenWelcome = !welcome
-            return Stage(MainPanelView(viewModel: model, settings: settings, updater: updater), appearance: appearance)
+            return Stage(MainPanelView(viewModel: model, settings: settings, updater: updater, memory: memory),
+                         appearance: appearance)
         }
 
         func still(_ model: DustyViewModel, welcome: Bool = false, settle: UInt64 = 900_000_000) async -> NSBitmapImageRep? {
@@ -381,7 +384,7 @@ private enum SnapshotFixtures {
         case .scanning:
             model.isScanning = true
             model.scanProgress = ScanProgress(completed: 23, total: 61, currentTargetName: "Xcode DerivedData")
-        case .home, .level, .confirm, .cleaned, .settings:
+        case .home, .level, .confirm, .cleaned, .settings, .memory, .memoryConfirm, .memoryFreed:
             model.scanResult = scan()
             model.hasScannedOnce = true
             model.advisories = advisories
@@ -396,10 +399,129 @@ private enum SnapshotFixtures {
             model.pendingConfirmationLevel = .safe
         case .settings:
             model.route = .settings
+        case .memory, .memoryConfirm, .memoryFreed:
+            model.route = .memory
         default:
             break
         }
         return model
+    }
+
+    // MARK: Memory
+
+    /// A 16 GB Mac under some pressure: Xcode in front, a Chrome that has been
+    /// growing all afternoon, and three apps nobody has touched in hours.
+    static func memory(for scene: SnapshotRenderer.Shot) -> MemoryModel {
+        let memory = MemoryModel(startsServices: false)
+        guard scene != .welcome else { return memory }
+        let now = Date()
+        let snapshot = MemorySnapshot(
+            totalBytes: 16 * gb,
+            appBytes: 7 * gb + 310 * mb,
+            wiredBytes: 2 * gb + 620 * mb,
+            compressedBytes: 2 * gb + 150 * mb,
+            cachedFilesBytes: 2 * gb + 900 * mb,
+            swapUsedBytes: 1 * gb + 380 * mb,
+            swapTotalBytes: 3 * gb,
+            pressure: .warning,
+            sampledAt: now
+        )
+        let hour: TimeInterval = 3600
+        let apps = [
+            memoryApp("Xcode", "/Applications/Xcode.app", "com.apple.dt.Xcode", 2 * gb + 940 * mb, processes: 6,
+                      frontmost: true, lastUsed: nil, now: now),
+            memoryApp("Google Chrome", "/Applications/Google Chrome.app", "com.google.Chrome", 2 * gb + 610 * mb,
+                      processes: 24, lastUsed: now.addingTimeInterval(-0.4 * hour), now: now),
+            memoryApp("Photos", "/System/Applications/Photos.app", "com.apple.Photos", 1 * gb + 330 * mb, processes: 3,
+                      lastUsed: now.addingTimeInterval(-3.2 * hour), now: now),
+            memoryApp("Safari", "/Applications/Safari.app", "com.apple.Safari", 830 * mb, processes: 9,
+                      lastUsed: now.addingTimeInterval(-0.2 * hour), now: now),
+            memoryApp("Maps", "/System/Applications/Maps.app", "com.apple.Maps", 720 * mb, processes: 2,
+                      lastUsed: now.addingTimeInterval(-2.1 * hour), now: now),
+            memoryApp("Music", "/System/Applications/Music.app", "com.apple.Music", 540 * mb, processes: 2,
+                      lastUsed: now.addingTimeInterval(-1.5 * hour), audio: true, now: now),
+            memoryApp("Notes", "/System/Applications/Notes.app", "com.apple.Notes", 330 * mb, processes: 1,
+                      lastUsed: now.addingTimeInterval(-5 * hour), now: now),
+            memoryApp("Mail", "/System/Applications/Mail.app", "com.apple.mail", 260 * mb, processes: 2,
+                      lastUsed: now.addingTimeInterval(-0.7 * hour), now: now),
+            memoryApp("Preview", "/System/Applications/Preview.app", "com.apple.Preview", 150 * mb, processes: 1,
+                      lastUsed: nil, now: now),
+        ]
+        let suggested: Set<String> = ["/System/Applications/Photos.app", "/System/Applications/Maps.app",
+                                      "/System/Applications/Notes.app"]
+        let background = [
+            AppMemoryUsage(id: "/opt/homebrew/bin/node", name: "node", bundlePath: nil, leaderPID: 4410,
+                           pids: [4410, 4411, 4415], footprintBytes: 1 * gb + 120 * mb),
+            AppMemoryUsage(id: "/opt/homebrew/opt/postgresql@16/bin/postgres", name: "postgres", bundlePath: nil,
+                           leaderPID: 812, pids: [812, 813, 814, 815], footprintBytes: 410 * mb),
+        ]
+        // A slow climb over the hour, with a little noise.
+        let history = (0..<60).map { minute -> MemoryUsagePoint in
+            let t = Double(minute) / 59
+            let fraction = 0.66 + 0.09 * t + 0.012 * sin(Double(minute) * 0.9)
+            return MemoryUsagePoint(date: now.addingTimeInterval(-Double(59 - minute) * 60),
+                                    usedFraction: fraction, pressure: t > 0.7 ? .warning : .normal)
+        }
+        memory.showForSnapshot(
+            snapshot: snapshot,
+            apps: apps,
+            background: background,
+            suggested: suggested,
+            growth: ["/Applications/Google Chrome.app": MemoryGrowth(fromBytes: 1 * gb + 280 * mb,
+                                                                     toBytes: 2 * gb + 610 * mb,
+                                                                     since: now.addingTimeInterval(-3 * hour))],
+            history: history
+        )
+        switch scene {
+        case .memoryConfirm:
+            memory.pendingQuit = apps.filter { suggested.contains($0.id) }
+        case .memoryFreed:
+            let quit = apps.filter { suggested.contains($0.id) }
+            let freed = quit.reduce(Int64(0)) { $0 + $1.footprintBytes }
+            memory.showForSnapshot(
+                snapshot: snapshot,
+                apps: apps.filter { !suggested.contains($0.id) },
+                background: background,
+                suggested: [],
+                growth: ["/Applications/Google Chrome.app": MemoryGrowth(fromBytes: 1 * gb + 280 * mb,
+                                                                         toBytes: 2 * gb + 610 * mb,
+                                                                         since: now.addingTimeInterval(-3 * hour))],
+                history: history,
+                receipt: MemoryQuitReceipt(
+                    quit: quit.map { MemoryQuitReceipt.QuitApp(id: $0.id, name: $0.name, bundleURL: $0.bundleURL,
+                                                               bytes: $0.footprintBytes) },
+                    stillOpen: [],
+                    availableBefore: snapshot.availableBytes,
+                    availableAfter: snapshot.availableBytes + freed,
+                    isRelaunch: false
+                ),
+                reopenDeadline: now.addingTimeInterval(MemoryModel.reopenWindow)
+            )
+        default:
+            break
+        }
+        return memory
+    }
+
+    private static func memoryApp(
+        _ name: String, _ path: String, _ bundleID: String, _ bytes: Int64, processes: Int,
+        frontmost: Bool = false, lastUsed: Date?, audio: Bool = false, now: Date
+    ) -> RunningAppMemory {
+        RunningAppMemory(
+            id: path,
+            name: name,
+            bundleIdentifier: bundleID,
+            bundleURL: URL(fileURLWithPath: path),
+            pid: 0,
+            footprintBytes: bytes,
+            processCount: processes,
+            icon: NSWorkspace.shared.icon(forFile: path),
+            isFrontmost: frontmost,
+            lastActiveAt: lastUsed,
+            idleSince: frontmost ? now : (lastUsed ?? now.addingTimeInterval(-6 * 3600)),
+            isPlayingAudio: audio,
+            isUsingMicrophone: false
+        )
     }
 
     /// Right after a Safe clean: the Safe level is empty, the space is back, and

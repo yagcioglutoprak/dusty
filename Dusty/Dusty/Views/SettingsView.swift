@@ -23,6 +23,7 @@ struct SettingsView: View {
                     general
                     menuBar
                     automation
+                    memorySection
                     cleaning
                     if stats.cleanCount > 0 {
                         statistics
@@ -106,6 +107,13 @@ struct SettingsView: View {
                        title: L10n.t("settings.menuBarReclaimable", "Show reclaimable space in the menu bar")) {
                 SettingSwitch(title: L10n.t("settings.menuBarReclaimable", "Show reclaimable space in the menu bar"),
                               isOn: $settings.menuBarShowsReclaimable)
+            }
+            .disabled(settings.menuBarStyle == .iconOnly)
+            Hairline(leading: 50)
+            SettingRow(symbol: "memorychip", tint: DustyTheme.memory,
+                       title: L10n.t("settings.menuBarMemory", "Show memory use in the menu bar")) {
+                SettingSwitch(title: L10n.t("settings.menuBarMemory", "Show memory use in the menu bar"),
+                              isOn: $settings.menuBarShowsMemory)
             }
             .disabled(settings.menuBarStyle == .iconOnly)
             Hairline(leading: 50)
@@ -200,6 +208,35 @@ struct SettingsView: View {
             "%@. Apps that are open are skipped, a notification reports what was reclaimed, and every path lands in the deletion log.",
             scope
         )
+    }
+
+    // MARK: - Memory
+
+    private var memorySection: some View {
+        SettingsGroup(title: L10n.t("settings.section.memory", "Memory"),
+                      footer: L10n.t("settings.memory.footer",
+                                     "Dusty never quits anything on its own. It suggests, you confirm, and every app quits the way ⌘Q quits it.")) {
+            SettingRow(symbol: "bell.badge", tint: DustyTheme.warn,
+                       title: L10n.t("settings.memoryAlerts", "Warn when memory runs low"),
+                       caption: L10n.t("settings.memoryAlertsCaption",
+                                       "Only when pressure stays high, naming the apps holding the most.")) {
+                SettingSwitch(title: L10n.t("settings.memoryAlerts", "Warn when memory runs low"),
+                              isOn: $settings.memoryAlertsEnabled)
+            }
+            Hairline(leading: 50)
+            SettingRow(symbol: "moon.zzz", tint: DustyTheme.memory,
+                       title: L10n.t("settings.memoryIdle", "Suggest quitting apps unused for")) {
+                Picker(L10n.t("settings.memoryIdle", "Suggest quitting apps unused for"),
+                       selection: $settings.memoryIdleMinutes) {
+                    ForEach([30, 60, 120, 240], id: \.self) { minutes in
+                        Text(MemoryText.duration(TimeInterval(minutes * 60))).tag(minutes)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .fixedSize()
+            }
+        }
     }
 
     // MARK: - Cleaning

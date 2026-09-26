@@ -7,6 +7,7 @@ import CleanerEngine
 enum PanelRoute: Hashable {
     case home
     case level(CleanupLevel)
+    case memory
     case settings
 }
 
@@ -91,6 +92,10 @@ final class DustyViewModel: ObservableObject {
         startAutoRefresh(interval: AppSettings.shared.refreshIntervalSeconds)
         LowDiskNotifier.configure(delegate: NotificationCoordinator.shared)
         NotificationCoordinator.shared.onCleanSafe = { [weak self] in self?.handleCleanSafeFromNotification() }
+        NotificationCoordinator.shared.onShowMemory = { [weak self] in
+            NSApp.activate(ignoringOtherApps: true)
+            self?.open(.memory)
+        }
         autoScan = AutoScanController(viewModel: self, settings: AppSettings.shared)
     }
 

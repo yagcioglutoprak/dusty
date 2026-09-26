@@ -16,8 +16,11 @@ enum LowDiskNotifier {
             title: L10n.t("notification.action.cleanSafe", "Clean Safe"),
             options: [.foreground]
         )
+        // One call registers every category: `setNotificationCategories`
+        // replaces whatever was registered before.
         center.setNotificationCategories([
-            UNNotificationCategory(identifier: categoryID, actions: [action], intentIdentifiers: [])
+            UNNotificationCategory(identifier: categoryID, actions: [action], intentIdentifiers: []),
+            MemoryPressureNotifier.category
         ])
         center.delegate = delegate
     }
@@ -97,10 +100,66 @@ enum AutoCleanNotifier {
     }
 }
 
-/// Retains the notification delegate and forwards the "Clean Safe" action to the view model.
+/// "Memory is running low": sent when pressure has stayed high (see
+/// `MemoryAlertPolicy`), naming the apps holding the most so the fix is obvious.
+enum MemoryPressureNotifier {
+    static let showActionID = "SHOW_MEMORY"
+    static let categoryID = "MEMORY_PRESSURE"
+
+    static var category: UNNotificationCategory {
+        let action = UNNotificationAction(
+            identifier: showActionID,
+            title: L10n.t("notification.action.showMemory", "Show Memory"),
+            options: [.foreground]
+        )
+        return UNNotificationCategory(identifier: categoryID, actions: [action], intentIdentifiers: [])
+    }
+
+    static func notify(appNames: [String], bytes: Int64, critical: Bool) {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                post(appNames: appNames, bytes: bytes, critical: critical)
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                    if granted { post(appNames: appNames, bytes: bytes, critical: critical) }
+                }
+            default:
+                break // denied: respect the choice, never prompt again
+            }
+        }
+    }
+
+    private static func post(appNames: [String], bytes: Int64, critical: Bool) {
+        let content = UNMutableNotificationContent()
+        content.title = critical
+            ? L10n.t("notification.memory.title.critical", "Your Mac is out of memory")
+            : L10n.t("notification.memory.title", "Memory is running low")
+        if appNames.isEmpty {
+            content.body = L10n.t("notification.memory.bodyNoApps",
+                                  "Quitting apps you are not using gives their memory back. Open Dusty to see which.")
+        } else {
+            content.body = L10n.f(
+                "notification.memory.body",
+                "Using the most: %1$@ (%2$@). Open Dusty to quit what you are not using.",
+                appNames.formatted(.list(type: .and)),
+                MemorySnapshot.formatBytes(bytes)
+            )
+        }
+        content.categoryIdentifier = categoryID
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: "memory-pressure", content: content, trigger: nil)
+        )
+    }
+}
+
+/// Retains the notification delegate and forwards the "Clean Safe" and "Show
+/// Memory" actions to the view model.
 final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationCoordinator()
     var onCleanSafe: (() -> Void)?
+    var onShowMemory: (() -> Void)?
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
@@ -109,6 +168,14 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.content.categoryIdentifier == MemoryPressureNotifier.categoryID {
+            if response.actionIdentifier == MemoryPressureNotifier.showActionID
+                || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+                Task { @MainActor in self.onShowMemory?() }
+            }
+            completionHandler()
+            return
+        }
         if response.actionIdentifier == LowDiskNotifier.cleanActionID
             || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
             Task { @MainActor in self.onCleanSafe?() }

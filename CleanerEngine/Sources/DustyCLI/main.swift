@@ -43,6 +43,7 @@ USAGE
   dusty scan    [--level safe|developer|deep|all] [--json]
   dusty clean   [--level safe|developer|deep] [--dry-run] [--trash] [--yes] [--json]
   dusty targets [--json]
+  dusty memory  [--top N] [--json]
   dusty version
 
 COMMANDS
@@ -50,12 +51,15 @@ COMMANDS
   clean     Delete the auto-safe items at one level (default: safe).
             Prints the plan and exits unless --yes is given.
   targets   List every cleanup target in the allowlist.
+  memory    Show memory use, pressure, and the apps holding the most (default
+            top 10, helpers counted with their app). Read-only: quits nothing.
 
 OPTIONS
   --level, -l    Cleanup level: safe (1), developer (2), deep (3), or all (scan only)
   --dry-run, -n  Log what a clean would delete without deleting anything
   --trash, -t    Move items to the Trash instead of deleting them
   --yes, -y      Actually delete. Without it, clean only prints the plan.
+  --top N        memory: how many apps to list
   --json         Machine-readable output
 
 Items the app gates behind a manual pick (old installers, Xcode archives,
@@ -300,6 +304,107 @@ func runTargets(json: Bool) -> Int32 {
     return 0
 }
 
+// MARK: - Memory
+
+struct MemoryAppJSON: Encodable {
+    let name: String
+    let bundlePath: String?
+    let bundleIdentifier: String?
+    let pids: [Int32]
+    let processes: Int
+    let bytes: Int64
+}
+
+struct MemoryJSON: Encodable {
+    let sampledAt: Date
+    let pressure: String
+    let totalBytes: Int64
+    let usedBytes: Int64
+    let availableBytes: Int64
+    let appBytes: Int64
+    let wiredBytes: Int64
+    let compressedBytes: Int64
+    let cachedFilesBytes: Int64
+    let swapUsedBytes: Int64
+    let swapTotalBytes: Int64
+    let apps: [MemoryAppJSON]
+}
+
+func pressureName(_ pressure: MemoryPressure) -> String {
+    switch pressure {
+    case .normal: return "normal"
+    case .warning: return "elevated"
+    case .critical: return "high"
+    }
+}
+
+func runMemory(top: Int, json: Bool) -> Int32 {
+    guard let snapshot = MemoryMonitor().snapshot() else {
+        errPrint("Could not read memory statistics.")
+        return 1
+    }
+    let groups = AppMemoryGrouping.group(ProcessMemoryScanner.sample(), excludingPIDs: [getpid()])
+    let running = Dictionary(
+        NSWorkspace.shared.runningApplications.map { ($0.processIdentifier, $0) },
+        uniquingKeysWith: { first, _ in first }
+    )
+    let shown = Array(groups.prefix(top))
+    func name(_ group: AppMemoryUsage) -> String {
+        running[group.leaderPID]?.localizedName ?? group.name
+    }
+
+    if json {
+        emitJSON(MemoryJSON(
+            sampledAt: snapshot.sampledAt,
+            pressure: pressureName(snapshot.pressure),
+            totalBytes: snapshot.totalBytes,
+            usedBytes: snapshot.usedBytes,
+            availableBytes: snapshot.availableBytes,
+            appBytes: snapshot.appBytes,
+            wiredBytes: snapshot.wiredBytes,
+            compressedBytes: snapshot.compressedBytes,
+            cachedFilesBytes: snapshot.cachedFilesBytes,
+            swapUsedBytes: snapshot.swapUsedBytes,
+            swapTotalBytes: snapshot.swapTotalBytes,
+            apps: shown.map { group in
+                MemoryAppJSON(
+                    name: name(group),
+                    bundlePath: group.bundlePath,
+                    bundleIdentifier: running[group.leaderPID]?.bundleIdentifier,
+                    pids: group.pids,
+                    processes: group.processCount,
+                    bytes: group.footprintBytes
+                )
+            }
+        ))
+        return 0
+    }
+
+    let format = MemorySnapshot.formatBytes
+    func row(_ label: String, _ bytes: Int64, _ note: String = "") -> String {
+        "  \(label.padding(toLength: 14, withPad: " ", startingAt: 0)) \(format(bytes).padding(toLength: 9, withPad: " ", startingAt: 0))\(note)"
+    }
+    print("Memory: \(format(snapshot.usedBytes)) used of \(format(snapshot.totalBytes)), pressure \(pressureName(snapshot.pressure))")
+    print(row("App memory", snapshot.appBytes))
+    print(row("Wired", snapshot.wiredBytes))
+    print(row("Compressed", snapshot.compressedBytes))
+    print(row("Cached files", snapshot.cachedFilesBytes, "  macOS hands this back on demand"))
+    if snapshot.swapUsedBytes > 0 {
+        print(row("Swap used", snapshot.swapUsedBytes))
+    }
+    print("")
+    print("Using the most memory:")
+    for group in shown {
+        let size = format(group.footprintBytes).padding(toLength: 10, withPad: " ", startingAt: 0)
+        let processes = group.processCount == 1 ? "" : " (\(group.processCount) processes)"
+        print("  \(size) \(name(group))\(processes)")
+    }
+    if shown.isEmpty { print("  nothing to show") }
+    print("")
+    print("Read-only: nothing was quit. Quit apps from Dusty's Memory screen, or with Cmd-Q.")
+    return 0
+}
+
 // MARK: - Entry point
 
 let rawArgs = Array(CommandLine.arguments.dropFirst())
@@ -323,6 +428,8 @@ case "scan":
     }
     let engine = CleanerEngine()
     exit(await runScan(engine: engine, levels: levelSet, json: args.json))
+case "memory":
+    exit(runMemory(top: args.top ?? 10, json: args.json))
 case "clean":
     guard let levelSet = levels(from: args.level, defaultAll: false), levelSet.count == 1,
           let level = levelSet.first else {

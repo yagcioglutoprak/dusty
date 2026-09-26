@@ -7,6 +7,8 @@ public struct ParsedArgs: Equatable {
     public var yes = false
     public var dryRun = false
     public var trash = false
+    /// `memory --top N`: how many apps to list.
+    public var top: Int?
 }
 
 public func parseArgs(_ args: [String]) -> ParsedArgs? {
@@ -24,6 +26,10 @@ public func parseArgs(_ args: [String]) -> ParsedArgs? {
         case "--yes", "-y": parsed.yes = true
         case "--dry-run", "-n": parsed.dryRun = true
         case "--trash", "-t": parsed.trash = true
+        case "--top":
+            guard let value = rest.first, let count = Int(value), count > 0 else { return nil }
+            rest = rest.dropFirst()
+            parsed.top = count
         default: return nil
         }
     }

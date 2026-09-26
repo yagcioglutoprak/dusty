@@ -30,4 +30,19 @@ final class DustyCLIParserTests: XCTestCase {
         XCTAssertEqual(levels(from: "3", defaultAll: false), [.deep])
         XCTAssertEqual(levels(from: "all", defaultAll: false), Set(CleanupLevel.allCases))
     }
+
+    func testMemoryParsesTopAndJSON() {
+        let args = parseArgs(["memory", "--top", "5", "--json"])
+        XCTAssertEqual(args?.command, "memory")
+        XCTAssertEqual(args?.top, 5)
+        XCTAssertEqual(args?.json, true)
+        XCTAssertNil(parseArgs(["memory"])?.top)
+    }
+
+    func testTopNeedsAPositiveNumber() {
+        XCTAssertNil(parseArgs(["memory", "--top"]))
+        XCTAssertNil(parseArgs(["memory", "--top", "zero"]))
+        XCTAssertNil(parseArgs(["memory", "--top", "0"]))
+        XCTAssertNil(parseArgs(["memory", "--top", "-3"]))
+    }
 }

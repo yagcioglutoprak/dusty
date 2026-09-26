@@ -105,6 +105,20 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(menuBarShowsReclaimable, forKey: "menuBarShowsReclaimable") }
     }
 
+    /// "RAM 72%" after the disk figure in the menu bar. Off by default; same
+    /// `@Published` pattern so the label re-renders the moment it flips.
+    @Published var menuBarShowsMemory: Bool = UserDefaults.standard.bool(forKey: "menuBarShowsMemory") {
+        didSet { UserDefaults.standard.set(menuBarShowsMemory, forKey: "menuBarShowsMemory") }
+    }
+
+    /// A notification when memory pressure stays high, naming the apps holding
+    /// the most. On by default: it only fires on sustained pressure, once per episode.
+    @AppStorage("memoryAlertsEnabled") var memoryAlertsEnabled: Bool = true
+
+    /// How long an app has to sit unused before the memory screen suggests
+    /// quitting it.
+    @AppStorage("memoryIdleMinutes") var memoryIdleMinutes: Int = 60
+
     /// First-run flag: the welcome overlay shows until the user starts (or skips)
     /// their first scan. `@Published` so the panel dismisses the moment it flips.
     @Published var hasSeenWelcome: Bool = UserDefaults.standard.bool(forKey: "hasSeenWelcome") {
