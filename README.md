@@ -120,9 +120,9 @@ is using your RAM and get it back.
   memory pressure: the signal that actually says whether your Mac needs more.
 - **Apps, not processes.** Every app's total counts all the processes working for
   it: Chrome's helpers, Safari's web pages, the tools a terminal started. That is
-  the memory quitting the app gives back.
-- **Idle apps, already ticked.** Big apps you have not used for an hour (you pick
-  the hour) are suggested. Dusty knows because it notices when you switch apps.
+  the memory you get back by quitting it.
+- **Idle apps, already ticked.** Big apps you have not used for an hour (or the
+  wait you set) are suggested. Dusty knows because it notices when you switch apps.
   Terminals, virtual machines, calls, and anything playing or recording sound are
   never suggested.
 - **Free up, with a way back.** One tap quits the suggested apps after a

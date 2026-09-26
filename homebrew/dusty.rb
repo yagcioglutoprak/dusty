@@ -7,7 +7,7 @@ cask "dusty" do
 
   url "https://github.com/yagcioglutoprak/dusty/releases/download/v#{version}/Dusty-#{version}.dmg"
   name "Dusty"
-  desc "Menu bar disk cleaner for macOS that frees space safely"
+  desc "Menu bar cleaner that safely frees disk space and memory"
   homepage "https://github.com/yagcioglutoprak/dusty"
 
   # Dusty updates itself via Sparkle, so Homebrew should not treat a self-updated

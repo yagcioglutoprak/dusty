@@ -46,7 +46,8 @@ build/Build/Products/Debug/Dusty.app/Contents/MacOS/Dusty --render-snapshots /tm
 ```
 
 That writes each state (welcome, home, scanning, a level, the confirmation,
-the undo receipt, settings) in light and dark. CI does the same on every
+the undo receipt, settings, and the memory screen with its sheets, receipt,
+and home card) in light and dark. CI does the same on every
 branch that touches `Dusty/` and attaches the PNGs to the run as
 `panel-snapshots`, so reviewers can see a UI change without building it.
 
