@@ -241,8 +241,14 @@ struct MemoryView: View {
     var body: some View {
         VStack(spacing: 0) {
             NavHeader(title: L10n.t("memory.title", "Memory"), subtitle: subtitle, onBack: { viewModel.goHome() }) {
-                if !memory.apps.isEmpty {
-                    selectAllButton
+                // Only a way out of the suggestions: "quit everything" is never
+                // one click away.
+                if !memory.selection.isEmpty {
+                    Button(L10n.t("level.selectNone", "Select None")) {
+                        withAnimation(.easeOut(duration: 0.15)) { memory.clearSelection() }
+                    }
+                    .buttonStyle(DustySecondaryButtonStyle())
+                    .font(.caption.weight(.semibold))
                 }
             }
             Hairline()
@@ -286,15 +292,6 @@ struct MemoryView: View {
         return L10n.f("memory.subtitle", "%@ of RAM · updates live", Bytes.memory(snapshot.totalBytes))
     }
 
-    private var selectAllButton: some View {
-        let allSelected = memory.selection.count == memory.apps.count
-        return Button(allSelected ? L10n.t("level.selectNone", "Select None") : L10n.t("level.selectAll", "Select All")) {
-            withAnimation(.easeOut(duration: 0.15)) { memory.setAllSelected(!allSelected) }
-        }
-        .buttonStyle(DustySecondaryButtonStyle())
-        .font(.caption.weight(.semibold))
-    }
-
     // MARK: Apps
 
     private var appsSection: some View {
@@ -331,7 +328,7 @@ struct MemoryView: View {
                             isQuitting: memory.quittingIDs.contains(app.id),
                             onToggle: { memory.toggle(app.id) },
                             onQuit: { memory.requestQuit([app.id]) },
-                            onRelaunch: { Task { await memory.relaunch(app) } }
+                            onRelaunch: { memory.requestRelaunch(app) }
                         )
                         if index < visibleApps.count - 1 {
                             Hairline(leading: 70)
@@ -766,7 +763,9 @@ private struct AppMemoryRow: View {
         }
     }
 
-    private var showsRelaunch: Bool { growth != nil && app.bundleURL != nil }
+    /// Growing apps get a Relaunch button, except the ones whose work would end
+    /// with them (terminals, VMs, calls): those keep it in the context menu only.
+    private var showsRelaunch: Bool { growth != nil && app.bundleURL != nil && !app.isNeverSuggested }
 
     @ViewBuilder private var icon: some View {
         if let image = app.icon {
@@ -783,16 +782,39 @@ private struct AppMemoryRow: View {
 
 // MARK: - Confirmation
 
-/// The last gate before quitting: which apps, how much memory, and what
-/// quitting means (their own Quit, save prompts included, and a way back).
+/// The last gate before quitting (or relaunching): which apps, how much
+/// memory, and what it means (their own Quit, save prompts included, and a way
+/// back).
 struct MemoryQuitSheet: View {
     let apps: [RunningAppMemory]
     let availableBefore: Int64
     let availableAfter: Int64
+    /// Relaunch one app instead of quitting: it opens again on its own, so
+    /// there is no Reopen and no lasting change to available memory.
+    var relaunch = false
+    var growth: MemoryGrowth? = nil
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
     private var bytes: Int64 { apps.reduce(0) { $0 + $1.footprintBytes } }
+
+    private var title: String {
+        if relaunch, let app = apps.first {
+            return L10n.f("memory.confirm.relaunchTitle", "Relaunch %@?", app.name)
+        }
+        return L10n.f("memory.confirm.title", "Quit %d apps?", apps.count)
+    }
+
+    private var subtitle: String {
+        if relaunch {
+            if let growth {
+                return L10n.f("memory.row.grew", "Grew by %1$@ in %2$@", Bytes.memory(growth.grownBytes),
+                              MemoryText.duration(Date().timeIntervalSince(growth.since)))
+            }
+            return L10n.f("memory.confirm.relaunchSubtitle", "It is holding %@", Bytes.memory(bytes))
+        }
+        return L10n.f("memory.confirm.subtitle", "Frees about %@ of memory", Bytes.memory(bytes))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -805,11 +827,12 @@ struct MemoryQuitSheet: View {
 
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 13) {
-                    IconTile(symbol: "power", tint: DustyTheme.memory, size: 42)
+                    IconTile(symbol: relaunch ? "arrow.clockwise" : "power", tint: DustyTheme.memory, size: 42)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(L10n.f("memory.confirm.title", "Quit %d apps?", apps.count))
+                        Text(title)
                             .font(.title3.weight(.bold))
-                        Text(L10n.f("memory.confirm.subtitle", "Frees about %@ of memory", Bytes.memory(bytes)))
+                            .lineLimit(1)
+                        Text(subtitle)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
@@ -817,41 +840,35 @@ struct MemoryQuitSheet: View {
                 }
                 .accessibilityElement(children: .combine)
 
-                HStack(spacing: 8) {
-                    Text(L10n.t("memory.confirm.available", "Available memory"))
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(Bytes.memory(availableBefore))
-                        .foregroundStyle(.secondary)
-                    Image(systemName: "arrow.right")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(DustyTheme.faint)
-                    Text(L10n.f("memory.confirm.about", "about %@", Bytes.memory(availableAfter)))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(DustyTheme.success)
+                if !relaunch {
+                    availableRow
                 }
-                .font(.subheadline.monospacedDigit())
-                .padding(.horizontal, 12)
-                .frame(height: 36)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DustyTheme.inset))
-                .accessibilityElement(children: .combine)
 
-                Group {
-                    if apps.count > 4 {
-                        ScrollView { appList }
-                            .frame(height: 118)
-                    } else {
-                        appList
+                if !relaunch {
+                    Group {
+                        if apps.count > 4 {
+                            ScrollView { appList }
+                                .frame(height: 118)
+                        } else {
+                            appList
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DustyTheme.inset))
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DustyTheme.inset))
 
                 VStack(alignment: .leading, spacing: 7) {
-                    note(symbol: "hand.raised",
-                         text: L10n.t("memory.confirm.saveNote", "Each app quits the way ⌘Q quits it. Apps with unsaved work ask you first."))
-                    note(symbol: "arrow.uturn.backward",
-                         text: L10n.t("memory.confirm.reopenNote", "Reopen them from the receipt for a few seconds."))
+                    if relaunch {
+                        note(symbol: "arrow.clockwise",
+                             text: L10n.t("memory.confirm.relaunchNote", "It quits the way ⌘Q quits it, then opens again in the background. Most apps bring their windows back."))
+                        note(symbol: "hand.raised",
+                             text: L10n.t("memory.confirm.relaunchSaveNote", "If it has unsaved work, it asks you first."))
+                    } else {
+                        note(symbol: "hand.raised",
+                             text: L10n.t("memory.confirm.saveNote", "Each app quits the way ⌘Q quits it. Apps with unsaved work ask you first."))
+                        note(symbol: "arrow.uturn.backward",
+                             text: L10n.t("memory.confirm.reopenNote", "Reopen them from the receipt for a few seconds."))
+                    }
                     note(symbol: "checkmark.shield",
                          text: L10n.t("memory.confirm.safeNote", "Nothing is force quit, and no files are touched."))
                 }
@@ -865,7 +882,9 @@ struct MemoryQuitSheet: View {
                     .buttonStyle(DustySecondaryButtonStyle(fullWidth: true))
                     .keyboardShortcut(.cancelAction)
                 Button(action: onConfirm) {
-                    Text(L10n.f("memory.confirm.action", "Quit %d apps", apps.count))
+                    Text(relaunch
+                         ? L10n.t("memory.relaunch", "Relaunch")
+                         : L10n.f("memory.confirm.action", "Quit %d apps", apps.count))
                 }
                 .buttonStyle(DustyPrimaryButtonStyle(tint: DustyTheme.memorySolid))
                 .keyboardShortcut(.defaultAction)
@@ -882,6 +901,27 @@ struct MemoryQuitSheet: View {
         )
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
+    }
+
+    private var availableRow: some View {
+        HStack(spacing: 8) {
+            Text(L10n.t("memory.confirm.available", "Available memory"))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(Bytes.memory(availableBefore))
+                .foregroundStyle(.secondary)
+            Image(systemName: "arrow.right")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(DustyTheme.faint)
+            Text(L10n.f("memory.confirm.about", "about %@", Bytes.memory(availableAfter)))
+                .fontWeight(.semibold)
+                .foregroundStyle(DustyTheme.success)
+        }
+        .font(.subheadline.monospacedDigit())
+        .padding(.horizontal, 12)
+        .frame(height: 36)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DustyTheme.inset))
+        .accessibilityElement(children: .combine)
     }
 
     private var appList: some View {

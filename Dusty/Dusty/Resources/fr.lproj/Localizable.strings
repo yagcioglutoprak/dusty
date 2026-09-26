@@ -334,3 +334,7 @@
 "intent.memory.result" = "%1$@ utilisés sur %2$@. %3$@.";
 "intent.memory.top" = "%1$@ en utilise le plus (%2$@).";
 "memory.pill.help" = "Mémoire : %@ utilisée";
+"memory.confirm.relaunchTitle" = "Relancer %@ ?";
+"memory.confirm.relaunchSubtitle" = "Elle occupe %@";
+"memory.confirm.relaunchNote" = "Elle se ferme comme avec ⌘Q, puis se rouvre en arrière-plan. La plupart des apps retrouvent leurs fenêtres.";
+"memory.confirm.relaunchSaveNote" = "Si elle a du travail non enregistré, elle vous le demande d’abord.";

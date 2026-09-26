@@ -142,6 +142,12 @@ final class MemoryFootprintHistoryTests: XCTestCase {
         XCTAssertEqual(growth.fromBytes, 500 * mb)
     }
 
+    func testGenerationTellsARelaunchApart() {
+        let h = history([(0, 500)], pid: 42)
+        XCTAssertEqual(h.generation(for: "slack"), 42)
+        XCTAssertNil(h.generation(for: "chrome"))
+    }
+
     func testRelaunchStartsTheHistoryOver() {
         var h = history([(0, 500), (60, 1_500)])
         h.record([(id: "slack", generation: 99, bytes: 1_600 * mb)], at: start.addingTimeInterval(61 * minute))

@@ -14,7 +14,8 @@ import CleanerEngine
 @MainActor
 enum SnapshotRenderer {
     enum Shot: String, CaseIterable {
-        case welcome, home, scanning, level, confirm, cleaned, settings, memory, memoryConfirm, memoryFreed, memoryCards
+        case welcome, home, scanning, level, confirm, cleaned, settings, memory, memoryConfirm, memoryRelaunch, memoryFreed,
+             memoryCards
     }
 
     static let panelSize = CGSize(width: DustyTheme.panelWidth, height: DustyTheme.panelHeight)
@@ -411,7 +412,8 @@ private enum SnapshotFixtures {
         case .scanning:
             model.isScanning = true
             model.scanProgress = ScanProgress(completed: 23, total: 61, currentTargetName: "Xcode DerivedData")
-        case .home, .level, .confirm, .cleaned, .settings, .memory, .memoryConfirm, .memoryFreed, .memoryCards:
+        case .home, .level, .confirm, .cleaned, .settings, .memory, .memoryConfirm, .memoryRelaunch, .memoryFreed,
+             .memoryCards:
             model.scanResult = scan()
             model.hasScannedOnce = true
             model.advisories = advisories
@@ -426,7 +428,7 @@ private enum SnapshotFixtures {
             model.pendingConfirmationLevel = .safe
         case .settings:
             model.route = .settings
-        case .memory, .memoryConfirm, .memoryFreed:
+        case .memory, .memoryConfirm, .memoryRelaunch, .memoryFreed:
             model.route = .memory
         default:
             break
@@ -507,6 +509,8 @@ private enum SnapshotFixtures {
         switch scene {
         case .memoryConfirm:
             memory.pendingQuit = apps.filter { suggested.contains($0.id) }
+        case .memoryRelaunch:
+            memory.pendingRelaunch = apps.first { $0.name == "Google Chrome" }
         case .memoryFreed:
             let quit = apps.filter { suggested.contains($0.id) }
             let freed = quit.reduce(Int64(0)) { $0 + $1.footprintBytes }
@@ -545,6 +549,7 @@ private enum SnapshotFixtures {
             bundleIdentifier: bundleID,
             bundleURL: URL(fileURLWithPath: path),
             pid: 0,
+            launchDate: now.addingTimeInterval(-8 * 3600),
             footprintBytes: bytes,
             processCount: processes,
             icon: NSWorkspace.shared.icon(forFile: path),

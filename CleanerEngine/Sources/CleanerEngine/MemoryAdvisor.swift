@@ -161,6 +161,12 @@ public struct MemoryFootprintHistory: Sendable {
         samples[id] ?? []
     }
 
+    /// The process id the history for `id` was recorded under, if any. A caller
+    /// that sees a different one knows the app was relaunched since.
+    public func generation(for id: String) -> Int32? {
+        generation[id]
+    }
+
     /// How much `id` has grown: from its lowest reading at least `minimumSpan`
     /// old up to its latest one. Nil unless the growth is both large and large
     /// relative to the starting point.

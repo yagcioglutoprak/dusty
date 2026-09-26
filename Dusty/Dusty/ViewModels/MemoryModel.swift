@@ -11,6 +11,9 @@ struct RunningAppMemory: Identifiable, Equatable {
     let bundleIdentifier: String?
     let bundleURL: URL?
     let pid: pid_t
+    /// When this copy of the app started; with the pid, it tells a relaunched
+    /// or recycled process apart from the one that was listed.
+    let launchDate: Date?
     let footprintBytes: Int64
     let processCount: Int
     let icon: NSImage?
@@ -22,6 +25,23 @@ struct RunningAppMemory: Identifiable, Equatable {
     let idleSince: Date
     let isPlayingAudio: Bool
     let isUsingMicrophone: Bool
+
+    /// Terminals, virtual machines, calls: never suggested, and not offered a
+    /// one-click Relaunch either, because what runs inside them would end.
+    var isNeverSuggested: Bool {
+        bundleIdentifier.map { MemoryAdvisor.neverSuggestedBundleIDs.contains($0) } ?? false
+    }
+}
+
+/// The menu bar's RAM figure on its own, so the app scene redraws when the
+/// rounded percent changes rather than on every sample the memory screen takes.
+@MainActor
+final class MemoryMenuBarFigure: ObservableObject {
+    @Published private(set) var usedPercent: Int?
+
+    func update(_ percent: Int?) {
+        if percent != usedPercent { usedPercent = percent }
+    }
 }
 
 /// One reading for the "memory in use" sparkline.
@@ -71,6 +91,8 @@ final class MemoryModel: ObservableObject {
     @Published var selection: Set<String> = []
     /// Apps awaiting the confirmation sheet.
     @Published var pendingQuit: [RunningAppMemory]?
+    /// The app awaiting the Relaunch confirmation.
+    @Published var pendingRelaunch: RunningAppMemory?
     @Published private(set) var quittingIDs: Set<String> = []
     @Published private(set) var receipt: MemoryQuitReceipt?
     /// While set, the receipt offers to reopen what was quit.
@@ -83,6 +105,7 @@ final class MemoryModel: ObservableObject {
     private static let backgroundMinimumBytes: Int64 = 150 * 1_048_576
     private static let lastAlertKey = "memoryLastAlertAt"
 
+    let menuBarFigure = MemoryMenuBarFigure()
     private let monitor = MemoryMonitor()
     private let startsServices: Bool
     private let trackingSince = Date()
@@ -130,10 +153,6 @@ final class MemoryModel: ObservableObject {
 
     var isQuitting: Bool { !quittingIDs.isEmpty }
 
-    /// Share of RAM in use, rounded, for the menu bar.
-    var usedPercent: Int? {
-        snapshot.map { Int(($0.usedFraction * 100).rounded()) }
-    }
 
     /// Available memory once `bytes` more is given back, capped at the total.
     func projectedAvailable(afterFreeing bytes: Int64) -> Int64 {
@@ -190,6 +209,7 @@ final class MemoryModel: ObservableObject {
     private func sampleSystem() {
         guard let fresh = monitor.snapshot() else { return }
         snapshot = fresh
+        menuBarFigure.update(Int((fresh.usedFraction * 100).rounded()))
         recordUsage(fresh)
         trackPressure(fresh)
     }
@@ -208,9 +228,10 @@ final class MemoryModel: ObservableObject {
         isRefreshingApps = true
         defer { isRefreshingApps = false }
         let own = getpid()
+        let appPIDs = Self.appPIDs()
         // Walking every process takes a few milliseconds: off the main actor.
         let (groups, audio) = await Task.detached(priority: .utility) {
-            (AppMemoryGrouping.group(ProcessMemoryScanner.sample(), excludingPIDs: [own]),
+            (AppMemoryGrouping.group(ProcessMemoryScanner.sample(), appPIDs: appPIDs, excludingPIDs: [own]),
              AudioActivityProbe.current())
         }.value
         apply(groups: groups, audio: audio, now: Date())
@@ -230,18 +251,26 @@ final class MemoryModel: ObservableObject {
             guard let group = groupByPID[app.processIdentifier], !claimed.contains(group.id) else { continue }
             claimed.insert(group.id)
             let pids = Set(group.pids)
+            let lastUsed = lastActive[app.processIdentifier]
+            // Idle since the later of its last use and its launch: an app opened
+            // (or reopened) a minute ago has not been idle for hours, whenever
+            // Dusty started watching.
+            let idleSince = app.processIdentifier == frontmost
+                ? now
+                : max(lastUsed ?? trackingSince, app.launchDate ?? trackingSince)
             listed.append(RunningAppMemory(
                 id: group.id,
                 name: app.localizedName ?? group.name,
                 bundleIdentifier: app.bundleIdentifier,
                 bundleURL: app.bundleURL,
                 pid: app.processIdentifier,
+                launchDate: app.launchDate,
                 footprintBytes: group.footprintBytes,
                 processCount: group.processCount,
                 icon: app.icon,
                 isFrontmost: app.processIdentifier == frontmost,
-                lastActiveAt: lastActive[app.processIdentifier],
-                idleSince: app.processIdentifier == frontmost ? now : (lastActive[app.processIdentifier] ?? trackingSince),
+                lastActiveAt: lastUsed,
+                idleSince: idleSince,
                 isPlayingAudio: audio.map { !$0.outputPIDs.isDisjoint(with: pids) } ?? false,
                 isUsingMicrophone: audio.map { !$0.inputPIDs.isDisjoint(with: pids) } ?? false
             ))
@@ -254,7 +283,7 @@ final class MemoryModel: ObservableObject {
                 bundleIdentifier: $0.bundleIdentifier,
                 footprintBytes: $0.footprintBytes,
                 isFrontmost: $0.isFrontmost,
-                lastActiveAt: $0.lastActiveAt,
+                lastActiveAt: $0.idleSince,
                 isPlayingAudio: $0.isPlayingAudio,
                 isUsingMicrophone: $0.isUsingMicrophone
             )
@@ -267,8 +296,11 @@ final class MemoryModel: ObservableObject {
             audioActivityKnown: audio != nil
         )
 
-        // Growth needs readings minutes apart, not seconds: record every five.
-        if lastHistoryRecord.map({ now.timeIntervalSince($0) >= 300 }) ?? true {
+        // Growth needs readings minutes apart, not seconds: record every five,
+        // and at once when an app was relaunched or appeared, so a relaunch
+        // clears its growth on the spot instead of up to five minutes later.
+        let relaunched = listed.contains { history.generation(for: $0.id) != $0.pid }
+        if relaunched || lastHistoryRecord.map({ now.timeIntervalSince($0) >= 300 }) ?? true {
             history.record(listed.map { (id: $0.id, generation: $0.pid, bytes: $0.footprintBytes) }, at: now)
             lastHistoryRecord = now
         }
@@ -314,6 +346,14 @@ final class MemoryModel: ObservableObject {
         }
     }
 
+    /// Processes macOS runs as apps of their own (Dock and menu bar apps), so
+    /// an app nested inside another's bundle keeps its own line.
+    private static func appPIDs() -> Set<Int32> {
+        Set(NSWorkspace.shared.runningApplications.compactMap { app in
+            app.activationPolicy == .prohibited ? nil : app.processIdentifier
+        })
+    }
+
     private static let protectedBundleIDs: Set<String> = [
         "com.apple.finder", "com.apple.dock", "com.apple.loginwindow", "com.apple.systemuiserver",
         "com.apple.controlcenter", "com.apple.notificationcenterui", "com.apple.Spotlight",
@@ -344,9 +384,11 @@ final class MemoryModel: ObservableObject {
 
     private func appTerminated(_ pid: pid_t) {
         lastActive[pid] = nil
-        // An app quit on its own: drop its row now rather than on the next tick.
-        if apps.contains(where: { $0.pid == pid }) {
+        // An app quit on its own: drop its row (and its tick) now rather than on
+        // the next tick.
+        if let gone = apps.first(where: { $0.pid == pid }) {
             apps.removeAll { $0.pid == pid }
+            selection.remove(gone.id)
             if isLive { Task { await refreshApps() } }
         }
     }
@@ -358,9 +400,9 @@ final class MemoryModel: ObservableObject {
         if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
     }
 
-    func setAllSelected(_ selected: Bool) {
+    func clearSelection() {
         userEditedSelection = true
-        selection = selected ? Set(apps.map(\.id)) : []
+        selection = []
     }
 
     // MARK: - Quit
@@ -386,9 +428,21 @@ final class MemoryModel: ObservableObject {
         await quit(chosen, relaunch: false)
     }
 
-    /// Quit and reopen one app: gives back what it has piled up since launch.
-    func relaunch(_ app: RunningAppMemory) async {
+    /// Ask before relaunching: it quits the app, and apps hold state.
+    func requestRelaunch(_ app: RunningAppMemory) {
         guard app.bundleURL != nil else { return }
+        errorMessage = nil
+        pendingRelaunch = app
+    }
+
+    func cancelRelaunch() {
+        pendingRelaunch = nil
+    }
+
+    /// Quit and reopen one app: gives back what it has piled up since launch.
+    func confirmRelaunch() async {
+        guard let app = pendingRelaunch else { return }
+        pendingRelaunch = nil
         await quit([app], relaunch: true)
     }
 
@@ -405,7 +459,9 @@ final class MemoryModel: ObservableObject {
             // Re-resolve by pid, and make sure the pid still belongs to the same
             // app: a pid can be reused after an app quits on its own.
             guard let app = NSRunningApplication(processIdentifier: target.pid), !app.isTerminated,
-                  app.bundleIdentifier == target.bundleIdentifier else { continue }
+                  app.bundleIdentifier == target.bundleIdentifier,
+                  app.bundleURL == target.bundleURL,
+                  app.launchDate == target.launchDate else { continue }
             // `terminate()` is the same request ⌘Q sends: the app saves, asks
             // about unsaved work, or refuses. Nothing is ever force quit.
             if app.terminate() {

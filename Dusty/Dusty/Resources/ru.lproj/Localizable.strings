@@ -334,3 +334,7 @@
 "intent.memory.result" = "Занято %1$@ из %2$@. %3$@.";
 "intent.memory.top" = "Больше всех занимает %1$@ (%2$@).";
 "memory.pill.help" = "Память: занято %@";
+"memory.confirm.relaunchTitle" = "Перезапустить %@?";
+"memory.confirm.relaunchSubtitle" = "Занимает %@";
+"memory.confirm.relaunchNote" = "Оно завершится как по ⌘Q и снова откроется в фоне. Большинство приложений восстанавливают свои окна.";
+"memory.confirm.relaunchSaveNote" = "Если есть несохранённая работа, оно сначала спросит.";

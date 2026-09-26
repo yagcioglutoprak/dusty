@@ -93,8 +93,8 @@ final class DustyViewModel: ObservableObject {
         LowDiskNotifier.configure(delegate: NotificationCoordinator.shared)
         NotificationCoordinator.shared.onCleanSafe = { [weak self] in self?.handleCleanSafeFromNotification() }
         NotificationCoordinator.shared.onShowMemory = { [weak self] in
-            NSApp.activate(ignoringOtherApps: true)
             self?.open(.memory)
+            MenuBarPanel.open()
         }
         autoScan = AutoScanController(viewModel: self, settings: AppSettings.shared)
     }
@@ -514,8 +514,8 @@ final class DustyViewModel: ObservableObject {
     }
 
     func handleCleanSafeFromNotification() {
-        NSApp.activate(ignoringOtherApps: true)
         route = .home
+        MenuBarPanel.open()
         Task {
             if scanResult == nil { await scan(settings: AppSettings.shared) }
             requestClean(level: .safe)

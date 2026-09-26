@@ -343,11 +343,10 @@ func runMemory(top: Int, json: Bool) -> Int32 {
         errPrint("Could not read memory statistics.")
         return 1
     }
-    let groups = AppMemoryGrouping.group(ProcessMemoryScanner.sample(), excludingPIDs: [getpid()])
-    let running = Dictionary(
-        NSWorkspace.shared.runningApplications.map { ($0.processIdentifier, $0) },
-        uniquingKeysWith: { first, _ in first }
-    )
+    let apps = NSWorkspace.shared.runningApplications
+    let appPIDs = Set(apps.compactMap { $0.activationPolicy == .prohibited ? nil : $0.processIdentifier })
+    let groups = AppMemoryGrouping.group(ProcessMemoryScanner.sample(), appPIDs: appPIDs, excludingPIDs: [getpid()])
+    let running = Dictionary(apps.map { ($0.processIdentifier, $0) }, uniquingKeysWith: { first, _ in first })
     let shown = Array(groups.prefix(top))
     func name(_ group: AppMemoryUsage) -> String {
         running[group.leaderPID]?.localizedName ?? group.name

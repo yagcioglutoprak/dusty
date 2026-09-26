@@ -27,7 +27,7 @@ struct MainPanelView: View {
             PanelBackdrop()
 
             screen
-                .disabled(sheetLevel != nil || memory.pendingQuit != nil)
+                .disabled(sheetLevel != nil || memory.pendingQuit != nil || memory.pendingRelaunch != nil)
 
             if settings.hasSeenWelcome, sheetLevel == nil, let result = viewModel.lastDeletionResult {
                 ResultToast(
@@ -42,7 +42,8 @@ struct MainPanelView: View {
                 .padding(.bottom, toastBottomInset)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
-            } else if settings.hasSeenWelcome, sheetLevel == nil, memory.pendingQuit == nil, let receipt = memory.receipt {
+            } else if settings.hasSeenWelcome, sheetLevel == nil, memory.pendingQuit == nil, memory.pendingRelaunch == nil,
+                      let receipt = memory.receipt {
                 MemoryToast(
                     receipt: receipt,
                     reopenDeadline: memory.reopenDeadline,
@@ -73,6 +74,25 @@ struct MainPanelView: View {
                 .zIndex(3)
             }
 
+            if let app = memory.pendingRelaunch, sheetLevel == nil, memory.pendingQuit == nil {
+                Color.black.opacity(0.34)
+                    .contentShape(Rectangle())
+                    .onTapGesture { memory.cancelRelaunch() }
+                    .transition(.opacity)
+                    .zIndex(2)
+                MemoryQuitSheet(
+                    apps: [app],
+                    availableBefore: 0,
+                    availableAfter: 0,
+                    relaunch: true,
+                    growth: memory.growth[app.id],
+                    onConfirm: { Task { await memory.confirmRelaunch() } },
+                    onCancel: { memory.cancelRelaunch() }
+                )
+                .transition(.move(edge: .bottom))
+                .zIndex(3)
+            }
+
             if let level = sheetLevel {
                 Color.black.opacity(0.34)
                     .contentShape(Rectangle())
@@ -92,6 +112,7 @@ struct MainPanelView: View {
         .animation(DustyTheme.revealSpring, value: sheetLevel)
         .animation(DustyTheme.revealSpring, value: viewModel.lastDeletionResult != nil)
         .animation(DustyTheme.revealSpring, value: memory.pendingQuit != nil)
+        .animation(DustyTheme.revealSpring, value: memory.pendingRelaunch != nil)
         .animation(DustyTheme.revealSpring, value: memory.receipt != nil)
         .task {
             // First launch holds the silent auto-scan: the welcome screen explains

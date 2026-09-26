@@ -9,11 +9,15 @@ struct DustyApp: App {
     @StateObject private var viewModel = DustyViewModel(startsServices: !SnapshotMode.isActive)
     @StateObject private var settings = AppSettings.shared
     @StateObject private var updater = Updater(startingUpdater: !SnapshotMode.isActive)
-    @StateObject private var memory = MemoryModel(startsServices: !SnapshotMode.isActive)
+    /// Held here rather than as a `@StateObject`: the panel observes it, and the
+    /// menu bar label only needs the rounded figure below, so the scene does not
+    /// redraw on every sample the memory screen takes.
+    private static let memory = MemoryModel(startsServices: !SnapshotMode.isActive)
+    @StateObject private var memoryFigure = DustyApp.memory.menuBarFigure
 
     var body: some Scene {
         MenuBarExtra {
-            MainPanelView(viewModel: viewModel, settings: settings, updater: updater, memory: memory)
+            MainPanelView(viewModel: viewModel, settings: settings, updater: updater, memory: DustyApp.memory)
         } label: {
             // Kept inline (not a child view) so the label re-renders whenever the
             // app-level objects publish; a menu bar label is a fragile place for a
@@ -46,7 +50,7 @@ struct DustyApp: App {
         if settings.menuBarShowsReclaimable, let reclaimable = viewModel.menuBarReclaimableSuffix {
             text = L10n.f("menubar.toClean", "%1$@ · %2$@ to clean", label, reclaimable)
         }
-        if settings.menuBarShowsMemory, let percent = memory.usedPercent {
+        if settings.menuBarShowsMemory, let percent = memoryFigure.usedPercent {
             text += " · " + L10n.f("menubar.memory", "RAM %d%%", percent)
         }
         return text

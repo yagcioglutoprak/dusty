@@ -61,7 +61,16 @@ public enum AppMemoryGrouping {
     /// bundle it runs from itself. Helpers nested inside an app's frameworks
     /// count toward the outermost app. Anything else stands alone, keyed by its
     /// executable, so ten `node` servers read as one line rather than ten.
-    public static func group(_ samples: [ProcessMemorySample], excludingPIDs excluded: Set<Int32> = []) -> [AppMemoryUsage] {
+    ///
+    /// `appPIDs` are the processes macOS runs as apps of their own (Dock and
+    /// menu bar apps). Each keeps its own line even when its bundle sits inside
+    /// another app's, the way Simulator lives inside Xcode or a login-item
+    /// helper inside its app, so quitting one never claims the other's memory.
+    public static func group(
+        _ samples: [ProcessMemorySample],
+        appPIDs: Set<Int32> = [],
+        excludingPIDs excluded: Set<Int32> = []
+    ) -> [AppMemoryUsage] {
         let kept = samples.filter { !excluded.contains($0.pid) && $0.footprintBytes > 0 }
         var byPID: [Int32: ProcessMemorySample] = [:]
         for sample in kept { byPID[sample.pid] = sample }
@@ -76,12 +85,17 @@ public enum AppMemoryGrouping {
 
         for sample in kept {
             let owner: ProcessMemorySample
-            if sample.responsiblePID != sample.pid, let responsible = byPID[sample.responsiblePID] {
+            if appPIDs.contains(sample.pid) {
+                owner = sample
+            } else if sample.responsiblePID != sample.pid, let responsible = byPID[sample.responsiblePID] {
                 owner = responsible
             } else {
                 owner = sample
             }
-            let bundle = appBundlePath(forExecutable: owner.executablePath)
+            let bundle = appPIDs.contains(owner.pid)
+                ? (innermostAppBundlePath(forExecutable: owner.executablePath)
+                    ?? appBundlePath(forExecutable: owner.executablePath))
+                : appBundlePath(forExecutable: owner.executablePath)
             let key = bundle ?? owner.executablePath
             var bucket = buckets[key] ?? Bucket(bundlePath: bundle, executablePath: owner.executablePath)
             bucket.pids.append(sample.pid)
@@ -95,11 +109,13 @@ public enum AppMemoryGrouping {
             let leader: Int32
             if let bundle = bucket.bundlePath {
                 // The main executable sits directly in the bundle; helpers sit in
-                // nested bundles. Lowest pid wins a tie (the one launched first).
-                leader = pids.first { pid in
+                // nested bundles. A registered app wins, then the lowest pid (the
+                // one launched first).
+                let mains = pids.filter { pid in
                     guard let path = byPID[pid]?.executablePath else { return false }
                     return isMainExecutable(path, of: bundle)
-                } ?? pids[0]
+                }
+                leader = mains.first { appPIDs.contains($0) } ?? mains.first ?? pids[0]
             } else {
                 leader = pids[0]
             }
@@ -125,6 +141,19 @@ public enum AppMemoryGrouping {
         // The bundle has to be a folder on the way to the executable, never the
         // executable's own name.
         for index in components.indices.dropLast() {
+            let component = components[index]
+            if component.count > 4 && component.hasSuffix(".app") {
+                return components[...index].joined(separator: "/")
+            }
+        }
+        return nil
+    }
+
+    /// The innermost `.app` bundle an executable lives in: its own bundle, even
+    /// when that bundle is nested inside another app's.
+    public static func innermostAppBundlePath(forExecutable path: String) -> String? {
+        let components = path.split(separator: "/", omittingEmptySubsequences: false)
+        for index in components.indices.dropLast().reversed() {
             let component = components[index]
             if component.count > 4 && component.hasSuffix(".app") {
                 return components[...index].joined(separator: "/")

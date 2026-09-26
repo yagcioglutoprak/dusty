@@ -124,4 +124,50 @@ final class AppMemoryGroupingTests: XCTestCase {
         XCTAssertFalse(AppMemoryGrouping.isMainExecutable(chromeRenderer, of: bundle))
         XCTAssertFalse(AppMemoryGrouping.isMainExecutable("/Applications/Google Chrome.appx/MacOS/x", of: bundle))
     }
+
+    func testAppNestedInsideAnotherAppKeepsItsOwnLine() throws {
+        let xcode = "/Applications/Xcode.app/Contents/MacOS/Xcode"
+        let simulator = "/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator"
+        let simHelper = "/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app/Contents/XPCServices/Render.app/Contents/MacOS/Render"
+        let groups = AppMemoryGrouping.group([
+            sample(100, xcode, 2_000),
+            sample(200, simulator, 600),
+            sample(201, simHelper, 150, responsible: 200),
+        ], appPIDs: [100, 200])
+        let xcodeGroup = try XCTUnwrap(groups.first { $0.id == "/Applications/Xcode.app" })
+        let simGroup = try XCTUnwrap(groups.first { $0.id.hasSuffix("/Simulator.app") })
+        XCTAssertEqual(xcodeGroup.pids, [100])
+        XCTAssertEqual(xcodeGroup.leaderPID, 100)
+        XCTAssertEqual(simGroup.pids, [200, 201])
+        XCTAssertEqual(simGroup.leaderPID, 200)
+        XCTAssertEqual(simGroup.name, "Simulator")
+    }
+
+    func testWithoutAppPIDsNestedAppsRollUpAsBefore() {
+        let xcode = "/Applications/Xcode.app/Contents/MacOS/Xcode"
+        let simulator = "/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator"
+        let groups = AppMemoryGrouping.group([sample(100, xcode, 2_000), sample(200, simulator, 600)])
+        XCTAssertEqual(groups.map(\.id), ["/Applications/Xcode.app"])
+    }
+
+    func testRegisteredAppIgnoresItsResponsibleProcess() throws {
+        // An app launched by another app (a login-item helper started by its
+        // parent) still stands on its own once macOS runs it as an app.
+        let foo = "/Applications/Foo.app/Contents/MacOS/Foo"
+        let helper = "/Applications/Foo.app/Contents/Library/LoginItems/FooHelper.app/Contents/MacOS/FooHelper"
+        let groups = AppMemoryGrouping.group([
+            sample(10, foo, 400),
+            sample(11, helper, 90, responsible: 10),
+        ], appPIDs: [10, 11])
+        XCTAssertEqual(Set(groups.map(\.leaderPID)), [10, 11])
+        let fooGroup = try XCTUnwrap(groups.first { $0.leaderPID == 10 })
+        XCTAssertEqual(fooGroup.footprintBytes, 400 * mb, "The helper's memory is not Foo's to give back")
+    }
+
+    func testInnermostBundle() {
+        XCTAssertEqual(AppMemoryGrouping.innermostAppBundlePath(forExecutable: chromeRenderer),
+                       "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/129.0/Helpers/Google Chrome Helper (Renderer).app")
+        XCTAssertEqual(AppMemoryGrouping.innermostAppBundlePath(forExecutable: chrome), "/Applications/Google Chrome.app")
+        XCTAssertNil(AppMemoryGrouping.innermostAppBundlePath(forExecutable: "/usr/bin/weird.app"))
+    }
 }

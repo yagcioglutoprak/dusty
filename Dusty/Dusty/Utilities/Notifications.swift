@@ -154,6 +154,38 @@ enum MemoryPressureNotifier {
     }
 }
 
+/// The menu bar panel, opened from code. `MenuBarExtra` has no API for it, so
+/// this clicks Dusty's own status item button, found through its window. If a
+/// future macOS hides that button, it quietly does nothing: the app is still
+/// activated and the panel opens on the right screen at the next click.
+@MainActor
+enum MenuBarPanel {
+    static func open() {
+        NSApp.activate(ignoringOtherApps: true)
+        Task { @MainActor in
+            // Give activation a moment, or the panel can open and lose focus at once.
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            // Already open: a click would close it.
+            if NSApp.windows.contains(where: { $0.isVisible && $0.className.contains("MenuBarExtra") }) { return }
+            for window in NSApp.windows {
+                if let button = statusBarButton(in: window.contentView) {
+                    button.performClick(nil)
+                    return
+                }
+            }
+        }
+    }
+
+    private static func statusBarButton(in view: NSView?) -> NSStatusBarButton? {
+        guard let view else { return nil }
+        if let button = view as? NSStatusBarButton { return button }
+        for subview in view.subviews {
+            if let button = statusBarButton(in: subview) { return button }
+        }
+        return nil
+    }
+}
+
 /// Retains the notification delegate and forwards the "Clean Safe" and "Show
 /// Memory" actions to the view model.
 final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate {

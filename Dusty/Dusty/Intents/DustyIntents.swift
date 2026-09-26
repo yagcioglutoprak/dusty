@@ -88,10 +88,11 @@ struct GetMemoryUsageIntent: AppIntent {
         let used = MemorySnapshot.formatBytes(snapshot.usedBytes)
         let total = MemorySnapshot.formatBytes(snapshot.totalBytes)
         let own = getpid()
-        let groups = await Task.detached(priority: .userInitiated) {
-            AppMemoryGrouping.group(ProcessMemoryScanner.sample(), excludingPIDs: [own])
-        }.value
         let running = NSWorkspace.shared.runningApplications
+        let appPIDs = Set(running.compactMap { $0.activationPolicy == .prohibited ? nil : $0.processIdentifier })
+        let groups = await Task.detached(priority: .userInitiated) {
+            AppMemoryGrouping.group(ProcessMemoryScanner.sample(), appPIDs: appPIDs, excludingPIDs: [own])
+        }.value
         let top = groups.first { group in
             running.contains { $0.processIdentifier == group.leaderPID && MemoryModel.isQuittable($0) }
         }
