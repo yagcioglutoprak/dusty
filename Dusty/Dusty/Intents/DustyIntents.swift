@@ -1,9 +1,11 @@
 import AppIntents
+import AppKit
 import CleanerEngine
 
-/// Shortcuts actions. Both run the same engine and allowlist as the panel:
+/// Shortcuts actions. They run the same engine and allowlist as the panel:
 /// the clean intent is exactly the Clean Safe button, the size intent is a
-/// read-only scan. Nothing here can reach manual-pick or opt-in targets.
+/// read-only scan, and the memory intent only reads. Nothing here can reach
+/// manual-pick or opt-in targets, and nothing here quits an app.
 
 struct CleanSafeIntent: AppIntent {
     static let title = LocalizedStringResource(
@@ -65,6 +67,46 @@ struct GetReclaimableSpaceIntent: AppIntent {
     }
 }
 
+struct GetMemoryUsageIntent: AppIntent {
+    static let title = LocalizedStringResource(
+        "intent.memory.title",
+        defaultValue: "Get Memory Usage"
+    )
+    static let description = IntentDescription(
+        LocalizedStringResource(
+            "intent.memory.description",
+            defaultValue: "Returns how much memory is in use, the memory pressure, and the app holding the most. Read-only: quits nothing."
+        )
+    )
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {
+        guard let snapshot = MemoryMonitor().snapshot() else {
+            return .result(value: "", dialog: IntentDialog(stringLiteral:
+                L10n.t("intent.memory.failed", "Could not read memory statistics.")))
+        }
+        let used = MemorySnapshot.formatBytes(snapshot.usedBytes)
+        let total = MemorySnapshot.formatBytes(snapshot.totalBytes)
+        let own = getpid()
+        let running = NSWorkspace.shared.runningApplications
+        let appPIDs = Set(running.compactMap { $0.activationPolicy == .prohibited ? nil : $0.processIdentifier })
+        let groups = await Task.detached(priority: .userInitiated) {
+            AppMemoryGrouping.group(ProcessMemoryScanner.sample(), appPIDs: appPIDs, excludingPIDs: [own])
+        }.value
+        let top = groups.first { group in
+            running.contains { $0.processIdentifier == group.leaderPID && MemoryModel.isQuittable($0) }
+        }
+        var message = L10n.f("intent.memory.result", "%1$@ of %2$@ in use. %3$@.",
+                             used, total, snapshot.pressure.sentence)
+        if let top {
+            let name = running.first { $0.processIdentifier == top.leaderPID }?.localizedName ?? top.name
+            message += " " + L10n.f("intent.memory.top", "%1$@ is using the most (%2$@).",
+                                    name, MemorySnapshot.formatBytes(top.footprintBytes))
+        }
+        return .result(value: used, dialog: IntentDialog(stringLiteral: message))
+    }
+}
+
 struct DustyShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
@@ -84,6 +126,15 @@ struct DustyShortcuts: AppShortcutsProvider {
             ],
             shortTitle: LocalizedStringResource("intent.reclaimable.shortTitle", defaultValue: "Reclaimable Space"),
             systemImageName: "internaldrive"
+        )
+        AppShortcut(
+            intent: GetMemoryUsageIntent(),
+            phrases: [
+                "How much memory is in use in \(.applicationName)",
+                "Check memory in \(.applicationName)"
+            ],
+            shortTitle: LocalizedStringResource("intent.memory.shortTitle", defaultValue: "Memory Usage"),
+            systemImageName: "memorychip"
         )
     }
 }

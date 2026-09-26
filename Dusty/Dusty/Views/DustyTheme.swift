@@ -97,6 +97,16 @@ enum DustyTheme {
     /// The segment of the storage bar that is used but not reclaimable.
     static let usedSpace = adaptive(light: 0x9CA3AF, dark: 0x4B5060)
 
+    // MARK: - Memory
+
+    /// Memory owns a hue of its own, a cyan none of the cleanup levels use, so
+    /// the memory card never reads as a fourth level.
+    static let memory = adaptive(light: 0x0891B2, dark: 0x22D3EE)
+    /// A deeper cut for filled buttons, dark enough under a white label.
+    static let memorySolid = hex(0x0E7490)
+    /// Compressed memory in the memory bar.
+    static let memoryCompressed = adaptive(light: 0x2563EB, dark: 0x60A5FA)
+
     // MARK: - Disk health
 
     enum DiskHealth {

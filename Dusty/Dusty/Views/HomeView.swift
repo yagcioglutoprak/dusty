@@ -2,12 +2,14 @@ import SwiftUI
 import AppKit
 import CleanerEngine
 
-/// The root screen: the disk at a glance, the one-tap Safe clean, the three
-/// levels to drill into, and what the scan noticed.
+/// The root screen: the disk at a glance, the one-tap Safe clean, memory with
+/// its own one-tap Free up, the three levels to drill into, and what the scan
+/// noticed.
 struct HomeView: View {
     @ObservedObject var viewModel: DustyViewModel
     @ObservedObject var settings: AppSettings
     @ObservedObject var updater: Updater
+    @ObservedObject var memory: MemoryModel
     @ObservedObject private var stats = CleanStatsStore.shared
     @State private var fdaDismissed = false
 
@@ -18,6 +20,11 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     StorageHeroCard(viewModel: viewModel, settings: settings)
                     banners
+                    MemoryCard(
+                        memory: memory,
+                        onOpen: { viewModel.open(.memory) },
+                        onFreeUp: { memory.requestQuit(memory.suggestedIDs) }
+                    )
                     levelsSection
                     InsightsSection(
                         forecast: viewModel.diskForecast,

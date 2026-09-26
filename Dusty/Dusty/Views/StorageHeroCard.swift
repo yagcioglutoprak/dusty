@@ -308,9 +308,11 @@ struct StorageHeroCard: View {
 struct BigBytes: View {
     let bytes: Int64
     var size: CGFloat = 34
+    /// Binary units, for RAM.
+    var memory = false
 
     var body: some View {
-        let parts = Bytes.split(bytes)
+        let parts = Bytes.split(bytes, memory: memory)
         HStack(alignment: .firstTextBaseline, spacing: size * 0.1) {
             Text(parts.value)
                 .font(.system(size: size, weight: .bold, design: .rounded))
@@ -324,15 +326,15 @@ struct BigBytes: View {
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: bytes)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Bytes.format(bytes))
+        .accessibilityLabel(memory ? Bytes.memory(bytes) : Bytes.format(bytes))
     }
 }
 
 extension Bytes {
     /// "182,4 GB" -> ("182,4", "GB"). Splits at the last space the formatter put
     /// in (regular or no-break), so every locale's unit survives intact.
-    static func split(_ bytes: Int64) -> (value: String, unit: String) {
-        let formatted = format(bytes)
+    static func split(_ bytes: Int64, memory: Bool = false) -> (value: String, unit: String) {
+        let formatted = memory ? Bytes.memory(bytes) : Bytes.format(bytes)
         guard let space = formatted.lastIndex(where: { $0 == " " || $0 == "\u{00A0}" || $0 == "\u{202F}" }) else {
             return (formatted, "")
         }

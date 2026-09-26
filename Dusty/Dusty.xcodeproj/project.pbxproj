@@ -38,6 +38,8 @@
 		CE7A2E459C980847794391A2 /* DustyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFF08EAAC5965987A96F3964 /* DustyTheme.swift */; };
 		D66C7C1373F8CE4DDE938665 /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42FDC53CD6D5B9C5B64EBF93 /* Updater.swift */; };
 		DDB9B867FF3C154E7DED0994 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A6FB53975EE4A204E771F42 /* SettingsView.swift */; };
+		BE4365E2A1A57EB1D283DF1F /* MemoryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12FF8F485422DD367252B8E5 /* MemoryModel.swift */; };
+		CDC7429B9118453EDBD90886 /* MemoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE575101905D6E24F2F00164 /* MemoryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -80,6 +82,8 @@
 		F90DD308B1EB4A3F11232157 /* CleanStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanStats.swift; sourceTree = "<group>"; };
 		F94AEE1C39FA8F5BC02C535F /* DiskHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskHistoryStore.swift; sourceTree = "<group>"; };
 		FFF08EAAC5965987A96F3964 /* DustyTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DustyTheme.swift; sourceTree = "<group>"; };
+		12FF8F485422DD367252B8E5 /* MemoryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryModel.swift; sourceTree = "<group>"; };
+		DE575101905D6E24F2F00164 /* MemoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				05CD6A9B404339BEF4E36398 /* DustyViewModel.swift */,
+				12FF8F485422DD367252B8E5 /* MemoryModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -147,6 +152,7 @@
 				D021C0E213C4A5925F99D80B /* InsightsSection.swift */,
 				A25688086DB163B6C1773C43 /* LevelDetailView.swift */,
 				6FDB04C7FFF7DA36515BB4AB /* MainPanelView.swift */,
+				DE575101905D6E24F2F00164 /* MemoryView.swift */,
 				835459CDE3201B797F7B75F3 /* ResultToast.swift */,
 				2A6FB53975EE4A204E771F42 /* SettingsView.swift */,
 				F5F5E039215E5DD72CDB6B73 /* StorageHeroCard.swift */,
@@ -305,6 +311,8 @@
 				C0907BC19B68A0B1E44F21E4 /* LevelDetailView.swift in Sources */,
 				BE35FE7B99372AF7E460B798 /* Localization.swift in Sources */,
 				4572B3AFD74C685F3DF3168A /* MainPanelView.swift in Sources */,
+				BE4365E2A1A57EB1D283DF1F /* MemoryModel.swift in Sources */,
+				CDC7429B9118453EDBD90886 /* MemoryView.swift in Sources */,
 				1207961D090D64D814274B0C /* Notifications.swift in Sources */,
 				38E41B6C84DC29DF23522B73 /* RelativeTime.swift in Sources */,
 				762293EB49D8958EB88C8CD0 /* ResultToast.swift in Sources */,
@@ -409,7 +417,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20001;
+				CURRENT_PROJECT_VERSION = 20100;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dusty/Info.plist;
@@ -418,7 +426,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = sh.toprak.dusty;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
@@ -495,7 +503,7 @@
 				CODE_SIGN_ENTITLEMENTS = Dusty/Dusty.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20001;
+				CURRENT_PROJECT_VERSION = 20100;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Dusty/Info.plist;
@@ -504,7 +512,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = sh.toprak.dusty;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;

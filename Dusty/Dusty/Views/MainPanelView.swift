@@ -13,6 +13,7 @@ struct MainPanelView: View {
     @ObservedObject var viewModel: DustyViewModel
     @ObservedObject var settings: AppSettings
     @ObservedObject var updater: Updater
+    @ObservedObject var memory: MemoryModel
 
     /// The level awaiting confirmation, once its scan result exists.
     private var sheetLevel: CleanupLevel? {
@@ -26,7 +27,7 @@ struct MainPanelView: View {
             PanelBackdrop()
 
             screen
-                .disabled(sheetLevel != nil)
+                .disabled(sheetLevel != nil || memory.pendingQuit != nil || memory.pendingRelaunch != nil)
 
             if settings.hasSeenWelcome, sheetLevel == nil, let result = viewModel.lastDeletionResult {
                 ResultToast(
@@ -41,6 +42,55 @@ struct MainPanelView: View {
                 .padding(.bottom, toastBottomInset)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
+            } else if settings.hasSeenWelcome, sheetLevel == nil, memory.pendingQuit == nil, memory.pendingRelaunch == nil,
+                      let receipt = memory.receipt {
+                MemoryToast(
+                    receipt: receipt,
+                    reopenDeadline: memory.reopenDeadline,
+                    reopenWindow: MemoryModel.reopenWindow,
+                    onReopen: { memory.reopenQuitApps() },
+                    onDismiss: { memory.dismissReceipt() }
+                )
+                .padding(.horizontal, 12)
+                .padding(.bottom, toastBottomInset)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(1)
+            }
+
+            if let pending = memory.pendingQuit, sheetLevel == nil {
+                Color.black.opacity(0.34)
+                    .contentShape(Rectangle())
+                    .onTapGesture { memory.cancelQuit() }
+                    .transition(.opacity)
+                    .zIndex(2)
+                MemoryQuitSheet(
+                    apps: pending,
+                    availableBefore: memory.snapshot?.availableBytes ?? 0,
+                    availableAfter: memory.projectedAvailable(afterFreeing: pending.reduce(0) { $0 + $1.footprintBytes }),
+                    onConfirm: { Task { await memory.confirmQuit() } },
+                    onCancel: { memory.cancelQuit() }
+                )
+                .transition(.move(edge: .bottom))
+                .zIndex(3)
+            }
+
+            if let app = memory.pendingRelaunch, sheetLevel == nil, memory.pendingQuit == nil {
+                Color.black.opacity(0.34)
+                    .contentShape(Rectangle())
+                    .onTapGesture { memory.cancelRelaunch() }
+                    .transition(.opacity)
+                    .zIndex(2)
+                MemoryQuitSheet(
+                    apps: [app],
+                    availableBefore: 0,
+                    availableAfter: 0,
+                    relaunch: true,
+                    growth: memory.growth[app.id],
+                    onConfirm: { Task { await memory.confirmRelaunch() } },
+                    onCancel: { memory.cancelRelaunch() }
+                )
+                .transition(.move(edge: .bottom))
+                .zIndex(3)
             }
 
             if let level = sheetLevel {
@@ -61,6 +111,9 @@ struct MainPanelView: View {
         .animation(DustyTheme.navSpring, value: settings.hasSeenWelcome)
         .animation(DustyTheme.revealSpring, value: sheetLevel)
         .animation(DustyTheme.revealSpring, value: viewModel.lastDeletionResult != nil)
+        .animation(DustyTheme.revealSpring, value: memory.pendingQuit != nil)
+        .animation(DustyTheme.revealSpring, value: memory.pendingRelaunch != nil)
+        .animation(DustyTheme.revealSpring, value: memory.receipt != nil)
         .task {
             // First launch holds the silent auto-scan: the welcome screen explains
             // the model first and its button starts the scan, so the first scan is chosen.
@@ -70,6 +123,7 @@ struct MainPanelView: View {
         }
         .onAppear {
             viewModel.startAutoRefresh(interval: settings.refreshIntervalSeconds)
+            memory.panelOpened()
         }
         .onChange(of: settings.refreshIntervalSeconds) { newValue in
             viewModel.startAutoRefresh(interval: newValue)
@@ -91,10 +145,13 @@ struct MainPanelView: View {
         } else {
             switch viewModel.route {
             case .home:
-                HomeView(viewModel: viewModel, settings: settings, updater: updater)
+                HomeView(viewModel: viewModel, settings: settings, updater: updater, memory: memory)
                     .transition(.move(edge: .leading).combined(with: .opacity))
             case .level(let level):
                 LevelDetailView(level: level, viewModel: viewModel, settings: settings)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            case .memory:
+                MemoryView(memory: memory, viewModel: viewModel, settings: settings)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             case .settings:
                 SettingsView(settings: settings, updater: updater, viewModel: viewModel)
@@ -139,6 +196,9 @@ struct MainPanelView: View {
     /// of over it, so the next clean is never blocked by the last one's receipt.
     private var toastBottomInset: CGFloat {
         if case .level(let level) = viewModel.route, viewModel.levelResult(for: level) != nil {
+            return 66
+        }
+        if viewModel.route == .memory {
             return 66
         }
         return 12

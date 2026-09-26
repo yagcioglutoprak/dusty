@@ -482,5 +482,125 @@
 			<string>%d элемента · выбор вручную</string>
 		</dict>
 	</dict>
+	<key>memory.apps.showAll</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Показать все %d приложения</string>
+			<key>many</key>
+			<string>Показать все %d приложений</string>
+			<key>one</key>
+			<string>Показать %d приложение</string>
+			<key>other</key>
+			<string>Показать все %d приложения</string>
+		</dict>
+	</dict>
+	<key>memory.bar.apps</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d приложения, каждое может попросить сохранить</string>
+			<key>many</key>
+			<string>%d приложений, каждое может попросить сохранить</string>
+			<key>one</key>
+			<string>%d приложение, может попросить сохранить</string>
+			<key>other</key>
+			<string>%d приложения, каждое может попросить сохранить</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.title</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Завершить %d приложения?</string>
+			<key>many</key>
+			<string>Завершить %d приложений?</string>
+			<key>one</key>
+			<string>Завершить %d приложение?</string>
+			<key>other</key>
+			<string>Завершить %d приложения?</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.action</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>Завершить %d</string>
+			<key>many</key>
+			<string>Завершить %d</string>
+			<key>one</key>
+			<string>Завершить %d</string>
+			<key>other</key>
+			<string>Завершить %d</string>
+		</dict>
+	</dict>
+	<key>memory.row.processes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d процесса</string>
+			<key>many</key>
+			<string>%d процессов</string>
+			<key>one</key>
+			<string>%d процесс</string>
+			<key>other</key>
+			<string>%d процесса</string>
+		</dict>
+	</dict>
+	<key>memory.names.more</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>ещё %d</string>
+			<key>many</key>
+			<string>ещё %d</string>
+			<key>one</key>
+			<string>ещё %d</string>
+			<key>other</key>
+			<string>ещё %d</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

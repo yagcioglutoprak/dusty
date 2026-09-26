@@ -1,7 +1,8 @@
 name: Panel snapshots
 
 # Renders every state of the panel (welcome, home, scanning, a level, the
-# confirmation sheet, the undo receipt, settings) in light and dark from
+# confirmation sheet, the undo receipt, settings, the memory screen and its
+# sheets) in light and dark from
 # fixture data, plus the README demo GIF, and uploads them. A reviewer can see
 # what a UI change looks like without building it. The render path only exists
 # in Debug builds.

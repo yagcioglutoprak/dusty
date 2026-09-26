@@ -26,13 +26,13 @@
   "@type": "SoftwareApplication",
   "name": "Dusty",
   "description": "A free, open-source CleanMyMac alternative for macOS that reclaims space from app caches, browser caches, Xcode data, package-manager caches, stale project artifacts, logs, and installers with an allowlist-only deletion engine.",
-  "keywords": "CleanMyMac alternative, macOS cleaner, disk cleaner, Xcode cleaner, cache cleaner, developer cache cleaner, stale node_modules cleaner",
+  "keywords": "CleanMyMac alternative, macOS cleaner, disk cleaner, Xcode cleaner, cache cleaner, developer cache cleaner, stale node_modules cleaner, free up RAM on Mac, Mac memory cleaner",
   "url": "https://toprak.sh/dusty/",
   "image": "https://toprak.sh/dusty/og-card.png",
   "downloadUrl": "https://github.com/yagcioglutoprak/dusty/releases/latest",
-  "softwareVersion": "1.6.0",
+  "softwareVersion": "2.1.0",
   "datePublished": "2026-06-03",
-  "dateModified": "2026-07-02",
+  "dateModified": "2026-09-26",
   "operatingSystem": "macOS 13+",
   "applicationCategory": "UtilitiesApplication",
   "applicationSubCategory": "Disk cleaner",
@@ -86,6 +86,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Yes. Dusty has a dry-run mode that shows exact paths and sizes before deletion. Developer and Deep cleanups can move files to Trash and expose an undo window immediately after the cleanup. Every action is also written to a local JSON log."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can Dusty free up RAM on a Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Dusty's Memory screen groups memory by app, helpers included, suggests quitting big apps that have sat idle, and quits the ones you confirm the same way Cmd-Q does, with a Reopen button for a few seconds. It never force quits, never kills processes, and never runs purge, which needs root and only drops the file cache macOS already hands back on demand."
       }
     },
     {
@@ -660,6 +668,7 @@
             <tr><td>Sizes shown before deleting</td><td class="us col-us"><span class="yes">&#10003;</span> Always, per path</td><td class="them">Varies</td></tr>
             <tr><td>Undo and a deletion log</td><td class="us col-us"><span class="yes">&#10003;</span> Yes</td><td class="them">Varies</td></tr>
             <tr><td>CLI and Shortcuts automation</td><td class="us col-us"><span class="yes">&#10003;</span> Yes</td><td class="them">Rare</td></tr>
+            <tr><td>Freeing RAM</td><td class="us col-us">Quits the idle apps you confirm, with Reopen</td><td class="them">Often <code>purge</code> as root</td></tr>
             <tr><td>Account or telemetry</td><td class="us col-us">None</td><td class="them">Often</td></tr>
           </tbody>
         </table>
@@ -691,6 +700,10 @@
         <details class="faq-item">
           <summary>Can I preview or undo a cleanup?</summary>
           <p>Yes. Dry-run mode shows exact paths and sizes before deletion. Developer and Deep cleanups can move files to Trash and expose an undo window immediately after cleanup. Every action is also written to a local JSON log.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can Dusty free up RAM on a Mac?</summary>
+          <p>Yes, the honest way. The Memory screen groups memory by app (helpers included), ticks the big apps you have not used in an hour, and quits the ones you confirm the way Cmd-Q does, so apps with unsaved work ask first. A Reopen button brings them back for a few seconds. Dusty never force quits and never runs <code>purge</code>, which needs root and only drops the file cache macOS already gives back on demand.</p>
         </details>
         <details class="faq-item">
           <summary>Does Dusty collect telemetry or require an account?</summary>

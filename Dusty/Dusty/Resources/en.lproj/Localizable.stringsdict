@@ -386,5 +386,101 @@
 			<string>%d items · pick by hand</string>
 		</dict>
 	</dict>
+	<key>memory.apps.showAll</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Show %d app</string>
+			<key>other</key>
+			<string>Show all %d apps</string>
+		</dict>
+	</dict>
+	<key>memory.bar.apps</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d app, it can ask to save first</string>
+			<key>other</key>
+			<string>%d apps, each can ask to save first</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.title</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Quit %d app?</string>
+			<key>other</key>
+			<string>Quit %d apps?</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.action</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Quit %d app</string>
+			<key>other</key>
+			<string>Quit %d apps</string>
+		</dict>
+	</dict>
+	<key>memory.row.processes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d process</string>
+			<key>other</key>
+			<string>%d processes</string>
+		</dict>
+	</dict>
+	<key>memory.names.more</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d more</string>
+			<key>other</key>
+			<string>%d more</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

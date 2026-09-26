@@ -9,10 +9,15 @@ struct DustyApp: App {
     @StateObject private var viewModel = DustyViewModel(startsServices: !SnapshotMode.isActive)
     @StateObject private var settings = AppSettings.shared
     @StateObject private var updater = Updater(startingUpdater: !SnapshotMode.isActive)
+    /// Held here rather than as a `@StateObject`: the panel observes it, and the
+    /// menu bar label only needs the rounded figure below, so the scene does not
+    /// redraw on every sample the memory screen takes.
+    private static let memory = MemoryModel(startsServices: !SnapshotMode.isActive)
+    @StateObject private var memoryFigure = DustyApp.memory.menuBarFigure
 
     var body: some Scene {
         MenuBarExtra {
-            MainPanelView(viewModel: viewModel, settings: settings, updater: updater)
+            MainPanelView(viewModel: viewModel, settings: settings, updater: updater, memory: DustyApp.memory)
         } label: {
             // Kept inline (not a child view) so the label re-renders whenever the
             // app-level objects publish; a menu bar label is a fragile place for a
@@ -32,7 +37,8 @@ struct DustyApp: App {
     }
 
     /// Free space (bytes or percent, per settings) plus a quiet "to clean" suffix
-    /// once a background scan has found a meaningful amount. Nil in icon-only mode.
+    /// once a background scan has found a meaningful amount, and memory in use
+    /// when that is switched on. Nil in icon-only mode.
     private var menuBarText: String? {
         let label: String
         switch settings.menuBarStyle {
@@ -40,10 +46,14 @@ struct DustyApp: App {
         case .percentage: label = viewModel.menuBarPercentLabel
         case .freeSpace: label = viewModel.menuBarLabel
         }
+        var text = label
         if settings.menuBarShowsReclaimable, let reclaimable = viewModel.menuBarReclaimableSuffix {
-            return L10n.f("menubar.toClean", "%1$@ · %2$@ to clean", label, reclaimable)
+            text = L10n.f("menubar.toClean", "%1$@ · %2$@ to clean", label, reclaimable)
         }
-        return label
+        if settings.menuBarShowsMemory, let percent = memoryFigure.usedPercent {
+            text += " · " + L10n.f("menubar.memory", "RAM %d%%", percent)
+        }
+        return text
     }
 }
 
