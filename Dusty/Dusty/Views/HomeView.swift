@@ -2,8 +2,9 @@ import SwiftUI
 import AppKit
 import CleanerEngine
 
-/// The root screen: the disk at a glance, the one-tap Safe clean, the three
-/// levels to drill into, memory, and what the scan noticed.
+/// The root screen: the disk at a glance, the one-tap Safe clean, memory with
+/// its own one-tap Free up, the three levels to drill into, and what the scan
+/// noticed.
 struct HomeView: View {
     @ObservedObject var viewModel: DustyViewModel
     @ObservedObject var settings: AppSettings
@@ -19,8 +20,12 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     StorageHeroCard(viewModel: viewModel, settings: settings)
                     banners
+                    MemoryCard(
+                        memory: memory,
+                        onOpen: { viewModel.open(.memory) },
+                        onFreeUp: { memory.requestQuit(memory.suggestedIDs) }
+                    )
                     levelsSection
-                    MemoryCard(memory: memory, onOpen: { viewModel.open(.memory) })
                     InsightsSection(
                         forecast: viewModel.diskForecast,
                         advisories: viewModel.advisories,
@@ -51,7 +56,6 @@ struct HomeView: View {
                     .help(L10n.t("home.dryRunHelp", "Dry run is on: cleans only report what they would delete."))
             }
             Spacer()
-            MemoryPill(memory: memory, onOpen: { viewModel.open(.memory) })
             Button {
                 viewModel.open(.settings)
             } label: {

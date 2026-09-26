@@ -248,7 +248,6 @@
 "memory.subtitle" = "%@ de RAM · en direct";
 "memory.card.total" = "%@ de RAM";
 "memory.card.inUse" = "%1$@ utilisés sur %2$@";
-"memory.card.idle" = "%@ occupés par des apps inutilisées";
 "memory.card.withSwap" = "%1$@ · %2$@ de swap";
 "memory.card.hint" = "Affiche les apps qui utilisent le plus de mémoire";
 "memory.pressure.normal" = "Normale";
@@ -333,8 +332,9 @@
 "intent.memory.failed" = "Impossible de lire les statistiques de la mémoire.";
 "intent.memory.result" = "%1$@ utilisés sur %2$@. %3$@.";
 "intent.memory.top" = "%1$@ en utilise le plus (%2$@).";
-"memory.pill.help" = "Mémoire : %@ utilisée";
 "memory.confirm.relaunchTitle" = "Relancer %@ ?";
 "memory.confirm.relaunchSubtitle" = "Elle occupe %@";
 "memory.confirm.relaunchNote" = "Elle se ferme comme avec ⌘Q, puis se rouvre en arrière-plan. La plupart des apps retrouvent leurs fenêtres.";
 "memory.confirm.relaunchSaveNote" = "Si elle a du travail non enregistré, elle vous le demande d’abord.";
+"memory.card.idleApps" = "Inutilisées récemment : %@";
+"memory.card.freeHelp" = "Quitter les apps inutilisées récemment. Dusty les liste et demande d’abord.";

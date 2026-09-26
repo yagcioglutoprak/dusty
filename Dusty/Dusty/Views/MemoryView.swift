@@ -72,12 +72,14 @@ enum MemoryText {
 
 // MARK: - Home card
 
-/// Memory on the home screen: how much is in use, how hard macOS is working
-/// for it, and whether idle apps are sitting on a lot of it. The whole card
-/// opens the memory screen.
+/// Memory on the home screen, right under the disk: how much is in use, how
+/// hard macOS is working for it, and, when idle apps are sitting on some of it,
+/// a Free up button that goes straight to the confirmation. The rest of the
+/// card opens the memory screen.
 struct MemoryCard: View {
     @ObservedObject var memory: MemoryModel
     let onOpen: () -> Void
+    let onFreeUp: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -85,40 +87,39 @@ struct MemoryCard: View {
                 title: L10n.t("memory.title", "Memory"),
                 detail: memory.snapshot.map { L10n.f("memory.card.total", "%@ RAM", Bytes.memory($0.totalBytes)) }
             )
-            Button(action: onOpen) {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 12) {
-                        IconTile(symbol: "memorychip", tint: DustyTheme.memory, size: 30)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(headline)
-                                .font(.body.weight(.semibold))
-                                .monospacedDigit()
-                                .lineLimit(1)
-                            detail
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    Button(action: onOpen) {
+                        HStack(spacing: 12) {
+                            IconTile(symbol: "memorychip", tint: DustyTheme.memory, size: 30)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(headline)
+                                    .font(.body.weight(.semibold))
+                                    .monospacedDigit()
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                detail
+                            }
+                            Spacer(minLength: 4)
                         }
-                        Spacer(minLength: 8)
-                        if let snapshot = memory.snapshot {
-                            UsageRing(fraction: snapshot.usedFraction, tint: snapshot.pressure.tint)
-                        }
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(DustyTheme.faint)
+                        .contentShape(Rectangle())
                     }
-                    if let snapshot = memory.snapshot {
-                        CapacityBar(segments: snapshot.barSegments, height: 6)
-                            .padding(.leading, 42)
-                            .accessibilityHidden(true)
-                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityHint(L10n.t("memory.card.hint", "Shows the apps using the most memory"))
+                    trailing
                 }
-                .padding(.leading, 13)
-                .padding(.trailing, 14)
-                .padding(.vertical, 11)
+                if let snapshot = memory.snapshot {
+                    CapacityBar(segments: snapshot.barSegments, height: 6)
+                        .padding(.leading, 42)
+                        .accessibilityHidden(true)
+                        .onTapGesture(perform: onOpen)
+                }
             }
-            .buttonStyle(DustyRowButtonStyle())
-            .clipShape(RoundedRectangle(cornerRadius: DustyTheme.cardRadius, style: .continuous))
+            .padding(.leading, 13)
+            .padding(.trailing, 14)
+            .padding(.vertical, 11)
             .dustyCard()
-            .accessibilityElement(children: .combine)
-            .accessibilityHint(L10n.t("memory.card.hint", "Shows the apps using the most memory"))
         }
     }
 
@@ -129,9 +130,10 @@ struct MemoryCard: View {
     }
 
     @ViewBuilder private var detail: some View {
-        if memory.suggestedBytes > 0 {
-            Text(L10n.f("memory.card.idle", "%@ held by apps you are not using", Bytes.memory(memory.suggestedBytes)))
-                .font(.caption.weight(.semibold))
+        let idle = memory.suggestedApps
+        if !idle.isEmpty {
+            Text(L10n.f("memory.card.idleApps", "Not used lately: %@", MemoryText.names(idle.map(\.name))))
+                .font(.caption)
                 .foregroundStyle(DustyTheme.memory)
                 .lineLimit(1)
         } else if let snapshot = memory.snapshot {
@@ -144,53 +146,36 @@ struct MemoryCard: View {
                 .lineLimit(1)
         }
     }
-}
 
-/// Memory in use as a small pill for the home screen's top bar, so memory is
-/// one click away without scrolling. Tinted once pressure rises, and dotted
-/// when idle apps are sitting on memory.
-struct MemoryPill: View {
-    @ObservedObject var memory: MemoryModel
-    let onOpen: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        if let snapshot = memory.snapshot {
-            let tint: Color = snapshot.pressure == .normal ? .secondary : snapshot.pressure.tint
-            let percent = MemoryText.percent(snapshot.usedFraction)
-            Button(action: onOpen) {
-                HStack(spacing: 4) {
-                    Image(systemName: "memorychip")
-                        .font(.system(size: 11, weight: .semibold))
-                    Text(percent)
-                        .font(.caption.weight(.semibold))
+    /// Free up when there is something to free, otherwise the usage ring.
+    @ViewBuilder private var trailing: some View {
+        if memory.isQuitting {
+            Spinner(tint: DustyTheme.memory, size: 14)
+        } else if memory.suggestedBytes > 0 {
+            Button(action: onFreeUp) {
+                HStack(spacing: 5) {
+                    Image(systemName: "wind")
+                    Text(L10n.f("memory.hero.free", "Free up %@", Bytes.memory(memory.suggestedBytes)))
                         .monospacedDigit()
-                        .contentTransition(.numericText())
                 }
-                .foregroundStyle(hovering ? Color.primary : tint)
-                .padding(.horizontal, 8)
-                .frame(height: 24)
-                .background(
-                    Capsule().fill(snapshot.pressure == .normal
-                                   ? (hovering ? DustyTheme.insetHover : DustyTheme.inset)
-                                   : snapshot.pressure.tint.opacity(hovering ? 0.2 : 0.13))
-                )
-                .overlay(alignment: .topTrailing) {
-                    if memory.suggestedBytes > 0 {
-                        Circle()
-                            .fill(DustyTheme.memory)
-                            .frame(width: 7, height: 7)
-                            .offset(x: 1, y: -1)
+            }
+            .buttonStyle(DustyPrimaryButtonStyle(tint: DustyTheme.memorySolid, compact: true))
+            .fixedSize()
+            .help(L10n.t("memory.card.freeHelp", "Quit the apps you have not used lately. Dusty lists them and asks first."))
+        } else {
+            Button(action: onOpen) {
+                HStack(spacing: 10) {
+                    if let snapshot = memory.snapshot {
+                        UsageRing(fraction: snapshot.usedFraction, tint: snapshot.pressure.tint)
                     }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(DustyTheme.faint)
                 }
-                .contentShape(Capsule())
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .onHover { hovering = $0 }
-            .animation(.easeOut(duration: 0.12), value: hovering)
-            .help(L10n.f("memory.pill.help", "Memory: %@ in use", percent))
-            .accessibilityLabel(L10n.t("memory.title", "Memory"))
-            .accessibilityValue(L10n.f("memory.pill.help", "Memory: %@ in use", percent))
+            .accessibilityHidden(true)
         }
     }
 }

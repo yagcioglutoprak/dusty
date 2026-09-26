@@ -248,7 +248,6 @@
 "memory.subtitle" = "%@ of RAM · updates live";
 "memory.card.total" = "%@ RAM";
 "memory.card.inUse" = "%1$@ of %2$@ in use";
-"memory.card.idle" = "%@ held by apps you are not using";
 "memory.card.withSwap" = "%1$@ · %2$@ swap";
 "memory.card.hint" = "Shows the apps using the most memory";
 "memory.pressure.normal" = "Normal";
@@ -333,8 +332,9 @@
 "intent.memory.failed" = "Could not read memory statistics.";
 "intent.memory.result" = "%1$@ of %2$@ in use. %3$@.";
 "intent.memory.top" = "%1$@ is using the most (%2$@).";
-"memory.pill.help" = "Memory: %@ in use";
 "memory.confirm.relaunchTitle" = "Relaunch %@?";
 "memory.confirm.relaunchSubtitle" = "It is holding %@";
 "memory.confirm.relaunchNote" = "It quits the way ⌘Q quits it, then opens again in the background. Most apps bring their windows back.";
 "memory.confirm.relaunchSaveNote" = "If it has unsaved work, it asks you first.";
+"memory.card.idleApps" = "Not used lately: %@";
+"memory.card.freeHelp" = "Quit the apps you have not used lately. Dusty lists them and asks first.";

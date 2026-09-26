@@ -146,8 +146,10 @@ comunícalo en privado: consulta [SECURITY.md](../../.github/SECURITY.md).
 
 ## Memoria
 
-Abre **Memoria** desde la pantalla de inicio (o la píldora RAM de arriba) para
-ver qué ocupa tu RAM y recuperarla.
+La memoria aparece en la pantalla de inicio, justo debajo del disco: lo que está
+en uso, la presión y, cuando hay apps inactivas ocupando memoria, un botón
+**Liberar** que la recupera de un toque (tras una confirmación). Abre la tarjeta
+para ver todo el detalle.
 
 - **La imagen real.** La memoria en uso, repartida como en el Monitor de
   Actividad (apps, sistema, comprimida, archivos en caché), el intercambio, la

@@ -108,8 +108,10 @@ anything.
 
 ## Memory
 
-Open **Memory** from the home screen (or the RAM pill at the top) to see what
-is using your RAM and get it back.
+Memory sits on the home screen right under the disk: what is in use, the
+pressure, and, when idle apps are sitting on memory, a **Free up** button that
+gets it back in one tap (after a confirmation). Open the card for the full
+picture.
 
 <p align="center">
 <img src="docs/screenshots/memory.png" width="420" alt="Dusty's Memory screen: 12 GB used of 16 GB with elevated pressure, the memory split into apps, system, compressed, and cached files, a last-hour graph, 2.35 GB held by idle apps with a Free up button, and the apps list with Xcode in use, a growing Chrome with a Relaunch button, and Photos ticked">

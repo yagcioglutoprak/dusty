@@ -259,23 +259,19 @@ enum SnapshotRenderer {
     }
 }
 
-/// The home screen's memory pieces in every state, stacked on one canvas: the
-/// top-bar pill and the card with idle apps to free, calm, under pressure, and
-/// still reading. The home shot itself only shows the card's header.
+/// The home screen's memory card in every state, stacked on one canvas: with
+/// idle apps to free, calm, under pressure, and still reading.
 private struct MemoryCardSheet: View {
     var body: some View {
         ZStack(alignment: .top) {
             DustyTheme.canvas
             VStack(alignment: .leading, spacing: 18) {
-                HStack(spacing: 10) {
-                    MemoryPill(memory: SnapshotFixtures.memory(for: .home), onOpen: {})
-                    MemoryPill(memory: SnapshotFixtures.memory(for: .home, pressure: .normal, suggestions: false), onOpen: {})
-                    MemoryPill(memory: SnapshotFixtures.memory(for: .home, pressure: .critical, suggestions: false), onOpen: {})
-                }
-                MemoryCard(memory: SnapshotFixtures.memory(for: .home), onOpen: {})
-                MemoryCard(memory: SnapshotFixtures.memory(for: .home, pressure: .normal, suggestions: false), onOpen: {})
-                MemoryCard(memory: SnapshotFixtures.memory(for: .home, pressure: .critical, suggestions: false), onOpen: {})
-                MemoryCard(memory: MemoryModel(startsServices: false), onOpen: {})
+                MemoryCard(memory: SnapshotFixtures.memory(for: .home), onOpen: {}, onFreeUp: {})
+                MemoryCard(memory: SnapshotFixtures.memory(for: .home, pressure: .normal, suggestions: false),
+                           onOpen: {}, onFreeUp: {})
+                MemoryCard(memory: SnapshotFixtures.memory(for: .home, pressure: .critical, suggestions: false),
+                           onOpen: {}, onFreeUp: {})
+                MemoryCard(memory: MemoryModel(startsServices: false), onOpen: {}, onFreeUp: {})
             }
             .padding(.horizontal, DustyTheme.gutter)
             .padding(.vertical, 18)

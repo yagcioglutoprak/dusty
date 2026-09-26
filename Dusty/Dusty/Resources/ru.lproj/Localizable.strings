@@ -248,7 +248,6 @@
 "memory.subtitle" = "ОЗУ %@ · обновляется вживую";
 "memory.card.total" = "ОЗУ %@";
 "memory.card.inUse" = "Занято %1$@ из %2$@";
-"memory.card.idle" = "%@ занимают приложения, которыми вы не пользуетесь";
 "memory.card.withSwap" = "%1$@ · подкачка %2$@";
 "memory.card.hint" = "Показывает приложения, которые занимают больше всего памяти";
 "memory.pressure.normal" = "Норма";
@@ -333,8 +332,9 @@
 "intent.memory.failed" = "Не удалось прочитать статистику памяти.";
 "intent.memory.result" = "Занято %1$@ из %2$@. %3$@.";
 "intent.memory.top" = "Больше всех занимает %1$@ (%2$@).";
-"memory.pill.help" = "Память: занято %@";
 "memory.confirm.relaunchTitle" = "Перезапустить %@?";
 "memory.confirm.relaunchSubtitle" = "Занимает %@";
 "memory.confirm.relaunchNote" = "Оно завершится как по ⌘Q и снова откроется в фоне. Большинство приложений восстанавливают свои окна.";
 "memory.confirm.relaunchSaveNote" = "Если есть несохранённая работа, оно сначала спросит.";
+"memory.card.idleApps" = "Давно не использовались: %@";
+"memory.card.freeHelp" = "Завершить давно не используемые приложения. Dusty покажет их и сначала спросит.";

@@ -153,8 +153,10 @@ blanche ? Merci de le signaler en privé : consultez [SECURITY.md](../../.github
 
 ## Mémoire
 
-Ouvrez **Mémoire** depuis l'accueil (ou la pastille RAM en haut) pour voir ce
-qui occupe votre RAM et la récupérer.
+La mémoire s'affiche sur l'accueil, juste sous le disque : ce qui est utilisé,
+la pression et, quand des apps inactives occupent de la mémoire, un bouton
+**Libérer** qui la récupère en un geste (après confirmation). Ouvrez la carte
+pour tout le détail.
 
 - **La vraie image.** La mémoire utilisée, répartie comme dans le Moniteur
   d'activité (apps, système, compressée, fichiers en cache), le swap, la
