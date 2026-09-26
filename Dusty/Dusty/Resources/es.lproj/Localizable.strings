@@ -296,10 +296,10 @@
 "memory.row.lastUsed" = "Usada %@";
 "memory.row.background" = "En segundo plano";
 "memory.row.withProcesses" = "%1$@ · %2$@";
-"memory.relaunch" = "Reabrir";
+"memory.relaunch" = "Reiniciar";
 "memory.relaunchHelp" = "Cerrarla y volver a abrirla. La mayoría de las apps siguen donde estaban, con la memoria como recién abiertas.";
 "memory.menu.quit" = "Cerrar %@";
-"memory.menu.relaunch" = "Reabrir %@";
+"memory.menu.relaunch" = "Reiniciar %@";
 "memory.error.noSelection" = "Marca al menos una app para cerrar.";
 "memory.confirm.subtitle" = "Libera unos %@ de memoria";
 "memory.confirm.available" = "Memoria disponible";
@@ -310,8 +310,8 @@
 "memory.toast.freed" = "%@ de memoria liberados";
 "memory.toast.available" = "Memoria disponible %1$@ → %2$@";
 "memory.toast.nothingQuit" = "No se cerró ninguna app";
-"memory.toast.notRelaunched" = "No se reabrió nada";
-"memory.toast.relaunched" = "Se reabrió %@";
+"memory.toast.notRelaunched" = "No se reinició nada";
+"memory.toast.relaunched" = "Se reinició %@";
 "memory.toast.relaunchedBody" = "Ocupaba %@.";
 "memory.toast.stillOpen" = "Sigue abierto: %@. Puede que esté preguntando por trabajo sin guardar.";
 "memory.toast.reopen" = "Reabrir";

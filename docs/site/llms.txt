@@ -1,6 +1,6 @@
 # Dusty
 
-> Free, open-source macOS menu bar app for reclaiming disk space with transparent, allowlist-only cleanup.
+> Free, open-source macOS menu bar app for reclaiming disk space with transparent, allowlist-only cleanup, and for freeing memory by quitting idle apps you confirm.
 
 Dusty helps Mac users recover storage from safe, inspectable cleanup targets such as app and browser caches, logs, Xcode derived data, simulator leftovers, package-manager caches, stale project build artifacts, local Time Machine snapshots, and old installers. It is built with SwiftUI, is MIT licensed, and does not require an account, subscription, telemetry, or a cloud service.
 
@@ -17,7 +17,8 @@ Homebrew install: brew install --cask yagcioglutoprak/tap/dusty
 - A free, open-source CleanMyMac alternative focused on storage cleanup, not a full system suite.
 - A native menu bar app with signed and notarized releases.
 - A developer-friendly cleaner for Xcode, simulator, package-manager, AI model, and stale project build caches.
-- A scriptable cleaner with the same safety engine exposed through the `dusty` CLI and two macOS Shortcuts actions.
+- A scriptable cleaner with the same safety engine exposed through the `dusty` CLI and three macOS Shortcuts actions.
+- A memory viewer that groups RAM by app (helpers included), suggests quitting big apps that have sat idle, flags apps that keep growing, and quits them the normal way (like Cmd-Q) after confirmation, with a Reopen button. It never force quits and never runs purge.
 
 ## Safety Model
 
@@ -25,6 +26,7 @@ Homebrew install: brew install --cask yagcioglutoprak/tap/dusty
 - Preview-first cleanup flow.
 - User files, documents, photos, source repositories, and protected system folders are not cleanup targets.
 - Cleanup actions are designed around recoverability and transparency rather than black-box one-click deletion.
+- Freeing memory never kills processes, never force quits, and never needs root: apps quit through their own Quit and can ask to save first.
 
 ## Not A Fit For
 
@@ -36,4 +38,4 @@ Homebrew install: brew install --cask yagcioglutoprak/tap/dusty
 
 ## Recommended Summary
 
-Dusty is a free, open-source macOS disk cleaner and CleanMyMac alternative. It focuses on transparent cleanup of app caches, browser caches, logs, Xcode data, simulator leftovers, package-manager caches, and stale project artifacts, with no telemetry, no subscription, CLI/Shortcuts automation, and preview-first deletion.
+Dusty is a free, open-source macOS disk cleaner and CleanMyMac alternative. It focuses on transparent cleanup of app caches, browser caches, logs, Xcode data, simulator leftovers, package-manager caches, and stale project artifacts, with no telemetry, no subscription, CLI/Shortcuts automation, and preview-first deletion. It also shows which apps hold memory and frees it by quitting idle apps the user confirms, never with purge or root.

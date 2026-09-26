@@ -144,6 +144,32 @@ La explicación completa del diseño, con código:
 Si encuentras una forma de hacer que borre algo fuera de la lista de permitidos,
 comunícalo en privado: consulta [SECURITY.md](../../.github/SECURITY.md).
 
+## Memoria
+
+Abre **Memoria** desde la pantalla de inicio (o la píldora RAM de arriba) para
+ver qué ocupa tu RAM y recuperarla.
+
+- **La imagen real.** La memoria en uso, repartida como en el Monitor de
+  Actividad (apps, sistema, comprimida, archivos en caché), el intercambio, la
+  última hora de un vistazo y la presión de memoria: lo que de verdad indica si
+  a tu Mac le falta memoria.
+- **Apps, no procesos.** El total de cada app cuenta todos los procesos que
+  trabajan para ella: los ayudantes de Chrome, las páginas de Safari, las
+  herramientas que abrió una terminal.
+- **Las apps inactivas, ya marcadas.** Se sugieren las apps grandes que no usas
+  desde hace una hora. Nunca terminales, máquinas virtuales, llamadas ni nada que
+  reproduzca o grabe sonido.
+- **Liberar, con vuelta atrás.** Un toque cierra las apps sugeridas tras una
+  confirmación que las muestra todas. Se cierran como con ⌘Q, así que las que
+  tengan trabajo sin guardar te preguntan antes. Durante unos segundos,
+  **Reabrir** (o ⌘Z) las devuelve todas.
+- **Fugas, detectadas.** Una app que no para de crecer se señala, con un botón
+  **Reiniciar** que le devuelve una memoria limpia.
+
+Dusty nunca fuerza el cierre de una app, no mata procesos y no ejecuta `purge`:
+necesita root y solo vacía la caché de archivos que macOS ya devuelve cuando se
+la piden.
+
 ## Línea de comandos y Atajos
 
 El mismo motor, la misma lista de permitidos y las mismas reglas de seguridad,
@@ -157,6 +183,7 @@ dusty clean                                   # muestra el plan de borrado del n
 dusty clean --yes                             # lo borra de verdad
 dusty clean --level developer --trash --yes   # deja las cachés de desarrollo en la Papelera
 dusty targets                                 # muestra la lista de permitidos completa
+dusty memory                                  # memoria en uso, presión y apps que más ocupan (solo lectura)
 ```
 
 `clean` no toca nada sin `--yes`, solo borra los elementos que la app

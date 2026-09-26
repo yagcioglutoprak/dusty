@@ -49,3 +49,25 @@ Dusty app -> CleanerEngine -> SafetyValidator
 
 No UI code should bypass the engine, and no delete path should bypass
 `SafetyValidator`.
+
+## Memory
+
+The memory feature sits beside the cleaning pipeline and never touches a file,
+so it has no path through `SafetyValidator`. It is split the same way:
+
+```text
+CleanerEngine                                  Dusty app
+  MemoryMonitor         kernel VM counters,      MemoryModel     samples, tracks which app
+                        swap, pressure level                     was used when, quits and
+  ProcessMemoryScanner  per-process footprint,                   reopens apps (after the
+                        responsible process                      user confirms)
+  AppMemoryGrouping     processes -> apps (pure) MemoryView      card, screen, sheet, receipt
+  MemoryAdvisor         idle suggestions,
+                        growth, alert policy (pure)
+```
+
+Everything that decides (grouping, suggestions, growth, when to alert) is pure
+and unit tested. The only action, quitting an app, lives in the app layer and
+uses `NSRunningApplication.terminate()`, the same request ⌘Q sends: apps can
+save, ask, or refuse. Nothing is force quit, no signal is sent to any process,
+and nothing runs as root. `dusty memory` and the Shortcuts action only read.

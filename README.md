@@ -4,7 +4,7 @@
 
 # Dusty
 
-**Free up disk space on your Mac, and see every file before it goes.**
+**Free up disk space and memory on your Mac, and see everything before it goes.**
 
 A free, open-source alternative to CleanMyMac that lives in your menu bar.
 
@@ -19,6 +19,7 @@ A free, open-source alternative to CleanMyMac that lives in your menu bar.
 [**Download**](https://github.com/yagcioglutoprak/dusty/releases/latest) ·
 [Install](#install) ·
 [What it cleans](#what-it-cleans) ·
+[Memory](#memory) ·
 [Why it is safe](#why-you-can-trust-it) ·
 [Command line](#command-line-and-shortcuts) ·
 [FAQ](#faq)
@@ -42,6 +43,9 @@ A free, open-source alternative to CleanMyMac that lives in your menu bar.
   button for a few seconds, and every deletion is written to a log.
 - **It knows developer junk.** Xcode DerivedData, simulators, npm, Cargo, and
   pip caches, and the `node_modules` of projects you forgot about.
+- **It frees memory the honest way.** It shows which apps hold your RAM (every
+  helper process counted), ticks the ones you have not used in an hour, and
+  quits them the way ⌘Q does, with a Reopen button. No `purge`, no root.
 - **It is fast.** A full scan of a working dev machine (M3, about 18 GB across
   866 paths) takes about 5 seconds.
 - **It stays out of the way.** Free space sits in your menu bar, a background
@@ -102,6 +106,40 @@ since spring, a disk on course to fill up in three weeks. Click one and the
 panel opens that item. Insights only point; they never select or delete
 anything.
 
+## Memory
+
+Open **Memory** from the home screen (or the RAM pill at the top) to see what
+is using your RAM and get it back.
+
+<p align="center">
+<img src="docs/screenshots/memory.png" width="420" alt="Dusty's Memory screen: 12 GB used of 16 GB with elevated pressure, the memory split into apps, system, compressed, and cached files, a last-hour graph, 2.35 GB held by idle apps with a Free up button, and the apps list with Xcode in use, a growing Chrome with a Relaunch button, and Photos ticked">
+</p>
+
+- **The real picture.** Memory in use, split the way Activity Monitor splits it
+  (apps, system, compressed, cached files), swap, the last hour at a glance, and
+  memory pressure: the signal that actually says whether your Mac needs more.
+- **Apps, not processes.** Every app's total counts all the processes working for
+  it: Chrome's helpers, Safari's web pages, the tools a terminal started. That is
+  the memory quitting the app gives back.
+- **Idle apps, already ticked.** Big apps you have not used for an hour (you pick
+  the hour) are suggested. Dusty knows because it notices when you switch apps.
+  Terminals, virtual machines, calls, and anything playing or recording sound are
+  never suggested.
+- **Free up, with a way back.** One tap quits the suggested apps after a
+  confirmation that lists every app and its memory. Apps quit the way ⌘Q quits
+  them, so anything with unsaved work asks first. For a few seconds afterwards,
+  **Reopen** (or ⌘Z) brings them all back.
+- **Leaks, caught.** An app that keeps growing (a browser open all week, a leaky
+  Electron app) is flagged with how much it grew, and a **Relaunch** button gives
+  that memory back without losing your place.
+- **A heads-up when it matters.** If memory pressure stays high, a notification
+  names the apps holding the most. Optionally, the menu bar shows `RAM 72%`.
+
+**What Dusty will not do:** force quit, kill processes, or run `purge`. Purging
+needs root, and it only evicts the file cache that macOS already hands to any
+app the moment it asks, so your Mac just reads those files from disk again. A
+Mac with little free memory and normal pressure is using its RAM well.
+
 ## Hands-off mode
 
 - **Background scan** (on by default, every 4 hours) keeps the "N GB to clean"
@@ -140,6 +178,9 @@ Swift package (`CleanerEngine`) with no UI, and a single component,
   target is allowed to touch.
 - **Dry run.** One switch makes every clean report what it would delete, and
   delete nothing.
+- **Memory is quit, never killed.** Freeing memory asks each app to quit the way
+  ⌘Q does, only after you confirm the list. Nothing is force quit, no process is
+  signalled, and no file is touched.
 - **A written record.** Every action (time, path, bytes) is appended to
   `~/Library/Application Support/Dusty/deletion-log.jsonl`.
 
@@ -162,6 +203,7 @@ The honest version, set against the paid cleaners (CleanMyMac and the like):
 | Sizes shown before deleting | Always, per path | Varies |
 | Undo and a written deletion log | Yes | Varies |
 | CLI and Shortcuts automation | Yes | Rare |
+| Freeing RAM | Quits the idle apps you confirm, with Reopen | Often `purge` as root |
 | Account or telemetry | None | Often |
 
 ## Command line and Shortcuts
@@ -176,6 +218,8 @@ dusty clean                                   # print the deletion plan for the 
 dusty clean --yes                             # actually delete it
 dusty clean --level developer --trash --yes   # park dev caches in the Trash
 dusty targets                                 # print the entire allowlist
+dusty memory                                  # memory in use, pressure, top apps (read-only)
+dusty memory --top 5 --json                   # the same, machine-readable
 ```
 
 `clean` touches nothing without `--yes`. It only deletes the items the app would
@@ -187,8 +231,10 @@ from the DMG instead of Homebrew? Link it once:
 ln -s /Applications/Dusty.app/Contents/Helpers/dusty /usr/local/bin/dusty
 ```
 
-Two Shortcuts actions, **Clean Safe Items** and **Get Reclaimable Space**, put
-Dusty in any macOS automation.
+Three Shortcuts actions, **Clean Safe Items**, **Get Reclaimable Space**, and
+**Get Memory Usage**, put Dusty in any macOS automation. `dusty memory` and
+**Get Memory Usage** only read: nothing quits an app except the panel, after you
+confirm.
 
 ## Keyboard shortcuts
 
@@ -197,7 +243,7 @@ Dusty in any macOS automation.
 | ⌘R | Rescan |
 | ⌘, | Settings |
 | Esc | Back |
-| ⌘Z | Undo the last clean |
+| ⌘Z | Undo the last clean, or reopen the apps a memory quit closed |
 | ⌘Q | Quit |
 
 ## Settings
@@ -208,10 +254,13 @@ Dusty in any macOS automation.
 - **General:** launch at login, and the panel language (English, French,
   Spanish, Russian, or match the system)
 - **Menu bar:** show free space, a percentage, or just the icon; show or hide
-  the "N GB to clean" suffix; how often free space refreshes (default 30 s)
+  the "N GB to clean" suffix; show memory in use (`RAM 72%`); how often free
+  space refreshes (default 30 s)
 - **Automation:** background scan and how often (default every 4 hours);
   scheduled auto clean; auto clean when free space runs low, and the threshold;
   whether unattended cleans include Developer caches
+- **Memory:** warn when memory pressure stays high (on by default); how long an
+  app has to sit unused before it is suggested (default 1 hour)
 - **Cleanup defaults:** dry run by default; keep Developer and Deep items in
   the Trash instead of purging them after Undo; the age for system logs to be
   offered (default 30 days)
@@ -273,6 +322,16 @@ Dusty cleans. The trade off would defeat the point.
 </details>
 
 <details>
+<summary><b>Can Dusty free up RAM?</b></summary>
+
+Yes, the honest way. The Memory screen shows which apps hold your memory, ticks
+the big ones you have not used in a while, and quits them after you confirm, the
+way ⌘Q would (with a Reopen button for a few seconds). It does not run `purge`:
+that needs root and only drops the file cache, which macOS already gives back
+the moment an app needs it.
+</details>
+
+<details>
 <summary><b>How is this different from <code>rm -rf ~/Library/Caches</code>?</b></summary>
 
 It sizes everything first, skips what is in use, gives every clean an undo
@@ -307,7 +366,7 @@ CleanupTarget(
 **How it is put together.**
 
 ```
-CleanerEngine/    Swift package: scan, size, delete, safety. No SwiftUI. Unit tested.
+CleanerEngine/    Swift package: scan, size, delete, safety, memory. No SwiftUI. Unit tested.
 Dusty/            SwiftUI menu bar app (MenuBarExtra) on top of the engine.
 ```
 

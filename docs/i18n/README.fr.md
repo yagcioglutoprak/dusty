@@ -151,6 +151,32 @@ La présentation détaillée de la conception, avec le code :
 Vous avez trouvé un moyen de lui faire supprimer quelque chose hors de la liste
 blanche ? Merci de le signaler en privé : consultez [SECURITY.md](../../.github/SECURITY.md).
 
+## Mémoire
+
+Ouvrez **Mémoire** depuis l'accueil (ou la pastille RAM en haut) pour voir ce
+qui occupe votre RAM et la récupérer.
+
+- **La vraie image.** La mémoire utilisée, répartie comme dans le Moniteur
+  d'activité (apps, système, compressée, fichiers en cache), le swap, la
+  dernière heure en un coup d'œil, et la pression mémoire : c'est elle qui dit
+  si votre Mac manque vraiment de mémoire.
+- **Des apps, pas des processus.** Le total de chaque app compte tous les
+  processus qui travaillent pour elle : les assistants de Chrome, les pages de
+  Safari, les outils lancés depuis un terminal.
+- **Les apps inactives, déjà cochées.** Les grosses apps que vous n'avez pas
+  utilisées depuis une heure sont suggérées. Jamais les terminaux, les machines
+  virtuelles, les appels, ni ce qui joue ou enregistre du son.
+- **Libérer, avec retour possible.** Un geste quitte les apps suggérées après
+  une confirmation qui les liste toutes. Elles se ferment comme avec ⌘Q, donc
+  celles qui ont du travail non enregistré vous le demandent. Pendant quelques
+  secondes, **Rouvrir** (ou ⌘Z) les ramène toutes.
+- **Les fuites, repérées.** Une app qui ne cesse de grossir est signalée, avec un
+  bouton **Relancer** qui lui rend une mémoire neuve.
+
+Dusty ne force jamais une app à quitter, ne tue aucun processus et ne lance pas
+`purge` : il faut être root pour ça, et cela ne vide que le cache de fichiers
+que macOS rend déjà à la demande.
+
 ## Ligne de commande et Raccourcis
 
 Le même moteur, la même liste blanche et les mêmes règles de sécurité, en
@@ -164,6 +190,7 @@ dusty clean                                   # affiche le plan de suppression d
 dusty clean --yes                             # effectue réellement la suppression
 dusty clean --level developer --trash --yes   # place les caches de dev dans la Corbeille
 dusty targets                                 # affiche toute la liste blanche
+dusty memory                                  # mémoire utilisée, pression, apps les plus gourmandes (lecture seule)
 ```
 
 `clean` ne touche à rien sans `--yes`, ne supprime que les éléments que l'app

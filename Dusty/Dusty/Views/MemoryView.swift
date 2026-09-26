@@ -531,7 +531,7 @@ private struct MemoryHeroCard: View {
                         .font(.caption)
                         .foregroundStyle(DustyTheme.faint)
                         MemorySparkline(points: memory.usageHistory, now: snapshot.sampledAt, tint: snapshot.pressure.tint)
-                            .frame(height: 26)
+                            .frame(height: 30)
                             .accessibilityHidden(true)
                     }
                 }
@@ -631,14 +631,15 @@ private struct MemorySparkline: View {
     var body: some View {
         GeometryReader { geometry in
             let size = geometry.size
-            // Memory in use rarely leaves the upper half, so the axis starts a
-            // little under the lowest reading (on a tenth) and ends at 100%:
-            // a climb reads as a climb, and a full Mac still touches the top.
-            let lowest = points.map(\.usedFraction).min() ?? 0
-            let bottom = max(0, ((lowest - 0.15) * 10).rounded(.down) / 10)
+            // The axis hugs the readings with at least a 30-point span: a climb
+            // reads as a climb, and a steady Mac draws a steady line instead of
+            // its noise blown up to fill the box.
+            let fractions = points.map { min(1, max(0, $0.usedFraction)) }
+            let bottom = max(0, (fractions.min() ?? 0) - 0.1)
+            let top = min(1, max((fractions.max() ?? 1) + 0.05, bottom + 0.3))
             let plotted = points.map { point -> CGPoint in
                 let x = (1 - CGFloat(now.timeIntervalSince(point.date) / span)) * size.width
-                let share = (min(1, max(bottom, point.usedFraction)) - bottom) / max(0.1, 1 - bottom)
+                let share = (min(top, max(bottom, point.usedFraction)) - bottom) / max(0.05, top - bottom)
                 let y = (1 - CGFloat(share)) * (size.height - 2) + 1
                 return CGPoint(x: min(size.width, max(0, x)), y: y)
             }
