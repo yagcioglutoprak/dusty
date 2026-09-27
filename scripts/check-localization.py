@@ -20,7 +20,7 @@ import plistlib
 import re
 import sys
 
-LOCALES = ["en", "fr", "es", "ru"]
+LOCALES = ["en", "fr", "es", "ru", "de"]
 APP_RESOURCES = "Dusty/Dusty/Resources"
 APP_SOURCES = "Dusty/Dusty"
 ENGINE_RESOURCES = "CleanerEngine/Sources/CleanerEngine/Resources"

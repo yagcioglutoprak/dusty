@@ -1,0 +1,340 @@
+/* Allgemein */
+"common.settings" = "Einstellungen";
+"common.cancel" = "Abbrechen";
+"common.open" = "Öffnen";
+"common.undo" = "Rückgängig";
+"common.dryRun" = "Testlauf";
+"common.revealInFinder" = "Im Finder anzeigen";
+
+/* Menüleiste */
+"menubar.percentFree" = "%d %% frei";
+"menubar.toClean" = "%1$@ · %2$@ zu bereinigen";
+
+/* Panel-Kopf und Scan */
+"panel.scan.scanning" = "Wird gescannt …";
+"panel.scan.rescan" = "Erneut scannen";
+"panel.scan.start" = "Datenträger scannen";
+"panel.scan.starting" = "Wird gestartet …";
+"panel.scan.lastScan" = "Letzter Scan: %@";
+
+/* Panel-Fußzeile */
+"panel.footer.madeBy" = "entwickelt von";
+"panel.footer.openSite" = "toprak.sh öffnen";
+
+/* Karte „Alles sauber“ */
+"panel.allClean.title" = "Alles sauber";
+"panel.allClean.body" = "Momentan gibt es nichts freizugeben. Dusty behält alles im Hintergrund im Blick.";
+"panel.allClean.bodyChecked" = "Nichts freizugeben (geprüft %@). Dusty behält alles im Hintergrund im Blick.";
+
+/* Kopfzeile freier Speicherplatz */
+"header.a11y.label" = "Speicherplatz";
+"header.a11y.value" = "%1$@ frei von %2$@, %3$d Prozent belegt";
+
+/* Zusammenfassung freigebbarer Speicher */
+"reclaim.cleanSafe" = "Sicher bereinigen · %@";
+
+/* Einblicke */
+"insights.title" = "Einblicke";
+"insights.forecast" = "%1$@ bis der Datenträger bei aktueller Rate voll ist (%2$@/Tag).";
+"insights.horizon.lessThanDay" = "Weniger als ein Tag";
+
+/* Bereiche der Bereinigungsstufen */
+"level.clean" = "Bereinigen";
+"level.notScanned" = "Führen Sie einen Scan aus, um zu sehen, was diese Stufe enthält.";
+"level.a11y.cleanLabel" = "%@ Elemente bereinigen";
+
+/* Zielzeilen */
+"target.skippedWhileOpen" = "Übersprungen, solange %@ geöffnet ist";
+
+/* Bestätigung */
+"confirm.title.dryRun" = "Bereinigung als Vorschau";
+"confirm.skippingApps" = "Cache von %@ wird übersprungen, App ist geöffnet";
+"confirm.dryRunNote" = "Testlauf: Es wird nichts gelöscht";
+"confirm.undoNote" = "Für einige Sekunden über „Rückgängig“ wiederherstellbar";
+"confirm.trashNote" = "Elemente bleiben im Papierkorb, bis dieser geleert wird";
+"confirm.action.dryRun" = "Testlauf ausführen";
+
+/* Ergebnisbanner */
+"result.body.trashed" = "Papierkorb leeren, um diesen Speicherplatz freizugeben.";
+"result.body.undoable" = "„Rückgängig“ ist für einige Sekunden verfügbar.";
+"result.skippedLine" = "%1$@: %2$@";
+
+/* Voller Festplattenzugriff */
+"fda.title" = "Voller Festplattenzugriff empfohlen";
+"fda.body" = "Gewähren Sie den Zugriff in den Systemeinstellungen, um Systemprotokolle und geschützte Caches zu scannen.";
+
+/* Fehler */
+"error.noSelection" = "Wählen Sie mindestens ein Element zum Bereinigen aus.";
+"error.quitApps" = "Beenden Sie %@, um deren Caches zu bereinigen.";
+"error.cleanInProgress" = "Es läuft bereits eine Bereinigung. Versuchen Sie es gleich noch einmal.";
+"error.cleanupFailed" = "Bereinigung fehlgeschlagen: Berechtigungen prüfen oder erneut versuchen.";
+"error.restorePartial" = "%1$d von %2$d Elementen wiederhergestellt. Einige konnten nicht zurückverschoben werden (der ursprüngliche Ort ist möglicherweise belegt).";
+
+/* Willkommen */
+"welcome.title" = "Willkommen bei Dusty";
+"welcome.subtitle" = "Ein Datenträger-Reiniger, der zeigt, was er tut.";
+"welcome.row1.title" = "Zeigt, was passiert";
+"welcome.row1.text" = "Ein Scan listet jeden Pfad und dessen Größe auf, bevor etwas geschieht. Beim Scannen wird nichts gelöscht.";
+"welcome.row2.title" = "Nur zugelassene Pfade";
+"welcome.row2.text" = "Dusty kann nur aus einer festen Liste von Cache- und Datenmüll-Pfaden löschen. Dokumente, Fotos und Mail sind bewusst unerreichbar.";
+"welcome.row3.title" = "Rückgängig machen – und ein Beleg";
+"welcome.row3.text" = "Bereinigungen laufen über den Papierkorb mit einem Zeitfenster zum Rückgängigmachen, und jede Löschung wird in einem Protokoll festgehalten, das sich öffnen lässt.";
+"welcome.scan" = "Meinen Mac scannen";
+"welcome.scan.hint" = "Sucht nach freigebbarem Speicherplatz. Es wird nichts gelöscht.";
+"welcome.skip" = "Ich schaue mich erst um";
+
+/* Einstellungen */
+"settings.section.general" = "Allgemein";
+"settings.launchAtLogin" = "Beim Anmelden starten";
+"settings.menuBarReclaimable" = "Freigebbaren Speicherplatz in der Menüleiste anzeigen";
+
+"settings.language" = "Sprache der Oberfläche";
+"settings.language.system" = "Systemsprache verwenden";
+"settings.language.restartNote" = "Dusty muss neu gestartet werden, um die Sprache zu ändern.";
+"settings.language.restart" = "Dusty neu starten";
+
+"settings.autoScanEnabled" = "Im Hintergrund scannen";
+"settings.autoScanCaption" = "Aktualisiert die Anzeige in der Menüleiste unauffällig im Hintergrund. Löscht dabei niemals von selbst Dateien.";
+
+"settings.autoCleanEnabled" = "Sichere Elemente nach Zeitplan bereinigen";
+"settings.autoCleanFrequency" = "Häufigkeit";
+"settings.frequency.daily" = "Täglich";
+"settings.frequency.weekly" = "Wöchentlich";
+"settings.frequency.biweekly" = "Alle zwei Wochen";
+"settings.autoCleanLowDisk" = "Auch bereinigen, wenn der Speicherplatz knapp wird";
+"settings.autoCleanThreshold" = "Unter %d GB frei";
+"settings.autoCleanDeveloper" = "Entwickler-Caches einbeziehen";
+"settings.autoCleanDryRunNote" = "Deaktiviert, solange der Testlauf Standard ist: Ohne Aufsicht wird nichts gelöscht.";
+"settings.autoCleanScope.safe" = "Nur Caches der Stufe „Sicher“";
+"settings.autoCleanScope.developer" = "Sichere Caches plus Entwickler-Caches (DerivedData, Paketmanager)";
+"settings.autoCleanCaption" = "%@. Geöffnete Apps werden übersprungen, eine Mitteilung zeigt an, was freigegeben wurde, und jeder Pfad wird protokolliert.";
+
+"settings.section.stats" = "Statistik";
+"settings.stats.lifetime" = "Insgesamt freigegeben";
+"settings.stats.cleans" = "Bereinigungen";
+"settings.stats.since" = "Seit";
+"settings.stats.recent" = "Letzte Bereinigungen";
+"settings.stats.level" = "Stufe %d";
+
+"settings.section.updates" = "Updates";
+"settings.updates.auto" = "Automatisch nach Updates suchen";
+"settings.updates.autoInstall" = "Automatisch herunterladen und installieren";
+"settings.updates.checkNow" = "Jetzt nach Updates suchen";
+
+"settings.section.cleanupDefaults" = "Standardeinstellungen für Bereinigung";
+"settings.dryRunDefault" = "Standardmäßig Testlauf";
+"settings.moveToTrash" = "Entwickler- & Tiefen-Elemente im Papierkorb behalten";
+
+"settings.section.safety" = "Sicherheit";
+"settings.safety.body" = "Dusty verwendet eine strikte Liste zugelassener Pfade: Gelöscht werden kann nur, was in der CleanupTargetRegistry steht, niemals über einen Symlink. Kein sudo, keine SIP-geschützten Pfade. Der einzige Systemordner, den Dusty anfassen darf, /Library/Logs/DiagnosticReports, ist optional aktivierbar und nach Alter gefiltert.";
+"settings.safety.logPath" = "Löschprotokoll: ~/Library/Application Support/Dusty/";
+
+/* Mitteilungen */
+"notification.action.cleanSafe" = "Sicher bereinigen";
+"notification.lowDisk.title" = "Speicherplatz wird knapp";
+"notification.lowDisk.body" = "%@ verfügbar. Speicherplatz mit einer sicheren Bereinigung freigeben.";
+"notification.autoClean.title" = "Automatische Bereinigung abgeschlossen";
+"notification.autoClean.body" = "Dusty hat %@ an zwischengespeichertem Datenmüll freigegeben. Jeder Pfad steht im Löschprotokoll.";
+"notification.autoCleanLowDisk.title" = "Speicherplatz wurde knapp";
+"notification.autoCleanLowDisk.body" = "Dusty hat automatisch %@ freigegeben. Jeder Pfad steht im Löschprotokoll.";
+
+/* Relative Zeit */
+"time.justNow" = "gerade eben";
+
+/* Kurzbefehle-Aktionen */
+"intent.cleanSafe.title" = "Sichere Elemente bereinigen";
+"intent.cleanSafe.shortTitle" = "Sicher bereinigen";
+"intent.cleanSafe.description" = "Löscht die automatisch sicheren Caches und Protokolle, die Dusty gefunden hat – genau wie die Schaltfläche „Sicher bereinigen“. Ziele, deren App geöffnet ist, werden übersprungen, und jeder gelöschte Pfad wird im Löschprotokoll festgehalten.";
+"intent.cleanSafe.busy" = "Dusty bereinigt bereits. Versuchen Sie es gleich noch einmal.";
+"intent.cleanSafe.scanFailed" = "Der Scan ist fehlgeschlagen, es wurde nichts bereinigt.";
+"intent.cleanSafe.nothing" = "Momentan gibt es nichts, das sich sicher bereinigen lässt.";
+"intent.cleanSafe.nothingSkipped" = "Momentan gibt es nichts, das sich sicher bereinigen lässt. %@ war geöffnet, daher wurde dessen Cache übersprungen.";
+"intent.reclaimable.title" = "Freigebbaren Speicherplatz ermitteln";
+"intent.reclaimable.shortTitle" = "Freigebbarer Speicherplatz";
+"intent.reclaimable.description" = "Scannt alle drei Bereinigungsstufen und ermittelt, wie viel Speicherplatz Dusty freigeben könnte. Nur lesend: Es wird nichts gelöscht.";
+"intent.reclaimable.result" = "%1$@ freigebbar (davon %2$@ automatisch sicher zu bereinigen).";
+
+/* Navigation und Menüs */
+"nav.back" = "Zurück";
+"menu.more" = "Mehr";
+"menu.deletionLog" = "Löschprotokoll öffnen";
+"menu.checkUpdates" = "Nach Updates suchen …";
+"menu.quit" = "Dusty beenden";
+"common.dismiss" = "Schließen";
+"common.copyPath" = "Pfad kopieren";
+"a11y.selected" = "ausgewählt";
+"a11y.notSelected" = "nicht ausgewählt";
+"a11y.partlySelected" = "teilweise ausgewählt";
+
+/* Start */
+"home.dryRunHelp" = "Testlauf ist aktiv: Bereinigungen zeigen nur, was gelöscht würde.";
+"home.levels" = "Bereinigungsstufen";
+"home.level.nothing" = "Nichts zu bereinigen";
+"home.level.hint" = "Zeigt jedes auf dieser Stufe gefundene Element";
+"health.healthy" = "Gesund";
+"health.gettingFull" = "Wird knapp";
+"health.low" = "Wenig Speicherplatz";
+"hero.availableOf" = "verfügbar von %@";
+"hero.legend.used" = "Belegt";
+"hero.legend.cleanable" = "Bereinigbar";
+"hero.legend.free" = "Frei";
+"hero.scan.count" = "%1$d von %2$d";
+"hero.notScanned.title" = "Sehen, was sich freigeben lässt";
+"hero.notScanned.body" = "Ein Scan misst Caches und Datenmüll Pfad für Pfad. Dabei wird nie etwas gelöscht.";
+"hero.canBeCleaned" = "können bereinigt werden";
+"hero.cleaning" = "Wird bereinigt …";
+"hero.afterClean" = "Danach sind %@ frei";
+"hero.review" = "%@ Elemente prüfen";
+"hero.rescanHelp" = "Erneut scannen (⌘R)";
+
+/* Bereinigungsstufen */
+"level.name.safe" = "Sicher";
+"level.name.developer" = "Entwickler";
+"level.name.deep" = "Intensiv";
+"level.blurb.safe" = "Caches, Protokolle und Papierkorb. Erneuert sich von selbst.";
+"level.blurb.developer" = "Build-Daten, Simulatoren, Paket-Caches.";
+"level.blurb.deep" = "Installationsprogramme, Archive, Snapshots. Manuell auswählen.";
+"level.selectAll" = "Alle auswählen";
+"level.selectNone" = "Auswahl aufheben";
+"level.notScanned.title" = "Noch nicht gescannt";
+"level.empty.title" = "Hier gibt es nichts zu bereinigen";
+"level.filter" = "Nach Name oder Pfad filtern";
+"level.clearFilter" = "Filter zurücksetzen";
+"level.noMatches" = "Keine Treffer für „%@“.";
+"level.bar.selected" = "%@ ausgewählt";
+"level.bar.nothing" = "Nichts ausgewählt";
+"level.bar.skipping" = "%@ wird übersprungen, solange geöffnet";
+"level.bar.pick" = "Elemente markieren, die entfernt werden sollen";
+"level.bar.preview" = "Vorschau";
+"target.nothing" = "Nichts gefunden";
+"target.showMore" = "%d weitere anzeigen";
+"path.untouchedSince" = "zuletzt geändert %@";
+
+/* Bestätigung und Beleg */
+"confirm.titleBytes" = "%@ bereinigen?";
+"confirm.freeSpace" = "Freier Speicherplatz";
+"confirm.logNote" = "Jeder Pfad wird im Löschprotokoll festgehalten";
+"confirm.hideItems" = "Elemente ausblenden";
+"confirm.action.deleteBytes" = "%@ löschen";
+"toast.cleaned" = "%@ bereinigt";
+"toast.trashed" = "%@ in den Papierkorb verschoben";
+"toast.dryRun" = "Testlauf: %@ würde bereinigt";
+"toast.dryRunBody" = "Es wurde nichts gelöscht.";
+"toast.freeSpace" = "Freier Speicherplatz %1$@ → %2$@";
+"toast.undoHelp" = "Alles zurückholen (⌘Z)";
+"insights.a11y.hint" = "Öffnet die Stufe, die dieses Element enthält";
+
+/* Einstellungen, überarbeitet */
+"settings.section.menuBar" = "Menüleiste";
+"settings.section.automation" = "Automatisierung";
+"settings.menuBarStyle" = "Neben dem Symbol anzeigen";
+"menubarStyle.freeSpace" = "Freier Speicherplatz";
+"menubarStyle.percentage" = "Prozentsatz";
+"menubarStyle.iconOnly" = "Nur Symbol";
+"settings.refresh.title" = "Freien Speicherplatz aktualisieren alle";
+"settings.value.seconds" = "%d s";
+"settings.autoScanFrequency" = "Intervall";
+"settings.threshold" = "Schwellenwert";
+"settings.dryRunCaption" = "Bereinigungen zeigen nur, was gelöscht würde, und löschen nichts.";
+"settings.moveToTrashCaption" = "Papierkorb selbst leeren, um den Speicherplatz freizugeben.";
+"settings.logAge.title" = "Systemprotokolle anbieten, die älter sind als";
+"settings.about.tagline" = "Kostenlos und Open Source.";
+"settings.about.source" = "Quellcode ansehen";
+
+/* Arbeitsspeicher */
+"menubar.memory" = "RAM %d %%";
+"memory.title" = "Arbeitsspeicher";
+"memory.reading" = "Arbeitsspeicher wird gelesen …";
+"memory.subtitle" = "%@ RAM · live aktualisiert";
+"memory.card.total" = "%@ RAM";
+"memory.card.inUse" = "%1$@ von %2$@ belegt";
+"memory.card.withSwap" = "%1$@ · %2$@ Swap";
+"memory.card.hint" = "Zeigt die Apps mit dem höchsten Speicherverbrauch";
+"memory.pressure.normal" = "Normal";
+"memory.pressure.warning" = "Erhöht";
+"memory.pressure.critical" = "Hoch";
+"memory.pressure.normalSentence" = "Auslastung ist normal";
+"memory.pressure.warningSentence" = "Auslastung ist erhöht";
+"memory.pressure.criticalSentence" = "Auslastung ist hoch";
+"memory.pressure.help" = "Speicherauslastung: wie stark macOS arbeiten muss, um Speicher freizumachen. Das – nicht der freie Speicher – zeigt, ob der Mac mehr braucht.";
+"memory.hero.label" = "Physischer Speicher";
+"memory.hero.usedOf" = "belegt von %@";
+"memory.a11y.value" = "%1$@ belegt von %2$@, %3$@";
+"memory.legend.apps" = "Apps";
+"memory.legend.compressed" = "Komprimiert";
+"memory.legend.wired" = "System";
+"memory.legend.wiredHelp" = "Wired Memory: von macOS selbst belegt, wird nie ausgelagert.";
+"memory.legend.cached" = "Zwischengespeicherte Dateien";
+"memory.legend.cachedHelp" = "Kürzlich genutzte Dateien, die im freien Speicher vorgehalten werden. macOS gibt sie sofort an jede App weiter, die danach fragt.";
+"memory.hero.lastHour" = "In Gebrauch, letzte Stunde";
+"memory.hero.swap" = "Swap %@";
+"memory.hero.swapHelp" = "Speicher, der auf den Datenträger ausgelagert wurde, um Platz zu schaffen. Ist viel davon vorhanden, während die Auslastung hoch ist, fühlt sich der Mac langsam an.";
+"memory.hero.idleHeld" = "von untätigen Apps belegt";
+"memory.hero.idleNames" = "Seit mindestens %1$@ nicht genutzt: %2$@.";
+"memory.hero.free" = "%@ freigeben";
+"memory.hero.tight.title" = "Speicher ist knapp";
+"memory.hero.tight.body" = "Beendest du eine ungenutzte App, gibst du ihren Speicher sofort frei. Einfach unten auswählen.";
+"memory.hero.fine.title" = "Speicher ist in gutem Zustand";
+"memory.hero.fine.body" = "macOS nutzt freien Speicher zum Zwischenspeichern von Dateien und gibt ihn sofort zurück, sobald eine App ihn benötigt. Es gibt nichts freizugeben.";
+"memory.apps" = "Apps";
+"memory.apps.loading" = "Apps werden gemessen …";
+"memory.apps.none" = "Keine Apps geöffnet.";
+"memory.apps.showFewer" = "Weniger anzeigen";
+"memory.background" = "Andere Prozesse";
+"memory.background.note" = "Das sind keine Apps, daher fasst Dusty sie nicht an. Beende sie dort, wo du sie gestartet hast.";
+"memory.footnote" = "Dusty beendet Apps genau wie ⌘Q – niemals erzwungen. Auch „purge“ führt Dusty nicht aus: macOS gibt zwischengespeicherten Speicher ohnehin sofort frei, sobald eine App ihn braucht.";
+"memory.bar.pick" = "Apps markieren, die beendet werden sollen";
+"memory.quit" = "Beenden";
+"memory.quitting" = "Wird beendet …";
+"memory.a11y.quitSelected" = "Ausgewählte Apps beenden";
+"memory.row.frontmost" = "Gerade in Gebrauch";
+"memory.row.microphone" = "Nutzt das Mikrofon";
+"memory.row.audio" = "Spielt Audio ab";
+"memory.row.grew" = "Um %1$@ gewachsen in %2$@";
+"memory.row.idle" = "Seit %@ nicht genutzt";
+"memory.row.lastUsed" = "Zuletzt genutzt %@";
+"memory.row.background" = "Im Hintergrund";
+"memory.row.withProcesses" = "%1$@ · %2$@";
+"memory.relaunch" = "Neu starten";
+"memory.relaunchHelp" = "Beenden und neu öffnen. Die meisten Apps machen dort weiter, wo sie aufgehört haben – mit frisch zurückgesetztem Speicher.";
+"memory.menu.quit" = "%@ beenden";
+"memory.menu.relaunch" = "%@ neu starten";
+"memory.error.noSelection" = "Mindestens eine App zum Beenden markieren.";
+"memory.confirm.subtitle" = "Gibt etwa %@ Arbeitsspeicher frei";
+"memory.confirm.available" = "Verfügbarer Arbeitsspeicher";
+"memory.confirm.about" = "etwa %@";
+"memory.confirm.saveNote" = "Jede App wird so beendet, wie es ⌘Q tut. Apps mit ungesicherter Arbeit fragen vorher nach.";
+"memory.confirm.reopenNote" = "Für einige Sekunden über den Beleg wieder öffnen.";
+"memory.confirm.safeNote" = "Nichts wird erzwungen beendet, und keine Dateien werden verändert.";
+"memory.toast.freed" = "%@ Arbeitsspeicher freigegeben";
+"memory.toast.available" = "Verfügbarer Arbeitsspeicher %1$@ → %2$@";
+"memory.toast.nothingQuit" = "Keine Apps beendet";
+"memory.toast.notRelaunched" = "Nichts wurde neu gestartet";
+"memory.toast.relaunched" = "%@ neu gestartet";
+"memory.toast.relaunchedBody" = "Sie belegte %@.";
+"memory.toast.stillOpen" = "Noch geöffnet: %@. Möglicherweise fragt sie wegen ungesicherter Arbeit nach.";
+"memory.toast.reopen" = "Erneut öffnen";
+"memory.toast.reopenHelp" = "Apps erneut öffnen (⌘Z)";
+"notification.action.showMemory" = "Arbeitsspeicher anzeigen";
+"notification.memory.title" = "Arbeitsspeicher wird knapp";
+"notification.memory.title.critical" = "Dem Mac ist der Arbeitsspeicher ausgegangen";
+"notification.memory.body" = "Verbraucht am meisten: %1$@ (%2$@). Dusty öffnen, um Ungenutztes zu beenden.";
+"notification.memory.bodyNoApps" = "Nicht genutzte Apps zu beenden, gibt deren Speicher zurück. Dusty öffnen, um zu sehen, welche.";
+"settings.section.memory" = "Arbeitsspeicher";
+"settings.menuBarMemory" = "Speichernutzung in der Menüleiste anzeigen";
+"settings.memoryAlerts" = "Warnen, wenn der Speicher knapp wird";
+"settings.memoryAlertsCaption" = "Meldet sich erst bei anhaltend hoher Auslastung und nennt die Apps mit dem höchsten Verbrauch.";
+"settings.memoryIdle" = "Ungenutzte Apps zum Beenden vorschlagen ab";
+"settings.memory.footer" = "Dusty beendet nie etwas von selbst. Es schlägt vor, du bestätigst, und jede App wird genau wie mit ⌘Q beendet.";
+"intent.memory.title" = "Arbeitsspeichernutzung abrufen";
+"intent.memory.shortTitle" = "Arbeitsspeichernutzung";
+"intent.memory.description" = "Zeigt den genutzten Arbeitsspeicher, die Auslastung und die App mit dem höchsten Verbrauch. Nur lesend – beendet nichts.";
+"intent.memory.failed" = "Arbeitsspeicherstatistik konnte nicht gelesen werden.";
+"intent.memory.result" = "%1$@ von %2$@ belegt. %3$@.";
+"intent.memory.top" = "%1$@ verbraucht am meisten (%2$@).";
+"memory.confirm.relaunchTitle" = "%@ neu starten?";
+"memory.confirm.relaunchSubtitle" = "Belegt derzeit %@";
+"memory.confirm.relaunchNote" = "Sie wird so beendet, wie es ⌘Q tut, und öffnet sich dann im Hintergrund erneut. Die meisten Apps stellen ihre Fenster wieder her.";
+"memory.confirm.relaunchSaveNote" = "Bei ungesicherter Arbeit fragt sie vorher nach.";
+"memory.card.idleApps" = "Zuletzt ungenutzt: %@";
+"memory.card.freeHelp" = "Zuletzt ungenutzte Apps beenden. Dusty listet sie auf und fragt vorher nach.";

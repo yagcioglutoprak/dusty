@@ -7,7 +7,7 @@ import XCTest
 /// directly so a missing bundle, a dropped locale, or a target added without a
 /// translation shows up as a red test instead of a quietly untranslated panel.
 final class LocalizationTests: XCTestCase {
-    private static let locales = ["en", "fr", "es", "ru"]
+    private static let locales = ["en", "fr", "es", "ru", "de"]
 
     private func table(for locale: String) throws -> Bundle {
         let path = try XCTUnwrap(

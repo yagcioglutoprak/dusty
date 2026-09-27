@@ -1,0 +1,83 @@
+/* Cleanup levels */
+"level.safe.title" = "Stufe 1: Sicher";
+"level.developer.title" = "Stufe 2: Entwickler";
+"level.deep.title" = "Stufe 3: Tiefgehend";
+"level.safe.subtitle" = "Benutzer-Caches, Logs, Papierkorb: keine funktionalen Auswirkungen";
+"level.developer.subtitle" = "DerivedData, Simulatoren, Paket-Caches: können Neu-Builds erfordern";
+"level.deep.subtitle" = "Installationsprogramme, Xcode-Archive, alte Systemprotokolle: manuelle Auswahl";
+
+/* Level 1 targets */
+"target.user-caches" = "Benutzer-Caches";
+"target.user-logs" = "App-Protokolle";
+"target.empty-trash" = "Papierkorb leeren";
+"target.safari-cache" = "Safari-Cache";
+"target.chrome-cache" = "Chrome-Cache";
+"target.brave-cache" = "Brave-Cache";
+"target.arc-cache" = "Arc-Cache";
+"target.firefox-cache" = "Firefox-Cache";
+"target.edge-cache" = "Edge-Cache";
+"target.discord-cache" = "Discord-Cache";
+"target.spotify-cache" = "Spotify-Cache";
+"target.vscode-cache" = "VS-Code-Cache";
+"target.slack-cache" = "Slack-Cache";
+"target.cursor-cache" = "Cursor-Cache";
+"target.signal-cache" = "Signal-Cache";
+"target.obsidian-cache" = "Obsidian-Cache";
+"target.notion-cache" = "Notion-Cache";
+"target.teams-cache" = "Microsoft-Teams-Cache";
+"target.zoom-updates" = "Zoom-Update-Installer";
+"target.telegram-media-cache" = "Telegram-Medien-Cache";
+
+/* Level 2 targets */
+"target.xcode-derived-data" = "Xcode DerivedData";
+"target.xcode-device-support" = "Alter iOS-DeviceSupport";
+"target.core-simulator-caches" = "CoreSimulator-Caches";
+"target.simulator-unavailable" = "Nicht verfügbare Simulatoren";
+"target.npm-cache" = "npm-Cache";
+"target.yarn-cache" = "Yarn-Cache";
+"target.pnpm-cache" = "pnpm-Store";
+"target.pip-cache" = "pip-Cache";
+"target.gradle-cache" = "Gradle-Cache";
+"target.cocoapods-cache" = "CocoaPods-Cache";
+"target.swiftpm-cache" = "SwiftPM-Cache";
+"target.cargo-cache" = "Cargo-Registry-Cache";
+"target.go-cache" = "Go-Build- und Modul-Cache";
+"target.homebrew-cache" = "Homebrew-Downloads";
+"target.composer-cache" = "Composer-Cache";
+"target.uv-cache" = "uv-Cache";
+"target.bun-cache" = "Bun-Installations-Cache";
+"target.dart-pub-cache" = "Dart- und Flutter-Pub-Cache";
+"target.deno-cache" = "Deno-Cache";
+"target.cypress-cache" = "Cypress-Binär-Cache";
+"target.xdg-cache" = "Entwicklertool-Caches (~/.cache)";
+"target.maven-repository" = "Lokales Maven-Repository";
+"target.jetbrains-cache" = "JetBrains-IDE-Caches";
+"target.unity-cache" = "Unity-Asset-Cache";
+"target.docker-prune" = "Docker System Prune";
+
+/* Level 3 targets */
+"target.downloads-installers" = "Alte Installationsprogramme (.dmg / .pkg)";
+"target.xcode-archives" = "Xcode-Archive";
+"target.old-simulators" = "Ungenutzte Simulatoren";
+"target.diagnostic-logs" = "Diagnose- und Systemprotokolle";
+"target.ollama-models" = "Ollama-Modelle";
+"target.ai-model-caches" = "KI-Modell-Caches";
+"target.stale-project-artifacts" = "Veraltete Projektartefakte";
+"target.time-machine-snapshots" = "Lokale Time-Machine-Schnappschüsse";
+
+/* Scan output */
+"docker.prune.item" = "Alle ungenutzten Images, Build-Caches und gestoppten Container";
+"error.dockerNotInstalled" = "Docker ist nicht installiert";
+
+/* Advisories */
+"advisory.orphan.title" = "%@ zurückgelassen";
+"advisory.orphan.detail" = "%1$@ scheint nicht mehr installiert zu sein, aber %2$@ seiner Daten befinden sich noch auf der Festplatte.";
+"advisory.tool.jetbrains" = "eine JetBrains-IDE";
+"advisory.stale.detail" = "Seit %1$@ wurde nichts mehr in diesen Cache geschrieben. %2$@ würde sich nur neu aufbauen, wenn er benötigt wird.";
+
+/* Compact free-space label for the menu bar */
+"format.gbFree" = "%.0f GB frei";
+"format.mbFree" = "%.0f MB frei";
+
+/* Simulator scan */
+"simctl.unavailable.none" = "Nicht verfügbare Simulatoren (keine gefunden)";
