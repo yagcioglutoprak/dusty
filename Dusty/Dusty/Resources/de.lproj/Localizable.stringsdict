@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>confirm.fromLevel</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element von %2$@</string>
+			<key>other</key>
+			<string>%d Elemente von %2$@</string>
+		</dict>
+	</dict>
+	<key>confirm.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element anzeigen</string>
+			<key>other</key>
+			<string>Alle %d Elemente anzeigen</string>
+		</dict>
+	</dict>
+	<key>home.level.noneSelected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element · auswählen, was entfernt werden soll</string>
+			<key>other</key>
+			<string>%d Elemente · auswählen, was entfernt werden soll</string>
+		</dict>
+	</dict>
+	<key>home.level.selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element · %2$@ ausgewählt</string>
+			<key>other</key>
+			<string>%d Elemente · %2$@ ausgewählt</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Etwa %d Tag</string>
+			<key>other</key>
+			<string>Etwa %d Tage</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.months</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@months@</string>
+		<key>months</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Etwa %d Monat</string>
+			<key>other</key>
+			<string>Etwa %d Monate</string>
+		</dict>
+	</dict>
+	<key>insights.horizon.weeks</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@weeks@</string>
+		<key>weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Etwa %d Woche</string>
+			<key>other</key>
+			<string>Etwa %d Wochen</string>
+		</dict>
+	</dict>
+	<key>intent.cleanSafe.done</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@, %2$@ freigegeben.</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element bereinigt</string>
+			<key>other</key>
+			<string>%d Elemente bereinigt</string>
+		</dict>
+	</dict>
+	<key>level.alsoChecked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@places@</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Außerdem %d weiteren Ort geprüft, dort nichts zu bereinigen.</string>
+			<key>other</key>
+			<string>Außerdem %d weitere Orte geprüft, dort nichts zu bereinigen.</string>
+		</dict>
+	</dict>
+	<key>level.bar.items</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element, für einige Sekunden wiederherstellbar</string>
+			<key>other</key>
+			<string>%d Elemente, für einige Sekunden wiederherstellbar</string>
+		</dict>
+	</dict>
+	<key>level.blocking</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@apps@</string>
+		<key>apps</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$@ ist geöffnet, daher wird der Cache übersprungen. Beende die App, um sie einzubeziehen.</string>
+			<key>other</key>
+			<string>%2$@ sind geöffnet, daher werden deren Caches übersprungen. Beende die Apps, um sie einzubeziehen.</string>
+		</dict>
+	</dict>
+	<key>level.empty.body</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@places@</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dusty hat %d Ort auf dieser Stufe geprüft und nichts Entfernenswertes gefunden.</string>
+			<key>other</key>
+			<string>Dusty hat %d Orte auf dieser Stufe geprüft und nichts Entfernenswertes gefunden.</string>
+		</dict>
+	</dict>
+	<key>level.subtitle</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ gefunden · %2$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element</string>
+			<key>other</key>
+			<string>%d Elemente</string>
+		</dict>
+	</dict>
+	<key>panel.footer.lifetime</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ %2$#@cleans@</string>
+		<key>cleans</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>insgesamt freigegeben · %d Bereinigung</string>
+			<key>other</key>
+			<string>insgesamt freigegeben · %d Bereinigungen</string>
+		</dict>
+	</dict>
+	<key>result.skipped.hide</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d übersprungen, zum Ausblenden tippen</string>
+			<key>other</key>
+			<string>%d übersprungen, zum Ausblenden tippen</string>
+		</dict>
+	</dict>
+	<key>result.skipped.show</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d übersprungen, zum Anzeigen tippen</string>
+			<key>other</key>
+			<string>%d übersprungen, zum Anzeigen tippen</string>
+		</dict>
+	</dict>
+	<key>settings.autoScanInterval</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@hours@</string>
+		<key>hours</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Alle %d Stunde</string>
+			<key>other</key>
+			<string>Alle %d Stunden</string>
+		</dict>
+	</dict>
+	<key>settings.value.days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Tag</string>
+			<key>other</key>
+			<string>%d Tage</string>
+		</dict>
+	</dict>
+	<key>target.a11y.hideItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element von %2$@ ausblenden</string>
+			<key>other</key>
+			<string>%d Elemente von %2$@ ausblenden</string>
+		</dict>
+	</dict>
+	<key>target.a11y.showItems</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element von %2$@ anzeigen</string>
+			<key>other</key>
+			<string>%d Elemente von %2$@ anzeigen</string>
+		</dict>
+	</dict>
+	<key>target.items</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element</string>
+			<key>other</key>
+			<string>%d Elemente</string>
+		</dict>
+	</dict>
+	<key>target.noneSelected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element · keines ausgewählt</string>
+			<key>other</key>
+			<string>%d Elemente · keine ausgewählt</string>
+		</dict>
+	</dict>
+	<key>target.partial</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$d von %2$#@items@ · %3$@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element</string>
+			<key>other</key>
+			<string>%d Elemente</string>
+		</dict>
+	</dict>
+	<key>target.pickByHand</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@items@</string>
+		<key>items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Element · manuell auswählen</string>
+			<key>other</key>
+			<string>%d Elemente · manuell auswählen</string>
+		</dict>
+	</dict>
+	<key>memory.apps.showAll</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d App anzeigen</string>
+			<key>other</key>
+			<string>Alle %d Apps anzeigen</string>
+		</dict>
+	</dict>
+	<key>memory.bar.apps</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d App, sie kann vorher zum Sichern auffordern</string>
+			<key>other</key>
+			<string>%d Apps, jede kann vorher zum Sichern auffordern</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.title</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d App beenden?</string>
+			<key>other</key>
+			<string>%d Apps beenden?</string>
+		</dict>
+	</dict>
+	<key>memory.confirm.action</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d App beenden</string>
+			<key>other</key>
+			<string>%d Apps beenden</string>
+		</dict>
+	</dict>
+	<key>memory.row.processes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Prozess</string>
+			<key>other</key>
+			<string>%d Prozesse</string>
+		</dict>
+	</dict>
+	<key>memory.names.more</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d weitere</string>
+			<key>other</key>
+			<string>%d weitere</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
