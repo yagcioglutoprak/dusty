@@ -14,7 +14,7 @@ cask "dusty" do
   # build as outdated.
   auto_updates true
 
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   app "Dusty.app"
   # The dusty CLI ships inside the app bundle (Contents/Helpers, not MacOS:
